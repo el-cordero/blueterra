@@ -1,0 +1,45 @@
+Package: blueterra
+Title: Process-Oriented Geomorphometry for Submerged Terrain
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Elvin", "Cordero", email = "cordero.elvin@gmail.com", role = c("aut", "cre")),
+    person("SeaMount Geospatial Labs", role = "cph")
+  )
+Description: Provides tools for deriving, organizing, summarizing, and
+    visualizing terrain metrics from user-supplied bathymetric or elevation
+    rasters. Supports submerged-landscape geomorphometry workflows including
+    slope, aspect, rugosity, bathymetric position, curvature, depth-band
+    summaries, transect extraction, and isobath-corridor summaries. The package
+    is data-source agnostic and does not download bathymetric data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1)
+Imports:
+    cli,
+    dplyr,
+    graphics,
+    grDevices,
+    methods,
+    rlang,
+    sf,
+    stats,
+    terra,
+    tibble,
+    utils
+Suggests:
+    covr,
+    exactextractr,
+    ggplot2,
+    knitr,
+    lintr,
+    pkgdown,
+    rmarkdown,
+    spelling,
+    testthat (>= 3.0.0),
+    units
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+LazyData: true

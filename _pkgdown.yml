@@ -1,0 +1,41 @@
+url: ~
+template:
+  bootstrap: 5
+  light-switch: true
+home:
+  title: Process-oriented geomorphometry for submerged terrain
+  strip_header: true
+  links:
+  - text: Source repository
+    href: https://example.com/blueterra
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search]
+reference:
+- title: Input and preparation
+  contents:
+  - read_bathy
+  - as_bathy
+  - validate_bathy
+  - prepare_bathy
+  - depth_filter
+- title: Terrain metrics
+  contents:
+  - derive_terrain
+  - derive_bpi
+  - derive_metric_stack
+- title: Process groups
+  contents:
+  - metric_catalog
+  - assign_process_groups
+  - summarize_process_groups
+- title: Summaries and geometry
+  contents:
+  - summarize_terrain
+  - make_transects
+  - make_isobath_corridors
+- title: Modeling and plots
+  contents:
+  - terrain_pca
+  - plot_bathy
