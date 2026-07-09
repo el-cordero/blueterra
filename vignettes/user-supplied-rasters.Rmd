@@ -18,10 +18,6 @@ library(blueterra)
 `blueterra` works with user-supplied digital bathymetric models, digital
 elevation models, and other raster surfaces readable by `terra`.
 
-The package does not download BlueTopo data. BlueTopo download and mosaicking
-are intentionally outside the scope of `blueterra` and will be handled by a
-separate package.
-
 ## Accepted Inputs
 
 Use a local raster path:
@@ -35,6 +31,13 @@ Or use an existing `terra::SpatRaster`:
 
 ```{r spatraster}
 same_bathy <- as_bathy(bathy)
+```
+
+Vector workflows use `terra::SpatVector` objects or local vector files:
+
+```{r vector}
+zones <- terra::vect(blueterra_example("zones"))
+zones
 ```
 
 ## CRS

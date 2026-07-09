@@ -23,7 +23,8 @@ the result is usable as a bathymetric or elevation surface.
 \details{
 \code{read_bathy()} is data-source agnostic. The input can be any local raster
 format supported by \code{terra}, including GeoTIFF and many GDAL-readable files.
-The function does not assume BlueTopo provenance and never downloads data.
+The function treats the raster as a user-supplied terrain surface and
+preserves its values, CRS, resolution, and vertical sign convention.
 }
 \examples{
 path <- blueterra_example("bathy")

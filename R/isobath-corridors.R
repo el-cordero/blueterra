@@ -8,10 +8,10 @@
 #' @param positive_depth Optional logical. If `TRUE`, `depths` are converted to
 #'   positive values. If `FALSE`, they are converted to negative values. If
 #'   `NULL`, `depths` are used exactly as supplied.
-#' @param as Output type: `"sf"` or `"SpatVector"`.
+#' @param as Output type: `"SpatVector"` or `"sf"`.
 #' @param ... Additional arguments reserved for future extensions.
 #'
-#' @return Isobath line features as `sf` or `terra::SpatVector`.
+#' @return Isobath line features as `terra::SpatVector` by default.
 #'
 #' @details
 #' Depth convention is explicit. For rasters stored as negative elevation,
@@ -28,7 +28,7 @@ extract_isobaths <- function(
     x,
     depths,
     positive_depth = NULL,
-    as = c("sf", "SpatVector"),
+    as = c("SpatVector", "sf"),
     ...
 ) {
   as <- match.arg(as)
@@ -47,18 +47,19 @@ extract_isobaths <- function(
   if (is.null(contours) || nrow(contours) == 0) {
     bt_abort("No isobaths were created for the supplied depths.")
   }
-  out <- sf::st_as_sf(contours)
+  out <- contours
   value_col <- intersect(c("level", "value", "z"), names(out))[1]
   if (is.na(value_col)) {
     out$level <- rep(levels, length.out = nrow(out))
     value_col <- "level"
   }
-  out$contour_value <- as.numeric(out[[value_col]])
+  attrs <- as.data.frame(out)
+  out$contour_value <- as.numeric(attrs[[value_col]])
   out$depth_label <- depths[match(out$contour_value, levels)]
   out$depth_label[is.na(out$depth_label)] <- out$contour_value[is.na(out$depth_label)]
-  out <- out[sf::st_geometry_type(out) %in% c("LINESTRING", "MULTILINESTRING"), ]
-  if (as == "SpatVector") {
-    return(terra::vect(out))
+  if (as == "sf") {
+    check_installed("sf", "to return sf objects")
+    return(sf::st_as_sf(out))
   }
   out
 }
@@ -73,7 +74,7 @@ extract_isobaths <- function(
 #' @param smooth Logical. If `TRUE`, apply a zero-width buffer after buffering
 #'   to clean polygon topology.
 #'
-#' @return Isobath corridor polygons as `sf` or `terra::SpatVector`.
+#' @return Isobath corridor polygons as `terra::SpatVector` by default.
 #'
 #' @details
 #' `width` is interpreted in the CRS map units. Projected CRS are strongly
@@ -91,7 +92,7 @@ make_isobath_corridors <- function(
     depths,
     width,
     smooth = FALSE,
-    as = c("sf", "SpatVector"),
+    as = c("SpatVector", "sf"),
     positive_depth = NULL,
     ...
 ) {
@@ -110,15 +111,16 @@ make_isobath_corridors <- function(
     r,
     depths = depths,
     positive_depth = positive_depth,
-    as = "sf"
+    as = "SpatVector"
   )
-  corridors <- suppressWarnings(sf::st_buffer(lines, dist = width))
+  corridors <- terra::buffer(lines, width = width)
   if (isTRUE(smooth)) {
-    corridors <- sf::st_buffer(corridors, dist = 0)
+    corridors <- terra::buffer(corridors, width = 0)
   }
   corridors$corridor_id <- seq_len(nrow(corridors))
-  if (as == "SpatVector") {
-    return(terra::vect(corridors))
+  if (as == "sf") {
+    check_installed("sf", "to return sf objects")
+    return(sf::st_as_sf(corridors))
   }
   corridors
 }
@@ -216,7 +218,7 @@ summarize_isobath_terrain <- function(
 #' @export
 plot_isobath_corridors <- function(corridors, bathy = NULL) {
   optional_ggplot2()
-  corridor_sf <- as_sf_object(corridors)
+  corridor_v <- as_spatvector(corridors)
   p <- ggplot2::ggplot()
   if (!is.null(bathy)) {
     df <- raster_plot_data(bathy)
@@ -228,7 +230,12 @@ plot_isobath_corridors <- function(corridors, bathy = NULL) {
       ) +
       ggplot2::scale_fill_viridis_c(option = "C", na.value = NA)
   }
+  corridor_df <- vector_plot_data(corridor_v)
   p +
-    ggplot2::geom_sf(data = corridor_sf, fill = NA, color = "white") +
+    ggplot2::geom_path(
+      data = corridor_df,
+      ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
+      color = "white"
+    ) +
     ggplot2::labs(x = NULL, y = NULL)
 }

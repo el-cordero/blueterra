@@ -10,11 +10,12 @@ make_transects(
   angle = 0,
   length = NULL,
   id_field = NULL,
-  as = c("sf", "SpatVector")
+  as = c("SpatVector", "sf")
 )
 }
 \arguments{
-\item{area}{An \code{sf} polygon object, \code{terra::SpatVector}, or local vector path.}
+\item{area}{A \code{terra::SpatVector}, local vector path, or optional \code{sf}
+polygon object.}
 
 \item{spacing}{Distance between transects in map units.}
 
@@ -25,22 +26,23 @@ on the polygon bounding box is used.}
 
 \item{id_field}{Optional field in \code{area} used as the zone identifier.}
 
-\item{as}{Output type: \code{"sf"} or \code{"SpatVector"}.}
+\item{as}{Output type: \code{"SpatVector"} or \code{"sf"}.}
 }
 \value{
-An \code{sf} object or \code{terra::SpatVector} of line transects.
+A \code{terra::SpatVector} by default. If \code{as = "sf"}, an \code{sf} object is
+returned and the optional \code{sf} package must be installed.
 }
 \description{
 Builds regularly spaced straight transects through polygon features.
 }
 \details{
 Transect spacing and length are interpreted in map units. Use a projected CRS
-for metric distances. The function creates candidate lines through each
-polygon bounding box and clips them to the polygon.
+for metric distances. Candidate lines are generated through each polygon
+bounding box and clipped to the polygon with \code{terra::intersect()}.
 }
 \examples{
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-transects <- make_transects(sites[1, ], spacing = 50)
+zones <- terra::vect(blueterra_example("zones"))
+transects <- make_transects(zones[1, ], spacing = 50)
 transects
 
 }

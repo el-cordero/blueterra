@@ -12,9 +12,8 @@ submerged-landscape geomorphometry after a raster has already been obtained.
 }
 \details{
 The package accepts \code{terra::SpatRaster} objects, local raster file paths, and
-other raster inputs readable by \code{terra}. It does not download, discover,
-mosaic, combine, cache, or otherwise acquire BlueTopo data or any other
-remote bathymetry product.
+other raster inputs readable by \code{terra}. Vector workflows use
+\code{terra::SpatVector} objects or local vector files readable by \code{terra::vect()}.
 
 Depth convention is explicit. Some bathymetric rasters store depth as
 negative elevation, while other workflows use positive depth. Functions
@@ -24,6 +23,14 @@ sign change.
 Terrain derivatives are sensitive to CRS, raster resolution, smoothing, and
 focal-window scale. Use projected coordinate systems when distance, slope,
 area, or buffering operations depend on linear units.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/el-cordero/blueterra}
+  \item Report bugs at \url{https://github.com/el-cordero/blueterra/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Elvin Cordero \email{cordero.elvin@gmail.com}

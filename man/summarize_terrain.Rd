@@ -48,15 +48,15 @@ Computes summary statistics for raster metrics inside polygons, buffers, or
 corridor features.
 }
 \details{
-\code{summarize_terrain()} does not assume specific sites, depth ranges, or
+\code{summarize_terrain()} does not assume specific zones, depth ranges, or
 ecological labels. For distance-sensitive summaries, use zones and rasters in
 a projected CRS.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
 terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-summarize_terrain(terrain, sites)
+zones <- terra::vect(blueterra_example("zones"))
+summarize_terrain(terrain, zones)
 
 }
 \seealso{

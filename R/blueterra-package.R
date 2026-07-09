@@ -7,9 +7,8 @@
 #'
 #' @details
 #' The package accepts `terra::SpatRaster` objects, local raster file paths, and
-#' other raster inputs readable by `terra`. It does not download, discover,
-#' mosaic, combine, cache, or otherwise acquire BlueTopo data or any other
-#' remote bathymetry product.
+#' other raster inputs readable by `terra`. Vector workflows use
+#' `terra::SpatVector` objects or local vector files readable by `terra::vect()`.
 #'
 #' Depth convention is explicit. Some bathymetric rasters store depth as
 #' negative elevation, while other workflows use positive depth. Functions

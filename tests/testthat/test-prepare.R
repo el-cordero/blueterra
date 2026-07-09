@@ -29,8 +29,8 @@ test_that("preparation helpers crop, filter, smooth, and write in tempdir", {
 
 test_that("mask, resample, and project helpers work", {
   bathy <- example_bathy()
-  sites <- example_sites()
-  masked <- mask_bathy(bathy, sites[1, ])
+  zones <- example_zones()
+  masked <- mask_bathy(bathy, zones[1, ])
   expect_s4_class(masked, "SpatRaster")
   template <- terra::aggregate(bathy, fact = 2)
   resampled <- resample_bathy(bathy, template)

@@ -15,7 +15,7 @@ test_that("plotting functions return ggplot objects when ggplot2 is installed", 
   expect_s3_class(plot_terrain_summary(summary, value = "slope_mean"), "ggplot")
   corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
   expect_s3_class(plot_isobath_corridors(corridors, bathy), "ggplot")
-  transects <- make_transects(example_sites()[1, ], spacing = 100)
+  transects <- make_transects(example_zones()[1, ], spacing = 100)
   samples <- sample_transects(transects, bathy, n = 5)
   expect_s3_class(plot_cross_sections(samples), "ggplot")
 })

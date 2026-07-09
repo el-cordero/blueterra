@@ -1,10 +1,10 @@
-url: ~
+url: https://github.com/el-cordero/blueterra
 template:
   bootstrap: 5
   light-switch: true
 home:
   title: Process-oriented geomorphometry for submerged terrain
-  strip_header: true
+  strip_header: false
 navbar:
   structure:
     left: [intro, reference, articles, news]
@@ -15,24 +15,80 @@ reference:
   - read_bathy
   - as_bathy
   - validate_bathy
+  - bathy_info
+  - check_bathy_crs
+  - check_bathy_units
   - prepare_bathy
+  - crop_bathy
+  - mask_bathy
+  - resample_bathy
+  - project_bathy
+  - smooth_bathy
   - depth_filter
+  - invert_depth
+  - set_depth_positive
+  - set_depth_negative
 - title: Terrain metrics
   contents:
   - derive_terrain
-  - derive_bpi
   - derive_metric_stack
+  - derive_slope
+  - derive_aspect
+  - derive_northness
+  - derive_eastness
+  - derive_hillshade
+  - derive_rugosity
+  - derive_roughness
+  - derive_tri
+  - derive_tpi
+  - derive_bpi
+  - derive_multiscale_bpi
+  - derive_curvature
+  - derive_surface_area_ratio
 - title: Process groups
   contents:
   - metric_catalog
+  - metric_catalog_data
+  - process_groups
   - assign_process_groups
+  - select_process_representatives
   - summarize_process_groups
+  - rename_metric_layers
+  - standardize_metric_names
 - title: Summaries and geometry
   contents:
   - summarize_terrain
+  - summarize_terrain_by_zone
+  - summarize_depth_bands
+  - extract_terrain_points
+  - sample_terrain_cells
   - make_transects
+  - sample_transects
+  - extract_cross_sections
+  - summarize_cross_sections
+  - plot_cross_sections
+  - extract_isobaths
   - make_isobath_corridors
+  - extract_isobath_corridors
+  - summarize_isobath_terrain
+  - plot_isobath_corridors
 - title: Modeling and plots
   contents:
   - terrain_pca
+  - terrain_effect_size
+  - terrain_correlation
+  - prepare_model_matrix
+  - balance_samples
   - plot_bathy
+  - plot_hillshade
+  - plot_metric
+  - plot_metric_stack
+  - plot_process_density
+  - plot_process_pca
+  - plot_depth_profile
+  - plot_terrain_summary
+- title: Utilities
+  contents:
+  - blueterra_example
+  - blueterra_extdata
+  - blueterra_options

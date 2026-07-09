@@ -85,7 +85,7 @@ plot_metric_stack <- function(
   )
   ggplot2::ggplot(long, ggplot2::aes(x = .data[["x"]], y = .data[["y"]])) +
     ggplot2::geom_raster(ggplot2::aes(fill = .data[["value"]])) +
-    ggplot2::facet_wrap(ggplot2::vars(.data[["metric"]]), scales = "free") +
+    ggplot2::facet_wrap(ggplot2::vars(.data[["metric"]])) +
     ggplot2::coord_equal() +
     ggplot2::scale_fill_viridis_c(option = "C", na.value = NA) +
     ggplot2::labs(x = NULL, y = NULL, fill = "Value")

@@ -20,11 +20,13 @@ A \code{ggplot} object.
 Plots raster values against transect distance.
 }
 \examples{
-bathy <- read_bathy(blueterra_example("bathy"))
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-transects <- make_transects(sites[1, ], spacing = 100)
-samples <- sample_transects(transects, bathy, n = 5)
-plot_cross_sections(samples)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  bathy <- read_bathy(blueterra_example("bathy"))
+  zones <- terra::vect(blueterra_example("zones"))
+  transects <- make_transects(zones[1, ], spacing = 100)
+  samples <- sample_transects(transects, bathy, n = 5)
+  plot_cross_sections(samples)
+}
 
 }
 \seealso{

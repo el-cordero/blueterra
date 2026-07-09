@@ -16,151 +16,296 @@ knitr::opts_chunk$set(
 
 # blueterra
 
-`blueterra` provides tools for process-oriented geomorphometry of submerged
-terrain from user-supplied bathymetric or elevation rasters. It derives terrain
-metrics, organizes them into geomorphic process groups, and summarizes terrain
-across polygons, transects, depth bands, and isobath corridors.
-
-`blueterra` does not download or mosaic BlueTopo data. BlueTopo acquisition will
-be handled by a separate package. Users can provide any suitable bathymetric or
-elevation raster supported by `terra`.
+`blueterra` is an R package for geomorphometric analysis of submerged
+terrain. It works from user-supplied bathymetric or elevation rasters and
+builds `terra`-based workflows for deriving terrain metrics, organizing those
+metrics into process-oriented groups, and summarizing submerged landscapes
+across polygons, transects, depth bands, and isobath corridors. The package is
+designed for seafloor classification, habitat mapping, shelf-margin analysis,
+and spatial modeling where terrain structure is part of the physical template.
 
 ## Installation
 
-Install from a local source checkout:
+```r
+install.packages("remotes")
+remotes::install_github("el-cordero/blueterra")
+```
+
+From a local source checkout:
 
 ```r
 install.packages("path/to/blueterra", repos = NULL, type = "source")
 ```
 
-After a public repository is available, install from GitHub with:
+## Core Workflow
 
-```r
-# install.packages("remotes")
-remotes::install_github("owner/blueterra")
-```
-
-## Scope
-
-`blueterra` focuses on local terrain analysis after a raster already exists:
-
-* read and validate user-supplied bathymetric or elevation rasters
-* prepare raster surfaces for terrain analysis
-* derive slope, aspect, orientation, ruggedness, BPI, TPI, curvature, and
-  surface-structure metrics
-* map metrics to process-oriented terrain groups
-* summarize metrics across polygons, depth bands, transects, and isobath
-  corridors
-* create model-ready tables and summary plots
-
-Out of scope:
-
-* BlueTopo download
-* BlueTopo tile discovery
-* BlueTopo mosaicking or combining
-* remote bathymetry acquisition
-* persistent download caches
-
-## Quick Start
-
-```{r quick-start}
+```{r setup}
 library(blueterra)
+library(terra)
 
 bathy <- read_bathy(blueterra_example("bathy"))
-bathy_info(bathy)
+zones <- vect(blueterra_example("zones"))
 
-terrain <- derive_terrain(
-  bathy,
-  metrics = c("slope", "aspect", "northness", "eastness", "bpi", "roughness")
+prepared <- prepare_bathy(bathy, depth_range = c(-90, -20), smooth = TRUE)
+metrics <- derive_terrain(
+  prepared,
+  metrics = c("slope", "aspect", "northness", "eastness", "tri", "bpi",
+              "curvature", "surface_area_ratio")
 )
 
+zone_summary <- summarize_terrain(metrics, zones)
+depth_summary <- summarize_depth_bands(
+  prepared,
+  metrics = metrics,
+  breaks = c(-90, -70, -50, -30, -20)
+)
+```
+
+The workflow is deliberately explicit: depth signs are preserved unless a
+conversion function is called, and coordinate reference systems are not changed
+unless the user requests a projection.
+
+## Data Input
+
+```{r input}
+bathy_path <- blueterra_example("bathy")
+zones_path <- blueterra_example("zones")
+
+class(bathy_path)
+class(zones_path)
+
+bathy <- read_bathy(bathy_path)
+class(bathy)
+
+bathy_info(bathy)
+check_bathy_crs(bathy)
+check_bathy_units(bathy, units = "m", positive_depth = FALSE)
+```
+
+`as_bathy()` accepts an existing `SpatRaster` or a local raster path:
+
+```{r as-bathy}
+same_bathy <- as_bathy(bathy)
+path_bathy <- as_bathy(bathy_path)
+class(same_bathy)
+class(path_bathy)
+```
+
+## Raster Preparation
+
+```{r preparation}
+cropped <- crop_bathy(bathy, ext(50, 400, 50, 400))
+masked <- mask_bathy(bathy, zones[1, ])
+smoothed <- smooth_bathy(bathy, window = 3)
+filtered <- depth_filter(bathy, depth_range = c(-80, -30))
+
+positive_depth <- set_depth_positive(bathy)
+negative_depth <- set_depth_negative(positive_depth)
+inverted_depth <- invert_depth(negative_depth)
+
+class(cropped)
+class(masked)
+range(values(filtered), na.rm = TRUE)
+range(values(positive_depth), na.rm = TRUE)
+range(values(negative_depth), na.rm = TRUE)
+```
+
+Projection and resampling are available as explicit operations:
+
+```{r project-resample}
+coarse <- aggregate(bathy, fact = 2)
+resampled <- resample_bathy(bathy, coarse)
+projected <- project_bathy(coarse, crs(bathy))
+prepared <- prepare_bathy(
+  bathy,
+  depth_range = c(-85, -25),
+  smooth = TRUE,
+  smooth_window = 3
+)
+
+class(resampled)
+class(projected)
+class(prepared)
+```
+
+## Terrain Metrics
+
+Terrain derivatives are scale-sensitive; select window sizes that match the
+feature size being interpreted.
+
+```{r metrics}
+slope <- derive_slope(bathy, units = "degrees")
+aspect <- derive_aspect(bathy, units = "degrees")
+northness <- derive_northness(bathy)
+eastness <- derive_eastness(bathy)
+hillshade <- derive_hillshade(bathy)
+roughness <- derive_roughness(bathy)
+rugosity <- derive_rugosity(bathy, window = 3)
+tri <- derive_tri(bathy)
+tpi <- derive_tpi(bathy)
+bpi <- derive_bpi(bathy, window = 5)
+multiscale_bpi <- derive_multiscale_bpi(bathy, windows = c(3, 7, 11))
+curvature <- derive_curvature(bathy)
+sar <- derive_surface_area_ratio(bathy)
+metric_stack <- derive_metric_stack(
+  bathy,
+  metrics = c("slope", "northness", "eastness", "tri", "bpi", "curvature")
+)
+
+names(metric_stack)
+global(slope, c("min", "mean", "max"), na.rm = TRUE)
+global(bpi, c("min", "mean", "max"), na.rm = TRUE)
+```
+
+`derive_terrain()` is the high-level stack builder:
+
+```{r derive-terrain}
+terrain <- derive_terrain(bathy)
 names(terrain)
-assign_process_groups(terrain)
+class(terrain)
 ```
 
-Summarize terrain by polygons:
+## Process Groups
 
-```{r polygon-summary}
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-summarize_terrain(terrain, sites)
+Process groups are an interpretation layer for organizing terrain form.
+
+```{r process-groups}
+catalog <- metric_catalog()
+head(catalog)
+
+process_groups()
+assign_process_groups(metric_stack)
+select_process_representatives(metrics_available = names(metric_stack))
+summarize_process_groups(metric_stack)
+
+standardize_metric_names(c("Slope (deg)", "Broad BPI"))
+rename_metric_layers(c("old_slope"), c(old_slope = "slope_deg"))
 ```
 
-Summarize by depth bands:
+## Depth Bands
 
 ```{r depth-bands}
 summarize_depth_bands(
   bathy,
-  metrics = terrain,
-  breaks = c(-90, -60, -30, 0)
+  metrics = metric_stack,
+  breaks = c(-90, -70, -50, -30, -20)
+)
+
+summarize_depth_bands(
+  set_depth_positive(bathy),
+  metrics = metric_stack,
+  breaks = c(20, 30, 50, 70, 90),
+  positive_depth = TRUE
 )
 ```
 
-Build and summarize an isobath corridor:
+## Transects
 
-```{r isobath}
-corridor <- make_isobath_corridors(bathy, depths = -50, width = 20)
-summarize_isobath_terrain(terrain, corridor)
+Transects are useful when observations are collected along cross-shelf or
+cross-slope sections.
+
+```{r transects}
+transects <- make_transects(zones[1, ], spacing = 100)
+class(transects)
+
+transect_samples <- sample_transects(transects, bathy, n = 8)
+head(transect_samples)
+
+cross_sections <- extract_cross_sections(transects, bathy, n = 8)
+summarize_cross_sections(cross_sections)
 ```
 
-## User-Supplied Rasters
+## Isobath Corridors
 
-Use any local raster readable by `terra`:
+Isobath corridors summarize terrain along depth horizons.
 
-```r
-path <- "my_bathymetry_or_dem.tif"
-bathy <- read_bathy(path)
-terrain <- derive_terrain(bathy)
+```{r isobaths}
+isobaths <- extract_isobaths(bathy, depths = c(-40, -60))
+corridors <- make_isobath_corridors(bathy, depths = c(-40, -60), width = 20)
+
+class(isobaths)
+class(corridors)
+
+corridor_cells <- extract_isobath_corridors(metric_stack, corridors)
+head(corridor_cells)
+
+summarize_isobath_terrain(metric_stack, corridors)
 ```
 
-`blueterra` preserves depth sign conventions unless a function explicitly asks
-for a conversion:
+## Polygon Summaries
 
-```r
-positive_depth <- set_depth_positive(bathy)
-negative_depth <- set_depth_negative(positive_depth)
+```{r polygon-summaries}
+terrain_summary <- summarize_terrain(metric_stack, zones)
+terrain_summary
+
+summarize_terrain_by_zone(metric_stack, zones)
+
+points <- centroids(zones)
+extract_terrain_points(metric_stack, points)
+sample_terrain_cells(metric_stack, size = 10, method = "regular")
 ```
 
-Metric derivation is scale-sensitive. Use projected coordinate systems when
-distances, slopes, buffers, or focal windows need interpretable linear units.
+## Modeling Helpers
 
-## Function Overview
+```{r modeling}
+cells <- sample_terrain_cells(metric_stack, size = 80)
+pca <- terrain_pca(cells)
+pca$variance
 
-Input and validation:
-`read_bathy()`, `as_bathy()`, `validate_bathy()`, `check_bathy_crs()`,
-`check_bathy_units()`, `bathy_info()`.
+terrain_correlation(cells)
 
-Raster preparation:
-`prepare_bathy()`, `crop_bathy()`, `mask_bathy()`, `resample_bathy()`,
-`project_bathy()`, `smooth_bathy()`, `depth_filter()`, `invert_depth()`,
-`set_depth_positive()`, `set_depth_negative()`.
+model_data <- prepare_model_matrix(cells, vars = names(metric_stack), scale = TRUE)
+class(model_data$x)
+dim(model_data$x)
 
-Terrain metrics:
-`derive_terrain()`, `derive_slope()`, `derive_aspect()`,
-`derive_northness()`, `derive_eastness()`, `derive_hillshade()`,
-`derive_rugosity()`, `derive_roughness()`, `derive_tri()`, `derive_tpi()`,
-`derive_bpi()`, `derive_multiscale_bpi()`, `derive_curvature()`,
-`derive_surface_area_ratio()`, `derive_metric_stack()`.
+effect_data <- data.frame(
+  group = rep(c("A", "B"), each = 10),
+  slope = c(1:10, 6:15)
+)
+terrain_effect_size(effect_data, group = "group", vars = "slope")
+balance_samples(data.frame(group = rep(c("A", "B"), c(5, 12)), value = seq_len(17)),
+                group = "group")
+```
 
-Summaries and geometry:
-`summarize_terrain()`, `summarize_depth_bands()`, `make_transects()`,
-`sample_transects()`, `extract_cross_sections()`, `extract_isobaths()`,
-`make_isobath_corridors()`, `summarize_isobath_terrain()`.
+## Plotting
 
-Modeling and plotting:
-`terrain_pca()`, `terrain_effect_size()`, `terrain_correlation()`,
-`prepare_model_matrix()`, `balance_samples()`, `plot_bathy()`,
-`plot_metric()`, `plot_metric_stack()`, `plot_depth_profile()`.
+```{r plotting, eval=requireNamespace("ggplot2", quietly = TRUE), fig.height=4, fig.alt=c("Bathymetry map of the synthetic example raster.", "Hillshade map of the synthetic example raster.", "Slope metric map derived from the example raster.", "Histogram of slope values grouped as slope-gradient process terrain.", "Principal components biplot for sampled terrain metrics.", "Depth profile from sampled raster cells.", "Bar chart of terrain summary statistics.", "Metric stack map for slope, roughness, and bathymetric position.", "Transect cross-section profile across the example zone.", "Isobath corridor map over the example raster.")}
+plot_bathy(bathy)
+plot_hillshade(bathy)
+plot_metric(metric_stack, "slope_deg")
+plot_metric_stack(metric_stack[[c("slope_deg", "tri", "bpi_3x3")]])
+plot_cross_sections(transect_samples)
+plot_isobath_corridors(corridors, bathy)
+plot_depth_profile(transect_samples, depth_col = "bathy")
+plot_terrain_summary(terrain_summary, value = "slope_deg_mean")
+plot_process_density(cells, value = "slope_deg")
+plot_process_pca(pca)
+```
+
+## Utility Functions
+
+```{r utilities}
+blueterra_extdata()
+blueterra_extdata("example_bathy.tif")
+blueterra_example("bathy")
+blueterra_example("zones")
+blueterra_options()
+old <- blueterra_options(blueterra.progress = FALSE)
+blueterra_options(blueterra.progress = old$blueterra.progress)
+```
+
+## Reproducibility
+
+Analyses should record the raster source, horizontal CRS, vertical units,
+vertical sign convention, raster resolution, smoothing choices, and focal
+window sizes. Terrain metrics such as slope, curvature, rugosity, TPI, and BPI
+are not invariant to grid resolution or preprocessing.
 
 ## Citation
 
-Citation details will be added before release. Until then, cite the package
-source and version used in your analysis.
+Citation metadata will be added with the first archived release. Until then,
+cite the GitHub repository and package version used in the analysis.
 
 ## License
 
 MIT. See `LICENSE.md`.
-
-## Development Status
-
-Development version. Confirm author, maintainer, repository, copyright, and
-release metadata before CRAN submission.

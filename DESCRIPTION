@@ -2,16 +2,21 @@ Package: blueterra
 Title: Process-Oriented Geomorphometry for Submerged Terrain
 Version: 0.1.0
 Authors@R: c(
-    person("Elvin", "Cordero", email = "cordero.elvin@gmail.com", role = c("aut", "cre")),
+    person("Elvin", "Cordero",
+           email = "cordero.elvin@gmail.com",
+           role = c("aut", "cre")),
     person("SeaMount Geospatial Labs", role = "cph")
   )
-Description: Provides tools for deriving, organizing, summarizing, and
-    visualizing terrain metrics from user-supplied bathymetric or elevation
-    rasters. Supports submerged-landscape geomorphometry workflows including
-    slope, aspect, rugosity, bathymetric position, curvature, depth-band
-    summaries, transect extraction, and isobath-corridor summaries. The package
-    is data-source agnostic and does not download bathymetric data.
+Description: Derives and summarizes terrain metrics from bathymetric and
+    elevation rasters for submerged-landscape geomorphometry. Tools support
+    raster preparation, slope and aspect decomposition, terrain position,
+    rugosity, curvature, depth-band summaries, transect extraction, and
+    isobath-corridor analysis using terra-based workflows. Outputs are designed
+    for seafloor classification, habitat mapping, shelf-margin analysis, and
+    spatial modeling of submerged terrain.
 License: MIT + file LICENSE
+URL: https://github.com/el-cordero/blueterra
+BugReports: https://github.com/el-cordero/blueterra/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
@@ -21,7 +26,6 @@ Imports:
     cli,
     dplyr,
     rlang,
-    sf,
     stats,
     terra,
     tibble,
@@ -33,8 +37,10 @@ Suggests:
     lintr,
     pkgdown,
     rmarkdown,
+    sf,
     testthat (>= 3.0.0),
-    units
+    units,
+    xml2
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 LazyData: true

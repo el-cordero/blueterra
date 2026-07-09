@@ -1,6 +1,7 @@
 ^\.git$
 ^\.gitignore$
 ^\.Rbuildignore$
+^\.github$
 ^\.lintr$
 ^README\.Rmd$
 ^cran-comments\.md$
@@ -9,6 +10,7 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^qa$
 ^revdep$
 ^outputs$
 ^cache$
@@ -19,3 +21,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^CRAN-SUBMISSION$
+^doc$
+^Meta$

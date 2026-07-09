@@ -8,7 +8,7 @@ extract_isobaths(
   x,
   depths,
   positive_depth = NULL,
-  as = c("sf", "SpatVector"),
+  as = c("SpatVector", "sf"),
   ...
 )
 }
@@ -21,12 +21,12 @@ extract_isobaths(
 positive values. If \code{FALSE}, they are converted to negative values. If
 \code{NULL}, \code{depths} are used exactly as supplied.}
 
-\item{as}{Output type: \code{"sf"} or \code{"SpatVector"}.}
+\item{as}{Output type: \code{"SpatVector"} or \code{"sf"}.}
 
 \item{...}{Additional arguments reserved for future extensions.}
 }
 \value{
-Isobath line features as \code{sf} or \code{terra::SpatVector}.
+Isobath line features as \code{terra::SpatVector} by default.
 }
 \description{
 Converts raster contour levels to line features.

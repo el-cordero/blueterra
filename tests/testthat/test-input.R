@@ -1,7 +1,9 @@
 test_that("example data are available", {
   expect_true(file.exists(blueterra_example("bathy")))
+  expect_true(file.exists(blueterra_example("zones")))
   expect_true(file.exists(blueterra_example("sites")))
   expect_match(blueterra_extdata("example_bathy.tif"), "example_bathy.tif")
+  expect_match(blueterra_example("zones"), "example_zones.gpkg")
 })
 
 test_that("bathymetry input helpers read and validate rasters", {
@@ -20,4 +22,11 @@ test_that("bathymetry input helpers read and validate rasters", {
 test_that("input helpers fail clearly", {
   expect_error(read_bathy(file.path(tempdir(), "missing.tif")), "does not exist")
   expect_error(as_bathy(1), "SpatRaster")
+})
+
+test_that("vector helpers accept SpatVector and local vector paths", {
+  zones <- terra::vect(blueterra_example("zones"))
+  expect_s4_class(zones, "SpatVector")
+  bathy <- example_bathy()
+  expect_s4_class(mask_bathy(bathy, blueterra_example("zones")), "SpatRaster")
 })

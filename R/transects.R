@@ -3,24 +3,26 @@
 #' @description
 #' Builds regularly spaced straight transects through polygon features.
 #'
-#' @param area An `sf` polygon object, `terra::SpatVector`, or local vector path.
+#' @param area A `terra::SpatVector`, local vector path, or optional `sf`
+#'   polygon object.
 #' @param spacing Distance between transects in map units.
 #' @param angle Transect direction in degrees counterclockwise from the x axis.
 #' @param length Optional transect length in map units. If `NULL`, a length based
 #'   on the polygon bounding box is used.
 #' @param id_field Optional field in `area` used as the zone identifier.
-#' @param as Output type: `"sf"` or `"SpatVector"`.
+#' @param as Output type: `"SpatVector"` or `"sf"`.
 #'
-#' @return An `sf` object or `terra::SpatVector` of line transects.
+#' @return A `terra::SpatVector` by default. If `as = "sf"`, an `sf` object is
+#'   returned and the optional `sf` package must be installed.
 #'
 #' @details
 #' Transect spacing and length are interpreted in map units. Use a projected CRS
-#' for metric distances. The function creates candidate lines through each
-#' polygon bounding box and clips them to the polygon.
+#' for metric distances. Candidate lines are generated through each polygon
+#' bounding box and clipped to the polygon with `terra::intersect()`.
 #'
 #' @examples
-#' sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-#' transects <- make_transects(sites[1, ], spacing = 50)
+#' zones <- terra::vect(blueterra_example("zones"))
+#' transects <- make_transects(zones[1, ], spacing = 50)
 #' transects
 #'
 #' @seealso [sample_transects()], [extract_cross_sections()]
@@ -31,45 +33,42 @@ make_transects <- function(
     angle = 0,
     length = NULL,
     id_field = NULL,
-    as = c("sf", "SpatVector")
+    as = c("SpatVector", "sf")
 ) {
   as <- match.arg(as)
-  area_sf <- as_sf_object(area)
-  if (is.na(sf::st_crs(area_sf))) {
-    bt_abort("`area` must have a CRS for distance-based transect spacing.")
-  }
-  if (sf::st_is_longlat(area_sf)) {
-    bt_abort("`area` must use a projected CRS for distance-based transect spacing.")
-  }
+  zones <- as_spatvector(area)
+  require_projected(zones, operation = "transect spacing")
   if (!is.numeric(spacing) || length(spacing) != 1 || spacing <= 0) {
     bt_abort("`spacing` must be one positive numeric value.")
   }
-  if (!is.null(id_field) && !id_field %in% names(area_sf)) {
+  if (!is.null(id_field) && !id_field %in% names(zones)) {
     bt_abort("`id_field` was not found in `area`.")
   }
-  out <- vector("list", nrow(area_sf))
-  for (i in seq_len(nrow(area_sf))) {
-    out[[i]] <- transects_for_polygon(
-      area_sf[i, ],
+  out <- vector("list", nrow(zones))
+  for (i in seq_len(nrow(zones))) {
+    zone_id <- if (is.null(id_field)) i else as.character(zones[[id_field]][i, 1])
+    out[[i]] <- transects_for_zone(
+      zones[i, ],
       spacing = spacing,
       angle = angle,
       length = length,
-      zone_id = if (is.null(id_field)) i else as.character(area_sf[[id_field]][i])
+      zone_id = zone_id
     )
   }
   out <- do.call(rbind, out)
-  row.names(out) <- NULL
-  if (as == "SpatVector") {
-    return(terra::vect(out))
+  out$transect_id <- paste0(out$zone_id, "_", seq_len(nrow(out)))
+  if (as == "sf") {
+    check_installed("sf", "to return sf objects")
+    return(sf::st_as_sf(out))
   }
   out
 }
 
-transects_for_polygon <- function(poly, spacing, angle, length, zone_id) {
-  bbox <- sf::st_bbox(poly)
-  cx <- mean(c(bbox[["xmin"]], bbox[["xmax"]]))
-  cy <- mean(c(bbox[["ymin"]], bbox[["ymax"]]))
-  diag_len <- sqrt((bbox[["xmax"]] - bbox[["xmin"]])^2 + (bbox[["ymax"]] - bbox[["ymin"]])^2)
+transects_for_zone <- function(zone, spacing, angle, length, zone_id) {
+  bbox <- terra::ext(zone)
+  cx <- mean(c(bbox[1], bbox[2]))
+  cy <- mean(c(bbox[3], bbox[4]))
+  diag_len <- sqrt((bbox[2] - bbox[1])^2 + (bbox[4] - bbox[3])^2)
   line_len <- if (is.null(length)) diag_len * 1.5 else as.numeric(length)
   if (!is.finite(line_len) || line_len <= 0) {
     bt_abort("`length` must be one positive numeric value.")
@@ -78,27 +77,24 @@ transects_for_polygon <- function(poly, spacing, angle, length, zone_id) {
   along <- c(cos(theta), sin(theta))
   normal <- c(-sin(theta), cos(theta))
   offsets <- seq(-diag_len, diag_len, by = spacing)
-  lines <- vector("list", length(offsets))
+  pieces <- vector("list", length(offsets))
   for (j in seq_along(offsets)) {
     mid <- c(cx, cy) + offsets[j] * normal
     p1 <- mid - along * line_len / 2
     p2 <- mid + along * line_len / 2
-    lines[[j]] <- sf::st_linestring(rbind(p1, p2))
+    candidate <- terra::vect(rbind(p1, p2), type = "lines", crs = terra::crs(zone))
+    clipped <- suppressWarnings(terra::intersect(candidate, zone))
+    if (!is.null(clipped) && nrow(clipped) > 0) {
+      clipped$zone_id <- as.character(zone_id)
+      clipped$offset <- offsets[j]
+      pieces[[j]] <- clipped
+    }
   }
-  line_sf <- sf::st_sf(
-    zone_id = zone_id,
-    transect_id = seq_along(lines),
-    offset = offsets,
-    geometry = sf::st_sfc(lines, crs = sf::st_crs(poly))
-  )
-  clipped <- suppressWarnings(sf::st_intersection(line_sf, sf::st_geometry(poly)))
-  clipped <- clipped[!sf::st_is_empty(clipped), , drop = FALSE]
-  clipped <- suppressWarnings(sf::st_collection_extract(clipped, "LINESTRING", warn = FALSE))
-  if (nrow(clipped) == 0) {
+  pieces <- Filter(Negate(is.null), pieces)
+  if (length(pieces) == 0) {
     bt_abort("No transects intersected the supplied polygon.")
   }
-  clipped$transect_id <- paste0(clipped$zone_id, "_", seq_len(nrow(clipped)))
-  clipped
+  do.call(rbind, pieces)
 }
 
 #' Sample rasters along transects
@@ -121,8 +117,8 @@ transects_for_polygon <- function(poly, spacing, angle, length, zone_id) {
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
-#' sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-#' transects <- make_transects(sites[1, ], spacing = 100)
+#' zones <- terra::vect(blueterra_example("zones"))
+#' transects <- make_transects(zones[1, ], spacing = 100)
 #' sample_transects(transects, bathy, n = 5)
 #'
 #' @seealso [make_transects()], [summarize_cross_sections()]
@@ -134,10 +130,10 @@ sample_transects <- function(
     n = NULL,
     method = "bilinear"
 ) {
-  lines <- as_sf_object(transects)
+  lines <- as_spatvector(transects)
   r <- as_bathy(x, check = TRUE)
-  if (!terra::same.crs(r, terra::vect(lines))) {
-    lines <- sf::st_transform(lines, terra::crs(r))
+  if (!terra::same.crs(r, lines)) {
+    lines <- terra::project(lines, terra::crs(r))
   }
   if (is.null(lines$transect_id)) {
     lines$transect_id <- seq_len(nrow(lines))
@@ -150,7 +146,15 @@ sample_transects <- function(
 }
 
 sample_one_transect <- function(line, r, spacing, n, method) {
-  line_len <- as.numeric(sf::st_length(line))
+  coords <- as.data.frame(terra::geom(line))
+  coords <- coords[is.finite(coords$x) & is.finite(coords$y), c("x", "y")]
+  coords <- unique(coords)
+  if (nrow(coords) < 2) {
+    return(tibble::tibble())
+  }
+  p1 <- as.numeric(coords[1, ])
+  p2 <- as.numeric(coords[nrow(coords), ])
+  line_len <- sqrt(sum((p2 - p1)^2))
   if (!is.finite(line_len) || line_len <= 0) {
     return(tibble::tibble())
   }
@@ -158,20 +162,19 @@ sample_one_transect <- function(line, r, spacing, n, method) {
     n <- if (is.null(spacing)) 20 else floor(line_len / spacing) + 1
   }
   n <- max(2, as.integer(n))
-  mp <- sf::st_line_sample(sf::st_geometry(line), n = n, type = "regular")
-  pts <- sf::st_cast(mp, "POINT", warn = FALSE)
-  pts_sf <- sf::st_sf(
-    transect_id = as.character(line$transect_id[[1]]),
-    distance = seq(0, line_len, length.out = length(pts)),
-    geometry = pts,
-    crs = sf::st_crs(line)
+  distance <- seq(0, line_len, length.out = n)
+  frac <- distance / line_len
+  xy <- cbind(
+    x = p1[1] + frac * (p2[1] - p1[1]),
+    y = p1[2] + frac * (p2[2] - p1[2])
   )
-  vals <- terra::extract(r, terra::vect(pts_sf), method = method, ID = FALSE)
-  coords <- sf::st_coordinates(pts_sf)
+  pts <- terra::vect(xy, type = "points", crs = terra::crs(r))
+  vals <- terra::extract(r, pts, method = method, ID = FALSE)
   tibble::as_tibble(cbind(
-    sf::st_drop_geometry(pts_sf),
-    x = coords[, "X"],
-    y = coords[, "Y"],
+    transect_id = as.character(line$transect_id[[1]]),
+    distance = distance,
+    x = xy[, "x"],
+    y = xy[, "y"],
     vals
   ))
 }
@@ -210,8 +213,8 @@ extract_cross_sections <- function(
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
-#' sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-#' transects <- make_transects(sites[1, ], spacing = 100)
+#' zones <- terra::vect(blueterra_example("zones"))
+#' transects <- make_transects(zones[1, ], spacing = 100)
 #' samples <- sample_transects(transects, bathy, n = 5)
 #' summarize_cross_sections(samples)
 #'
@@ -240,8 +243,8 @@ summarize_cross_sections <- function(
   fun <- safe_summary_funs(fun)
   pieces <- split(samples[[value_col]], samples[[group_col]])
   rows <- lapply(names(pieces), function(id) {
-    stats <- vapply(pieces[[id]], function(z) z, numeric(1))
-    out <- lapply(fun, function(f) apply_summary_fun(stats, f, na.rm = na.rm))
+    values <- as.numeric(pieces[[id]])
+    out <- lapply(fun, function(f) apply_summary_fun(values, f, na.rm = na.rm))
     names(out) <- paste(value_col, fun, sep = "_")
     data.frame(transect_id = id, out, check.names = FALSE)
   })
@@ -260,11 +263,13 @@ summarize_cross_sections <- function(
 #' @return A `ggplot` object.
 #'
 #' @examples
-#' bathy <- read_bathy(blueterra_example("bathy"))
-#' sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-#' transects <- make_transects(sites[1, ], spacing = 100)
-#' samples <- sample_transects(transects, bathy, n = 5)
-#' plot_cross_sections(samples)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   bathy <- read_bathy(blueterra_example("bathy"))
+#'   zones <- terra::vect(blueterra_example("zones"))
+#'   transects <- make_transects(zones[1, ], spacing = 100)
+#'   samples <- sample_transects(transects, bathy, n = 5)
+#'   plot_cross_sections(samples)
+#' }
 #'
 #' @seealso [sample_transects()], [plot_depth_profile()]
 #' @export

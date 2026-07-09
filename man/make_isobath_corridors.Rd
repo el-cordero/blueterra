@@ -9,7 +9,7 @@ make_isobath_corridors(
   depths,
   width,
   smooth = FALSE,
-  as = c("sf", "SpatVector"),
+  as = c("SpatVector", "sf"),
   positive_depth = NULL,
   ...
 )
@@ -24,7 +24,7 @@ make_isobath_corridors(
 \item{smooth}{Logical. If \code{TRUE}, apply a zero-width buffer after buffering
 to clean polygon topology.}
 
-\item{as}{Output type: \code{"sf"} or \code{"SpatVector"}.}
+\item{as}{Output type: \code{"SpatVector"} or \code{"sf"}.}
 
 \item{positive_depth}{Optional logical. If \code{TRUE}, \code{depths} are converted to
 positive values. If \code{FALSE}, they are converted to negative values. If
@@ -33,7 +33,7 @@ positive values. If \code{FALSE}, they are converted to negative values. If
 \item{...}{Additional arguments reserved for future extensions.}
 }
 \value{
-Isobath corridor polygons as \code{sf} or \code{terra::SpatVector}.
+Isobath corridor polygons as \code{terra::SpatVector} by default.
 }
 \description{
 Buffers isobath contour lines to create depth-following corridor polygons.

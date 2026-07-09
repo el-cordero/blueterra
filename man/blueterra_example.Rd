@@ -5,13 +5,14 @@
 \alias{blueterra_extdata}
 \title{Locate package example files}
 \usage{
-blueterra_example(name = c("bathy", "sites"))
+blueterra_example(name = c("bathy", "zones", "sites"))
 
 blueterra_extdata(file = NULL)
 }
 \arguments{
-\item{name}{Example name. Use \code{"bathy"} for the synthetic raster or \code{"sites"}
-for the synthetic polygon layer.}
+\item{name}{Example name. Use \code{"bathy"} for the synthetic raster or \code{"zones"}
+for the synthetic polygon layer. \code{"sites"} is accepted as a compatibility
+alias.}
 
 \item{file}{File name under \code{inst/extdata}.}
 }
@@ -23,8 +24,8 @@ Returns the path to a small file installed with \code{blueterra}.
 }
 \details{
 The example files are synthetic and are intended for tests, examples, and
-vignettes. They are not BlueTopo tiles and were not downloaded from NOAA or
-any other remote service.
+vignettes. The raster contains a depth gradient, ridge, basin, and slope
+break; the vector file contains two polygon zones.
 }
 \examples{
 blueterra_example("bathy")

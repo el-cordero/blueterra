@@ -15,9 +15,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(blueterra)
 ```
 
-Isobath corridors summarize terrain near depth contours. This workflow uses any
-user-supplied raster supported by `terra`; it does not require BlueTopo or any
-remote service.
+Isobath corridors summarize terrain near depth contours. They are useful when
+observations or management zones follow depth horizons rather than rectangular
+or administrative boundaries.
 
 ```{r data}
 bathy <- read_bathy(blueterra_example("bathy"))

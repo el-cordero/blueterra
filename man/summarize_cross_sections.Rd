@@ -32,8 +32,8 @@ Summarizes raster values sampled along transects.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-transects <- make_transects(sites[1, ], spacing = 100)
+zones <- terra::vect(blueterra_example("zones"))
+transects <- make_transects(zones[1, ], spacing = 100)
 samples <- sample_transects(transects, bathy, n = 5)
 summarize_cross_sections(samples)
 

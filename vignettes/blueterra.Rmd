@@ -15,9 +15,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(blueterra)
 ```
 
-`blueterra` is for submerged-terrain geomorphometry after the user already has a
-raster. It accepts local bathymetric or elevation rasters through `terra` and
-does not download, discover, mosaic, or cache BlueTopo data.
+`blueterra` supports submerged-terrain geomorphometry from user-supplied
+bathymetric and elevation rasters. It uses `terra` objects for raster
+preparation, metric derivation, vector summaries, transects, and isobath
+corridors.
 
 ## Start with a Raster
 
@@ -60,8 +61,8 @@ names(terrain)
 ## Summarize Zones
 
 ```{r zones}
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-summarize_terrain(terrain, sites)
+zones <- terra::vect(blueterra_example("zones"))
+summarize_terrain(terrain, zones)
 ```
 
 ## Model-Ready Tables

@@ -6,12 +6,18 @@
 
 ## R CMD check results
 
-This package is under development and should not be submitted to CRAN until the
-author, maintainer, copyright, and release repository metadata have been
-confirmed.
+0 errors | 0 warnings | 2 notes
 
-## Scope note
+The notes are:
 
-`blueterra` does not download, discover, mosaic, combine, cache, or otherwise
-acquire BlueTopo or other remote bathymetry data. Users provide a local raster
-or `terra::SpatRaster`.
+* New submission.
+* Local HTML manual validation skipped because the installed system `tidy`
+  executable is older than the version required by current R checks.
+
+`devtools::check(args = "--as-cran")` completed with 0 errors, 0 warnings, and
+0 notes in the local development environment.
+
+## Data note
+
+Examples, tests, and vignettes use small synthetic raster and polygon data
+bundled under `inst/extdata`.

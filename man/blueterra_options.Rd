@@ -17,8 +17,8 @@ A named list with current option values, invisibly when setting.
 Returns or sets package options used by examples and helper functions.
 }
 \details{
-Options affect only local package behavior. They never create cache
-directories, download data, or write outside paths provided by the user.
+Options affect only local package behavior and do not write outside paths
+provided by the user.
 }
 \examples{
 blueterra_options()

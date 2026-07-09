@@ -88,6 +88,7 @@ as_spat_extent <- function(x) {
     return(terra::ext(x))
   }
   if (is_sf(x)) {
+    check_installed("sf", "to use sf objects")
     return(terra::ext(terra::vect(x)))
   }
   bt_abort("`extent` must be a SpatExtent, numeric xmin/xmax/ymin/ymax vector, raster, or vector object.")
@@ -98,6 +99,7 @@ as_spatvector <- function(x) {
     return(x)
   }
   if (is_sf(x)) {
+    check_installed("sf", "to use sf objects")
     return(terra::vect(x))
   }
   if (is.character(x) && length(x) == 1) {
@@ -110,6 +112,7 @@ as_spatvector <- function(x) {
 }
 
 as_sf_object <- function(x) {
+  check_installed("sf", "to use sf objects")
   if (inherits(x, "sf")) {
     return(x)
   }
@@ -207,20 +210,31 @@ raster_plot_data <- function(x, max_cells = 10000) {
   tibble::as_tibble(df)
 }
 
+vector_plot_data <- function(x) {
+  x <- as_spatvector(x)
+  geom <- as.data.frame(terra::geom(x))
+  if (!all(c("geom", "part", "x", "y") %in% names(geom))) {
+    bt_abort("Vector geometry could not be converted to plot coordinates.")
+  }
+  geom$group <- paste(geom$geom, geom$part, sep = "_")
+  tibble::as_tibble(geom)
+}
+
 #' Locate package example files
 #'
 #' @description
 #' Returns the path to a small file installed with `blueterra`.
 #'
-#' @param name Example name. Use `"bathy"` for the synthetic raster or `"sites"`
-#'   for the synthetic polygon layer.
+#' @param name Example name. Use `"bathy"` for the synthetic raster or `"zones"`
+#'   for the synthetic polygon layer. `"sites"` is accepted as a compatibility
+#'   alias.
 #'
 #' @return A normalized local file path.
 #'
 #' @details
 #' The example files are synthetic and are intended for tests, examples, and
-#' vignettes. They are not BlueTopo tiles and were not downloaded from NOAA or
-#' any other remote service.
+#' vignettes. The raster contains a depth gradient, ridge, basin, and slope
+#' break; the vector file contains two polygon zones.
 #'
 #' @examples
 #' blueterra_example("bathy")
@@ -228,12 +242,13 @@ raster_plot_data <- function(x, max_cells = 10000) {
 #'
 #' @seealso [read_bathy()]
 #' @export
-blueterra_example <- function(name = c("bathy", "sites")) {
+blueterra_example <- function(name = c("bathy", "zones", "sites")) {
   name <- match.arg(name)
   file <- switch(
     name,
     bathy = "example_bathy.tif",
-    sites = "example_sites.gpkg"
+    zones = "example_zones.gpkg",
+    sites = "example_zones.gpkg"
   )
   blueterra_extdata(file)
 }
@@ -260,8 +275,8 @@ blueterra_extdata <- function(file = NULL) {
 #' @return A named list with current option values, invisibly when setting.
 #'
 #' @details
-#' Options affect only local package behavior. They never create cache
-#' directories, download data, or write outside paths provided by the user.
+#' Options affect only local package behavior and do not write outside paths
+#' provided by the user.
 #'
 #' @examples
 #' blueterra_options()

@@ -23,8 +23,8 @@ Extracts raster values at point locations.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
-sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
-pts <- sf::st_centroid(sites)
+zones <- terra::vect(blueterra_example("zones"))
+pts <- terra::centroids(zones)
 extract_terrain_points(bathy, pts)
 
 }
