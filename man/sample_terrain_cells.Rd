@@ -9,7 +9,8 @@ sample_terrain_cells(
   size,
   method = c("random", "regular"),
   na.rm = TRUE,
-  xy = TRUE
+  xy = TRUE,
+  seed = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ sample_terrain_cells(
 \item{na.rm}{Logical. Omit rows with missing values.}
 
 \item{xy}{Logical. Include cell coordinates.}
+
+\item{seed}{Optional random seed used before sampling.}
 }
 \value{
 A tibble of sampled cell values.

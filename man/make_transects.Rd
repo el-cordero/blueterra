@@ -7,7 +7,11 @@
 make_transects(
   area,
   spacing,
-  angle = 0,
+  angle = NULL,
+  bathy = NULL,
+  orientation = c("auto", "surface", "bbox", "manual"),
+  orientation_weight = c("slope", "none"),
+  min_slope = 0,
   length = NULL,
   id_field = NULL,
   as = c("SpatVector", "sf")
@@ -19,7 +23,24 @@ polygon object.}
 
 \item{spacing}{Distance between transects in map units.}
 
-\item{angle}{Transect direction in degrees counterclockwise from the x axis.}
+\item{angle}{Optional transect direction in degrees counterclockwise from the
+projected x axis. When supplied, this manual value overrides orientation
+estimation.}
+
+\item{bathy}{Optional bathymetry raster used to estimate a terrain-based
+transect orientation when \code{angle = NULL}.}
+
+\item{orientation}{Orientation strategy. \code{"auto"} uses surface orientation
+when \code{bathy} is supplied and otherwise falls back to the historical
+horizontal line angle with a warning. \code{"surface"} requires \code{bathy},
+\code{"bbox"} uses the polygon bounding-box axis, and \code{"manual"} requires
+\code{angle}.}
+
+\item{orientation_weight}{Weighting for surface orientation. \code{"slope"} gives
+steeper cells more influence; \code{"none"} averages aspect components equally.}
+
+\item{min_slope}{Minimum slope, in degrees, used when
+\code{orientation_weight = "slope"}.}
 
 \item{length}{Optional transect length in map units. If \code{NULL}, a length based
 on the polygon bounding box is used.}
@@ -39,13 +60,27 @@ Builds regularly spaced straight transects through polygon features.
 Transect spacing and length are interpreted in map units. Use a projected CRS
 for metric distances. Candidate lines are created through each polygon
 bounding box and clipped to the polygon with \code{terra::intersect()}.
+
+With \code{angle = NULL} and a supplied \code{bathy} raster, the default transect
+direction is estimated from the mean surface aspect within each polygon.
+Aspect is converted to northness and eastness, averaged as circular
+components, and converted to the mathematical line angle used for transect
+generation. For example, a south-facing mean aspect near 180 degrees yields a
+transect angle near 90 degrees, producing north-south transects in projected
+coordinates. The estimated angle and source metadata are stored on the output
+lines so the orientation can be inspected.
 }
 \examples{
 zones <- terra::vect(blueterra_example("zones"))
-transects <- make_transects(zones[1, ], spacing = 50)
+bathy <- read_bathy(blueterra_example("bathy"))
+transects <- make_transects(zones[1, ], spacing = 50, bathy = bathy)
 transects
+
+manual <- make_transects(zones[1, ], spacing = 50, angle = 90)
+manual[, c("angle_deg", "angle_source")]
 
 }
 \seealso{
-\code{\link[=sample_transects]{sample_transects()}}, \code{\link[=extract_cross_sections]{extract_cross_sections()}}
+\code{\link[=estimate_surface_orientation]{estimate_surface_orientation()}}, \code{\link[=sample_transects]{sample_transects()}},
+\code{\link[=extract_cross_sections]{extract_cross_sections()}}
 }

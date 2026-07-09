@@ -4,13 +4,16 @@
 \alias{summarize_process_groups}
 \title{Summarize process group representation}
 \usage{
-summarize_process_groups(x, catalog = metric_catalog())
+summarize_process_groups(x, catalog = metric_catalog(), groups = NULL)
 }
 \arguments{
 \item{x}{A \code{terra::SpatRaster}, character vector, or data frame with metric
 columns.}
 
 \item{catalog}{Optional catalog table. Defaults to \code{\link[=metric_catalog]{metric_catalog()}}.}
+
+\item{groups}{Optional named character vector passed to
+\code{\link[=assign_process_groups]{assign_process_groups()}}.}
 }
 \value{
 A tibble with process group counts.

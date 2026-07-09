@@ -4,13 +4,21 @@
 \alias{assign_process_groups}
 \title{Assign metrics to process groups}
 \usage{
-assign_process_groups(x, catalog = metric_catalog(), unmatched = "unassigned")
+assign_process_groups(
+  x,
+  catalog = metric_catalog(),
+  groups = NULL,
+  unmatched = "unassigned"
+)
 }
 \arguments{
 \item{x}{A \code{terra::SpatRaster}, character vector, or data frame with metric
 columns.}
 
 \item{catalog}{Optional catalog table. Defaults to \code{\link[=metric_catalog]{metric_catalog()}}.}
+
+\item{groups}{Optional named character vector mapping metric names to process
+groups. Supplied mappings override catalog matches for those metrics.}
 
 \item{unmatched}{Character value assigned to unmatched metrics.}
 }

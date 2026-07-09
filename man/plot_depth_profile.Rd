@@ -9,7 +9,12 @@ plot_depth_profile(
   distance_col = "distance",
   depth_col = NULL,
   group_col = NULL,
-  depth_increases_down = TRUE
+  points = TRUE,
+  line = TRUE,
+  depth_increases_down = TRUE,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL
 )
 }
 \arguments{
@@ -22,8 +27,15 @@ non-coordinate value column is used.}
 
 \item{group_col}{Optional grouping column.}
 
+\item{points}{Logical. Draw profile points.}
+
+\item{line}{Logical. Draw profile lines when at least two finite samples are
+available.}
+
 \item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
 plotted with a reversed y-axis so larger depths appear lower in the panel.}
+
+\item{title, subtitle, caption}{Plot text.}
 }
 \value{
 A \code{ggplot} object.

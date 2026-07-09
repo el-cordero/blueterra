@@ -207,12 +207,20 @@ summarize_isobath_terrain <- function(
 #'
 #' @param corridors Corridor polygons.
 #' @param bathy Optional raster background.
+#' @param isobaths Optional source isobath lines to draw over the corridors.
 #' @param hillshade Logical. Draw hillshade from `bathy` when available.
-#' @param contours Logical. Draw bathymetric contours when `bathy` is supplied.
-#' @param contour_interval Contour interval in raster units.
+#' @param background_contours Logical. Draw general bathymetric background
+#'   contours. Defaults to `FALSE` to keep corridor figures readable.
+#' @param source_isobaths Logical. Draw the source isobaths used to create the
+#'   corridors.
+#' @param isobath_color,isobath_linewidth Source-isobath line styling.
+#' @param corridor_color,corridor_linewidth,corridor_fill,corridor_alpha
+#'   Corridor polygon styling.
 #' @param labels Logical. Label corridors with `label_field`.
 #' @param label_field Attribute used for labels. Defaults to `depth_label` when
 #'   present, otherwise `contour_value`.
+#' @param title,subtitle,caption Plot text.
+#' @param contours Deprecated alias for `background_contours`.
 #' @param ... Additional arguments passed to [plot_bathy()].
 #'
 #' @return A `ggplot` object.
@@ -221,7 +229,8 @@ summarize_isobath_terrain <- function(
 #' if (requireNamespace("ggplot2", quietly = TRUE)) {
 #'   bathy <- read_bathy(blueterra_example("bathy"))
 #'   corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
-#'   plot_isobath_corridors(corridors, bathy)
+#'   isobaths <- extract_isobaths(bathy, depths = -50)
+#'   plot_isobath_corridors(corridors, bathy, isobaths = isobaths)
 #' }
 #'
 #' @seealso [make_isobath_corridors()], [plot_bathy()]
@@ -229,29 +238,74 @@ summarize_isobath_terrain <- function(
 plot_isobath_corridors <- function(
     corridors,
     bathy = NULL,
+    isobaths = NULL,
     hillshade = TRUE,
-    contours = TRUE,
-    contour_interval = NULL,
+    background_contours = FALSE,
+    source_isobaths = TRUE,
+    isobath_color = "black",
+    isobath_linewidth = 0.6,
+    corridor_color = "white",
+    corridor_linewidth = 0.45,
+    corridor_fill = NA,
+    corridor_alpha = 0.20,
     labels = TRUE,
     label_field = NULL,
+    title = "Isobath Corridors",
+    subtitle = NULL,
+    caption = NULL,
+    contours = NULL,
     ...
 ) {
   optional_ggplot2()
+  if (!is.null(contours)) {
+    bt_warn("`contours` is deprecated for `plot_isobath_corridors()`; use `background_contours`.")
+    background_contours <- contours
+  }
   corridor_v <- as_spatvector(corridors)
   if (is.null(label_field)) {
     label_field <- intersect(c("depth_label", "contour_value", "corridor_id"), names(corridor_v))[1]
   }
+  source_v <- NULL
+  if (isTRUE(source_isobaths)) {
+    if (!is.null(isobaths)) {
+      source_v <- as_spatvector(isobaths)
+    } else if (!is.null(bathy)) {
+      depth_field <- intersect(c("contour_value", "depth_label"), names(corridor_v))[1]
+      if (!is.na(depth_field)) {
+        depths <- unique(stats::na.omit(as.numeric(as.data.frame(corridor_v)[[depth_field]])))
+        if (length(depths) > 0) {
+          source_v <- try(extract_isobaths(bathy, depths = depths), silent = TRUE)
+          if (inherits(source_v, "try-error")) {
+            source_v <- NULL
+          }
+        }
+      }
+    }
+  }
   if (is.null(bathy)) {
     corridor_df <- vector_plot_data(corridor_v)
     p <- ggplot2::ggplot() +
-      ggplot2::geom_path(
+      ggplot2::geom_polygon(
         data = corridor_df,
         ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
-        color = "black",
-        linewidth = 0.5
+        color = corridor_color,
+        fill = corridor_fill,
+        alpha = corridor_alpha,
+        linewidth = corridor_linewidth
       ) +
       ggplot2::coord_equal() +
-      ggplot2::labs(x = NULL, y = NULL)
+      ggplot2::labs(x = NULL, y = NULL, title = title, subtitle = subtitle, caption = caption)
+    if (!is.null(source_v)) {
+      source_df <- vector_plot_data(source_v)
+      p <- p +
+        ggplot2::geom_path(
+          data = source_df,
+          ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
+          inherit.aes = FALSE,
+          color = isobath_color,
+          linewidth = isobath_linewidth
+        )
+    }
     if (isTRUE(labels) && !is.na(label_field)) {
       label_df <- vector_label_data(corridor_v, label_field = label_field)
       p <- p +
@@ -264,18 +318,51 @@ plot_isobath_corridors <- function(
     }
     return(p)
   }
-  plot_bathy(
+  p <- plot_bathy(
     bathy,
     hillshade = hillshade,
-    contours = contours,
-    contour_interval = contour_interval,
-    vectors = corridor_v,
-    vector_color = "white",
-    vector_linewidth = 0.45,
-    labels = if (isTRUE(labels)) corridor_v else NULL,
-    label_field = label_field,
-    title = "Isobath Corridors",
+    contours = background_contours,
+    vectors = NULL,
+    labels = NULL,
+    title = title,
+    subtitle = subtitle,
+    caption = caption,
     legend_title = "Bathymetry",
     ...
   )
+  corridor_df <- vector_plot_data(corridor_v)
+  p <- p +
+    ggplot2::geom_polygon(
+      data = corridor_df,
+      ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
+      inherit.aes = FALSE,
+      color = corridor_color,
+      fill = corridor_fill,
+      alpha = corridor_alpha,
+      linewidth = corridor_linewidth
+    )
+  if (!is.null(source_v)) {
+    source_df <- vector_plot_data(source_v)
+    p <- p +
+      ggplot2::geom_path(
+        data = source_df,
+        ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
+        inherit.aes = FALSE,
+        color = isobath_color,
+        linewidth = isobath_linewidth
+      )
+  }
+  if (isTRUE(labels) && !is.na(label_field)) {
+    label_df <- vector_label_data(corridor_v, label_field = label_field)
+    p <- p +
+      ggplot2::geom_text(
+        data = label_df,
+        ggplot2::aes(x = .data[["x"]], y = .data[["y"]], label = .data[["label"]]),
+        inherit.aes = FALSE,
+        color = "white",
+        fontface = "bold",
+        size = 3
+      )
+  }
+  p
 }

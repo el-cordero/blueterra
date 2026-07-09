@@ -25,13 +25,6 @@ polygons, transects, depth bands, and isobath corridors. The package is
 intended for analyses where terrain form, grid resolution, vertical sign
 convention, and coordinate reference system affect interpretation.
 
-<img src="man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
-
-*Study-area context for the example data. The package examples use reduced
-bathymetry and sampling rectangles from Hole-in-the-Wall, El Hoyo, and a
-broader slope clip along the southwest Puerto Rico shelf margin near La
-Parguera, Puerto Rico.*
-
 ## Installation
 
 ```r
@@ -46,6 +39,13 @@ install.packages("path/to/blueterra", repos = NULL, type = "source")
 ```
 
 ## Example Data
+
+<img src="man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
+
+*Study-area context for the example data. The package examples use reduced
+bathymetry and sampling rectangles from Hole-in-the-Wall, El Hoyo, and a
+broader slope clip along the southwest Puerto Rico shelf margin near La
+Parguera, Puerto Rico.*
 
 The installed examples are reduced from analysis rasters and sampling
 rectangles used to test terrain workflows on real shelf-margin morphology.
@@ -392,10 +392,26 @@ positive_bands
 Transects convert the raster surface into cross-sectional profiles. They are
 useful for showing slope breaks, terraces, escarpments, and cross-shelf
 gradients that are not always obvious from cell-by-cell terrain metrics.
+When `bathy` is supplied and `angle` is left unset, `make_transects()`
+estimates the transect direction from the slope-weighted mean aspect of the
+clipped bathymetry. An explicit `angle` remains the correct choice when the
+analysis requires a fixed survey bearing.
 
 ```{r transects}
-hitw_transects <- make_transects(hitw_rect, spacing = 75)
+hitw_transects <- make_transects(
+  hitw_rect,
+  spacing = 75,
+  bathy = hitw_prepared
+)
 class(hitw_transects)
+unique(as.data.frame(hitw_transects)[, c("angle_deg", "angle_source", "mean_aspect_deg")])
+
+manual_transects <- make_transects(
+  hitw_rect,
+  spacing = 75,
+  angle = 90
+)
+unique(as.data.frame(manual_transects)[, c("angle_deg", "angle_source")])
 
 transect_samples <- sample_transects(hitw_transects, hitw_prepared, n = 12)
 head(transect_samples)
@@ -408,13 +424,21 @@ summarize_cross_sections(cross_sections)
 plot_transects(
   hitw_prepared,
   hitw_transects,
+  color_by = "transect_id",
+  show_legend = FALSE,
   contour_interval = 25,
-  title = "Transects Across Hole-in-the-Wall"
+  title = "Terrain-Oriented Transects Across Hole-in-the-Wall"
 )
 ```
 
 ```{r plot-cross-sections, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Bathymetric cross-section profiles with depth increasing downward."}
-plot_cross_sections(cross_sections)
+plot_cross_sections(
+  cross_sections,
+  show_legend = TRUE,
+  mean_profile = TRUE,
+  normalize_distance = TRUE,
+  title = "Hole-in-the-Wall Cross-Sections"
+)
 ```
 
 ## Isobaths and Isobath Corridors
@@ -458,9 +482,14 @@ plot_bathy(
 plot_isobath_corridors(
   hitw_corridors,
   hitw_prepared,
-  contour_interval = 25
+  isobaths = hitw_isobaths,
+  background_contours = FALSE,
+  title = "Isobath Corridors and Source Isobaths"
 )
 ```
+
+The black lines are the source isobaths. The corridor polygons buffer those
+depth horizons and define the terrain extraction zones.
 
 ## Model-Ready Terrain Tables
 
@@ -517,11 +546,13 @@ hoyo_cells$site <- "El Hoyo"
 
 comparison <- rbind(hitw_cells, hoyo_cells)
 
-pca <- terrain_pca(
+pca_set <- terrain_pca_by_group(
   comparison,
+  group = "site",
   vars = c("slope_deg", "tri", "bpi_3x3", "curvature")
 )
-pca$variance
+pca_set$overall$variance
+pca_axis_labels(pca_set$overall)
 
 terrain_effect_size(
   comparison,
@@ -539,7 +570,25 @@ table(balanced$site)
 ```
 
 ```{r plot-pca, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="PCA scores for sampled terrain metrics."}
-plot_process_pca(pca)
+plot_process_pca(
+  pca_set$overall,
+  color_col = "site",
+  title = "Overall Terrain PCA"
+)
+```
+
+```{r plot-pca-hitw, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Hole-in-the-Wall PCA scores for sampled terrain metrics."}
+plot_process_pca(
+  pca_set$groups[["Hole-in-the-Wall"]],
+  title = "Hole-in-the-Wall Terrain PCA"
+)
+```
+
+```{r plot-pca-hoyo, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="El Hoyo PCA scores for sampled terrain metrics."}
+plot_process_pca(
+  pca_set$groups[["El Hoyo"]],
+  title = "El Hoyo Terrain PCA"
+)
 ```
 
 ## Plotting Guide
@@ -607,6 +656,83 @@ plot_process_density(comparison, value = "slope_deg", group = "site")
 ```{r plotting-depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Depth profile along one transect."}
 plot_depth_profile(
   transect_samples[transect_samples$transect_id == transect_samples$transect_id[1], ]
+)
+```
+
+## Custom Metrics and Process Groups
+
+Custom metrics should be raster layers on the same grid, CRS, and extent as the
+metric stack they extend. This keeps polygon summaries, PCA tables, and process
+group assignments aligned cell by cell. A custom metric can come from a
+precomputed raster, a quoted expression using existing layers, or a function
+that returns a single-layer `terra::SpatRaster`.
+
+```{r custom-metrics}
+renamed <- rename_metric_layers(
+  hitw_metrics,
+  c(slope_deg = "local_slope", bpi_3x3 = "fine_bpi")
+)
+names(renamed)[1:4]
+
+slope_tri <- derive_custom_metric(
+  hitw_metrics,
+  name = "slope_tri_index",
+  expression = quote(slope_deg * tri)
+)
+
+relief_index <- derive_custom_metric(
+  hitw_metrics,
+  name = "relief_index",
+  fun = function(r) {
+    out <- r[["tri"]] + abs(r[["bpi_3x3"]])
+    names(out) <- "relief_index"
+    out
+  }
+)
+
+extended_metrics <- add_metric_layers(
+  hitw_metrics,
+  slope_tri,
+  relief_index
+)
+names(extended_metrics)
+
+custom_catalog <- extend_metric_catalog(
+  metric_catalog(),
+  create_metric_catalog(
+    metric = "slope_tri_index",
+    label = "Slope-TRI index",
+    process_group = "custom_relief",
+    description = "Product of local slope and terrain ruggedness index.",
+    units = "index",
+    source_function = "derive_custom_metric",
+    interpretation_notes = "Example index for documentation; users should define metrics that match their own process model."
+  ),
+  create_metric_catalog(
+    metric = "relief_index",
+    label = "Relief index",
+    process_group = "custom_relief",
+    description = "Sum of TRI and absolute fine-scale BPI.",
+    units = "index",
+    source_function = "derive_custom_metric",
+    interpretation_notes = "Example index for documentation."
+  )
+)
+
+assign_process_groups(extended_metrics, catalog = custom_catalog)
+summarize_process_groups(extended_metrics, catalog = custom_catalog)
+```
+
+```{r custom-metric-plot, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Custom Slope-TRI metric over hillshaded bathymetry."}
+plot_metric(
+  extended_metrics,
+  "slope_tri_index",
+  bathy = hitw_prepared,
+  hillshade = TRUE,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Custom Slope-TRI Index",
+  legend_title = "Index"
 )
 ```
 
@@ -697,8 +823,11 @@ that keep terrain interpretation organized.
 metric_catalog()
 process_groups()
 assign_process_groups(hitw_metrics)
+assign_process_groups(extended_metrics, catalog = custom_catalog)
 select_process_representatives(metrics_available = names(hitw_metrics))
 summarize_process_groups(hitw_metrics)
+create_metric_catalog(metric = "custom_index", process_group = "custom_relief")
+extend_metric_catalog(metric_catalog(), create_metric_catalog("custom_index", process_group = "custom_relief"))
 standardize_metric_names(c("Slope degrees", "BPI 3 x 3"))
 rename_metric_layers(c("slope_old", "bpi_old"), c(slope_old = "slope_deg"))
 ```
@@ -715,7 +844,8 @@ These functions work with `terra::SpatVector` objects or local vector paths and
 return vectors, extracted cells, or summary tables.
 
 ```{r cookbook-lines-zones}
-make_transects(hitw_rect, spacing = 100)
+estimate_surface_orientation(hitw_prepared, hitw_rect)
+make_transects(hitw_rect, spacing = 100, bathy = hitw_prepared)
 sample_transects(hitw_transects, hitw_prepared, n = 5)
 extract_cross_sections(hitw_transects, hitw_prepared, n = 5)
 summarize_cross_sections(cross_sections)
@@ -740,12 +870,16 @@ These helpers return tibbles, model matrices, PCA objects, or `ggplot` objects.
 
 ```{r cookbook-model-plot}
 extract_terrain_points(hitw_metrics, terra::centroids(hitw_rect))
-sample_terrain_cells(hitw_metrics, size = 10)
+sample_terrain_cells(hitw_metrics, size = 10, seed = 42)
 terrain_pca(terrain_cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
+pca_axis_labels(pca_set$overall)
+terrain_pca_by_group(comparison, group = "site", vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
 terrain_effect_size(comparison, group = "site", vars = c("slope_deg", "tri"))
 terrain_correlation(terrain_cells[, c("slope_deg", "tri", "bpi_3x3")])
 prepare_model_matrix(terrain_cells, vars = c("slope_deg", "tri"))
 balance_samples(comparison, group = "site", seed = 42)
+derive_custom_metric(hitw_metrics, "slope_tri_index", expression = quote(slope_deg * tri))
+add_metric_layers(hitw_metrics, slope_tri)
 ```
 
 ```{r cookbook-plots, eval=requireNamespace("ggplot2", quietly = TRUE), fig.show='hide'}
@@ -755,12 +889,12 @@ invisible(list(
   plot_terrain_map(hitw_prepared, hitw_metrics[["tri"]]),
   plot_sampling_rectangles(slope, rectangles),
   plot_transects(hitw_prepared, hitw_transects),
-  plot_isobath_corridors(hitw_corridors, hitw_prepared),
+  plot_isobath_corridors(hitw_corridors, hitw_prepared, isobaths = hitw_isobaths),
   plot_cross_sections(cross_sections),
   plot_depth_profile(transect_samples),
   plot_metric_stack(hitw_metrics[[c("slope_deg", "tri")]]),
   plot_process_density(comparison, value = "slope_deg", group = "site"),
-  plot_process_pca(pca),
+  plot_process_pca(pca_set$overall),
   plot_terrain_summary(sampling_summary, value = "slope_deg_mean"),
   plot_hillshade(hitw_prepared)
 ))

@@ -217,7 +217,53 @@ vector_plot_data <- function(x) {
     bt_abort("Vector geometry could not be converted to plot coordinates.")
   }
   geom$group <- paste(geom$geom, geom$part, sep = "_")
+  attrs <- as.data.frame(x)
+  if (nrow(attrs) > 0) {
+    attr_names <- setdiff(names(attrs), names(geom))
+    for (nm in attr_names) {
+      geom[[nm]] <- attrs[[nm]][geom$geom]
+    }
+  }
   tibble::as_tibble(geom)
+}
+
+terrain_value_column <- function(
+    data,
+    value_col = NULL,
+    exclude = character(),
+    context = "value"
+) {
+  if (!is.data.frame(data)) {
+    bt_abort("`data` must be a data frame.")
+  }
+  if (!is.null(value_col)) {
+    if (!is.character(value_col) || length(value_col) != 1 || !value_col %in% names(data)) {
+      bt_abort(paste0("`", context, "_col` was not found in `data`."))
+    }
+    if (!is.numeric(data[[value_col]])) {
+      bt_abort(paste0("`", context, "_col` must identify a numeric column."))
+    }
+    values <- data[[value_col]]
+    if (!any(is.finite(values))) {
+      bt_abort(paste0("`", value_col, "` does not contain finite values."))
+    }
+    return(value_col)
+  }
+
+  default_exclude <- c(
+    "distance", "normalized_distance", "x", "y", "ID", "id", "cell",
+    "transect_id", "zone_id", "corridor_id", "offset", "angle_deg",
+    "mean_aspect_deg", "n_orientation_cells"
+  )
+  exclude <- unique(c(default_exclude, exclude))
+  numeric_cols <- names(data)[vapply(data, is.numeric, logical(1))]
+  candidates <- setdiff(numeric_cols, exclude)
+  finite <- vapply(candidates, function(nm) any(is.finite(data[[nm]])), logical(1))
+  candidates <- candidates[finite]
+  if (length(candidates) == 0) {
+    bt_abort(paste0("Could not identify a numeric ", context, " column with finite values."))
+  }
+  candidates[[1]]
 }
 
 #' Locate package example files

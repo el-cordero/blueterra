@@ -8,7 +8,14 @@ plot_cross_sections(
   samples,
   value_col = NULL,
   group_col = "transect_id",
-  depth_increases_down = TRUE
+  color_col = NULL,
+  show_legend = TRUE,
+  mean_profile = FALSE,
+  normalize_distance = FALSE,
+  depth_increases_down = TRUE,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL
 )
 }
 \arguments{
@@ -18,8 +25,20 @@ plot_cross_sections(
 
 \item{group_col}{Grouping column for transect lines.}
 
+\item{color_col}{Optional column used to color profiles. Defaults to
+\code{group_col}.}
+
+\item{show_legend}{Logical. Show the line-color legend.}
+
+\item{mean_profile}{Logical. Overlay a binned mean profile across transects.}
+
+\item{normalize_distance}{Logical. Plot distance as 0-1 normalized position
+along each transect.}
+
 \item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
 plotted with a reversed y-axis so larger depths appear lower in the panel.}
+
+\item{title, subtitle, caption}{Plot text.}
 }
 \value{
 A \code{ggplot} object.
@@ -31,7 +50,7 @@ Plots raster values against transect distance.
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   bathy <- read_bathy(blueterra_example("bathy"))
   zones <- terra::vect(blueterra_example("zones"))
-  transects <- make_transects(zones[1, ], spacing = 100)
+  transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
   samples <- sample_transects(transects, bathy, n = 5)
   plot_cross_sections(samples)
 }

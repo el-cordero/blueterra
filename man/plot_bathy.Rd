@@ -69,7 +69,7 @@ plot_hillshade(x, max_cells = getOption("blueterra.max_plot_cells", 10000))
 
 plot_sampling_rectangles(bathy, rectangles, label_field = "site_id", ...)
 
-plot_transects(bathy, transects, ...)
+plot_transects(bathy, transects, color_by = NULL, show_legend = FALSE, ...)
 
 plot_metric_stack(x, max_cells = getOption("blueterra.max_plot_cells", 10000))
 }
@@ -117,6 +117,11 @@ when \code{x} is a metric raster.}
 \item{rectangles}{Sampling rectangles or polygon zones.}
 
 \item{transects}{Transect line geometry.}
+
+\item{color_by}{Optional transect attribute used to color lines, such as
+\code{"transect_id"}.}
+
+\item{show_legend}{Logical. Show a legend when \code{color_by} is supplied.}
 }
 \value{
 A \code{ggplot} object.

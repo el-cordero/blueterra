@@ -82,9 +82,12 @@ depth_summary_plot <- depth_summary[
   ,
   drop = FALSE
 ]
-transects <- make_transects(hitw_rect, spacing = 75)
+orientation <- estimate_surface_orientation(prepared, hitw_rect, return = "both")
+transects <- make_transects(hitw_rect, spacing = 75, bathy = prepared)
 samples <- sample_transects(transects, prepared, n = 12)
-samples_plot <- samples[is.finite(samples$focal_mean), , drop = FALSE]
+sample_value_col <- names(prepared)[1]
+samples_plot <- samples[is.finite(samples[[sample_value_col]]), , drop = FALSE]
+one_transect <- samples[samples$transect_id == samples$transect_id[1], , drop = FALSE]
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
 corridor_summary <- summarize_isobath_terrain(metrics, corridors)
@@ -104,7 +107,12 @@ hoyo_cells <- sample_terrain_cells(
 )
 hoyo_cells$site <- "El Hoyo"
 comparison <- rbind(hitw_cells, hoyo_cells)
-pca <- terrain_pca(comparison, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
+pca_set <- terrain_pca_by_group(
+  comparison,
+  group = "site",
+  vars = c("slope_deg", "tri", "bpi_3x3", "curvature")
+)
+pca <- pca_set$overall
 corr <- terrain_correlation(comparison, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
 effect <- terrain_effect_size(comparison, group = "site", vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
 process_summary <- summarize_process_groups(metrics)
@@ -221,12 +229,31 @@ figures <- c(figures, save_plot(
   plot_transects(
     prepared,
     transects,
+    color_by = "transect_id",
+    show_legend = FALSE,
     contour_interval = 25,
-    title = "Transects Over Bathymetry"
+    title = "Terrain-Oriented Transects Over Bathymetry",
+    subtitle = paste0("Estimated line angle: ", round(unique(transects$angle_deg)[1], 1), " degrees")
   ),
-  "17-transects-over-bathymetry.png"
+  "17-transects-over-bathymetry-auto-orientation.png"
 ))
-figures <- c(figures, save_plot(plot_cross_sections(samples_plot), "18-cross-sections.png"))
+figures <- c(figures, save_plot(
+  plot_cross_sections(
+    samples_plot,
+    show_legend = TRUE,
+    mean_profile = TRUE,
+    normalize_distance = TRUE,
+    title = "Cross-Sections With Transect Legend"
+  ),
+  "18-cross-sections-with-legend.png"
+))
+figures <- c(figures, save_plot(
+  plot_depth_profile(
+    one_transect,
+    title = "Single Transect Depth Profile"
+  ),
+  "19-depth-profile-single-transect.png"
+))
 figures <- c(figures, save_plot(
   plot_bathy(
     prepared,
@@ -236,26 +263,53 @@ figures <- c(figures, save_plot(
     vector_color = "black",
     title = "Isobaths Over Bathymetry"
   ),
-  "19-isobaths-over-bathymetry.png"
+  "20-isobaths-over-bathymetry.png"
 ))
 figures <- c(figures, save_plot(
-  plot_isobath_corridors(corridors, prepared, contour_interval = 25),
-  "20-isobath-corridors.png"
+  plot_isobath_corridors(
+    corridors,
+    prepared,
+    isobaths = isobaths,
+    background_contours = FALSE,
+    title = "Isobath Corridors and Source Isobaths"
+  ),
+  "21-isobath-corridors-source-isobaths.png"
 ))
 figures <- c(figures, save_plot(
   ggplot2::ggplot(corridor_summary, ggplot2::aes(x = factor(contour_value), y = slope_deg_mean)) +
     ggplot2::geom_col() +
     ggplot2::labs(x = "Contour value", y = "Mean slope"),
-  "21-isobath-terrain-summary.png"
+  "22-isobath-terrain-summary.png"
 ))
-figures <- c(figures, save_plot(plot_process_pca(pca), "22-pca-plot.png"))
+figures <- c(figures, save_plot(
+  plot_process_pca(
+    pca_set$overall,
+    color_col = "site",
+    title = "Overall Terrain PCA"
+  ),
+  "23-pca-overall.png"
+))
+figures <- c(figures, save_plot(
+  plot_process_pca(
+    pca_set$groups[["Hole-in-the-Wall"]],
+    title = "Hole-in-the-Wall Terrain PCA"
+  ),
+  "24-pca-hole-in-the-wall.png"
+))
+figures <- c(figures, save_plot(
+  plot_process_pca(
+    pca_set$groups[["El Hoyo"]],
+    title = "El Hoyo Terrain PCA"
+  ),
+  "25-pca-el-hoyo.png"
+))
 figures <- c(figures, save_plot(
   ggplot2::ggplot(corr, ggplot2::aes(x = var1, y = var2, fill = correlation)) +
     ggplot2::geom_tile() +
     ggplot2::scale_fill_gradient2(limits = c(-1, 1)) +
     ggplot2::coord_equal() +
     ggplot2::labs(x = NULL, y = NULL, fill = "r"),
-  "23-correlation-plot.png"
+  "26-correlation-plot.png"
 ))
 
 readme_result <- capture_command(
@@ -331,18 +385,18 @@ if (requireNamespace("webshot2", quietly = TRUE)) {
       silent = TRUE
     )
     if (file.exists(readme_html)) {
-      out <- file.path(shot_dir, "24-readme-screenshot.png")
+      out <- file.path(shot_dir, "27-readme-screenshot.png")
       webshot2::webshot(paste0("file://", normalizePath(readme_html)), out)
       screenshots <- c(screenshots, out)
     }
   }
   if (file.exists("docs/index.html")) {
-    out <- file.path(shot_dir, "25-pkgdown-home-screenshot.png")
+    out <- file.path(shot_dir, "28-pkgdown-home-screenshot.png")
     webshot2::webshot(paste0("file://", normalizePath("docs/index.html")), out)
     screenshots <- c(screenshots, out)
   }
   if (file.exists("docs/reference/index.html")) {
-    out <- file.path(shot_dir, "26-pkgdown-reference-screenshot.png")
+    out <- file.path(shot_dir, "29-pkgdown-reference-screenshot.png")
     webshot2::webshot(paste0("file://", normalizePath("docs/reference/index.html")), out)
     screenshots <- c(screenshots, out)
   }
@@ -406,8 +460,13 @@ report <- c(
     print(names(metrics))
     print(terrain_summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")])
     print(depth_summary[depth_summary$metric == "slope_deg", ])
+    print(orientation)
+    print(unique(as.data.frame(transects)[, c("angle_deg", "angle_source", "mean_aspect_deg")]))
     print(corridor_summary[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean")])
     print(pca$variance)
+    print(pca_axis_labels(pca))
+    print(pca_set$groups[["Hole-in-the-Wall"]]$variance)
+    print(pca_set$groups[["El Hoyo"]]$variance)
     print(effect)
     print(corr)
   }),

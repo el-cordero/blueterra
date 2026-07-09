@@ -6,7 +6,20 @@
 #' @param area A `terra::SpatVector`, local vector path, or optional `sf`
 #'   polygon object.
 #' @param spacing Distance between transects in map units.
-#' @param angle Transect direction in degrees counterclockwise from the x axis.
+#' @param angle Optional transect direction in degrees counterclockwise from the
+#'   projected x axis. When supplied, this manual value overrides orientation
+#'   estimation.
+#' @param bathy Optional bathymetry raster used to estimate a terrain-based
+#'   transect orientation when `angle = NULL`.
+#' @param orientation Orientation strategy. `"auto"` uses surface orientation
+#'   when `bathy` is supplied and otherwise falls back to the historical
+#'   horizontal line angle with a warning. `"surface"` requires `bathy`,
+#'   `"bbox"` uses the polygon bounding-box axis, and `"manual"` requires
+#'   `angle`.
+#' @param orientation_weight Weighting for surface orientation. `"slope"` gives
+#'   steeper cells more influence; `"none"` averages aspect components equally.
+#' @param min_slope Minimum slope, in degrees, used when
+#'   `orientation_weight = "slope"`.
 #' @param length Optional transect length in map units. If `NULL`, a length based
 #'   on the polygon bounding box is used.
 #' @param id_field Optional field in `area` used as the zone identifier.
@@ -20,39 +33,87 @@
 #' for metric distances. Candidate lines are created through each polygon
 #' bounding box and clipped to the polygon with `terra::intersect()`.
 #'
+#' With `angle = NULL` and a supplied `bathy` raster, the default transect
+#' direction is estimated from the mean surface aspect within each polygon.
+#' Aspect is converted to northness and eastness, averaged as circular
+#' components, and converted to the mathematical line angle used for transect
+#' generation. For example, a south-facing mean aspect near 180 degrees yields a
+#' transect angle near 90 degrees, producing north-south transects in projected
+#' coordinates. The estimated angle and source metadata are stored on the output
+#' lines so the orientation can be inspected.
+#'
 #' @examples
 #' zones <- terra::vect(blueterra_example("zones"))
-#' transects <- make_transects(zones[1, ], spacing = 50)
+#' bathy <- read_bathy(blueterra_example("bathy"))
+#' transects <- make_transects(zones[1, ], spacing = 50, bathy = bathy)
 #' transects
 #'
-#' @seealso [sample_transects()], [extract_cross_sections()]
+#' manual <- make_transects(zones[1, ], spacing = 50, angle = 90)
+#' manual[, c("angle_deg", "angle_source")]
+#'
+#' @seealso [estimate_surface_orientation()], [sample_transects()],
+#'   [extract_cross_sections()]
 #' @export
 make_transects <- function(
     area,
     spacing,
-    angle = 0,
+    angle = NULL,
+    bathy = NULL,
+    orientation = c("auto", "surface", "bbox", "manual"),
+    orientation_weight = c("slope", "none"),
+    min_slope = 0,
     length = NULL,
     id_field = NULL,
     as = c("SpatVector", "sf")
 ) {
   as <- match.arg(as)
+  orientation <- match.arg(orientation)
+  orientation_weight <- match.arg(orientation_weight)
   zones <- as_spatvector(area)
   require_projected(zones, operation = "transect spacing")
   if (!is.numeric(spacing) || length(spacing) != 1 || spacing <= 0) {
     bt_abort("`spacing` must be one positive numeric value.")
   }
+  if (!is.null(angle) && (!is.numeric(angle) || length(angle) != 1 || !is.finite(angle))) {
+    bt_abort("`angle` must be one finite numeric value when supplied.")
+  }
+  if (!is.numeric(min_slope) || length(min_slope) != 1 || !is.finite(min_slope) || min_slope < 0) {
+    bt_abort("`min_slope` must be one non-negative numeric value.")
+  }
+  if (orientation == "manual" && is.null(angle)) {
+    bt_abort("`orientation = \"manual\"` requires a supplied `angle`.")
+  }
+  if (orientation == "surface" && is.null(bathy) && is.null(angle)) {
+    bt_abort("`orientation = \"surface\"` requires `bathy` when `angle` is not supplied.")
+  }
   if (!is.null(id_field) && !id_field %in% names(zones)) {
     bt_abort("`id_field` was not found in `area`.")
+  }
+  bathy_r <- NULL
+  if (!is.null(bathy)) {
+    bathy_r <- first_layer(bathy)
+  }
+  if (is.null(angle) && orientation == "auto" && is.null(bathy_r)) {
+    bt_warn("No `bathy` raster was supplied; using the historical horizontal transect angle of 0 degrees.")
   }
   out <- vector("list", nrow(zones))
   for (i in seq_len(nrow(zones))) {
     zone_id <- if (is.null(id_field)) i else as.character(zones[[id_field]][i, 1])
+    orientation_info <- resolve_transect_orientation(
+      zone = zones[i, ],
+      angle = angle,
+      bathy = bathy_r,
+      orientation = orientation,
+      orientation_weight = orientation_weight,
+      min_slope = min_slope
+    )
     out[[i]] <- transects_for_zone(
       zones[i, ],
       spacing = spacing,
-      angle = angle,
+      angle = orientation_info$angle_deg,
       length = length,
-      zone_id = zone_id
+      zone_id = zone_id,
+      orientation_info = orientation_info
     )
   }
   out <- do.call(rbind, out)
@@ -64,7 +125,83 @@ make_transects <- function(
   out
 }
 
-transects_for_zone <- function(zone, spacing, angle, length, zone_id) {
+resolve_transect_orientation <- function(
+    zone,
+    angle = NULL,
+    bathy = NULL,
+    orientation = "auto",
+    orientation_weight = "slope",
+    min_slope = 0
+) {
+  if (!is.null(angle)) {
+    return(list(
+      angle_deg = normalize_line_angle(angle),
+      angle_source = "manual",
+      mean_aspect_deg = NA_real_,
+      orientation_weight = NA_character_,
+      n_orientation_cells = NA_integer_
+    ))
+  }
+
+  if (orientation %in% c("auto", "surface") && !is.null(bathy)) {
+    estimated <- estimate_surface_orientation(
+      bathy = bathy,
+      area = zone,
+      orientation_weight = orientation_weight,
+      min_slope = min_slope,
+      return = "both"
+    )
+    return(list(
+      angle_deg = estimated$transect_angle_deg[[1]],
+      angle_source = "surface",
+      mean_aspect_deg = estimated$bearing_deg[[1]],
+      orientation_weight = orientation_weight,
+      n_orientation_cells = estimated$n_orientation_cells[[1]]
+    ))
+  }
+
+  if (orientation == "bbox") {
+    return(list(
+      angle_deg = bbox_transect_angle(zone),
+      angle_source = "bbox",
+      mean_aspect_deg = NA_real_,
+      orientation_weight = NA_character_,
+      n_orientation_cells = NA_integer_
+    ))
+  }
+
+  if (orientation == "surface") {
+    bt_abort("Surface-based transect orientation requires `bathy`.")
+  }
+
+  list(
+    angle_deg = 0,
+    angle_source = "fallback",
+    mean_aspect_deg = NA_real_,
+    orientation_weight = NA_character_,
+    n_orientation_cells = NA_integer_
+  )
+}
+
+normalize_line_angle <- function(angle) {
+  angle <- angle %% 180
+  if (angle < 0) {
+    angle <- angle + 180
+  }
+  angle
+}
+
+bbox_transect_angle <- function(zone) {
+  bbox <- terra::ext(zone)
+  width <- bbox[2] - bbox[1]
+  height <- bbox[4] - bbox[3]
+  if (is.finite(width) && is.finite(height) && height > width) {
+    return(90)
+  }
+  0
+}
+
+transects_for_zone <- function(zone, spacing, angle, length, zone_id, orientation_info) {
   bbox <- terra::ext(zone)
   cx <- mean(c(bbox[1], bbox[2]))
   cy <- mean(c(bbox[3], bbox[4]))
@@ -87,6 +224,11 @@ transects_for_zone <- function(zone, spacing, angle, length, zone_id) {
     if (!is.null(clipped) && nrow(clipped) > 0) {
       clipped$zone_id <- as.character(zone_id)
       clipped$offset <- offsets[j]
+      clipped$angle_deg <- orientation_info$angle_deg
+      clipped$angle_source <- orientation_info$angle_source
+      clipped$mean_aspect_deg <- orientation_info$mean_aspect_deg
+      clipped$orientation_weight <- orientation_info$orientation_weight
+      clipped$n_orientation_cells <- orientation_info$n_orientation_cells
       pieces[[j]] <- clipped
     }
   }
@@ -95,6 +237,123 @@ transects_for_zone <- function(zone, spacing, angle, length, zone_id) {
     bt_abort("No transects intersected the supplied polygon.")
   }
   do.call(rbind, pieces)
+}
+
+#' Estimate mean surface orientation from a bathymetric raster
+#'
+#' @description
+#' Estimates the mean aspect direction of a raster surface and converts that
+#' compass bearing to the line-angle convention used by [make_transects()].
+#'
+#' @param bathy A single-layer bathymetric or elevation raster, or a raster input
+#'   accepted by [as_bathy()].
+#' @param area Optional polygon area used to crop and mask `bathy` before
+#'   estimating orientation.
+#' @param orientation_weight Weighting method. `"slope"` weights aspect
+#'   components by slope magnitude; `"none"` averages finite aspect cells
+#'   equally.
+#' @param min_slope Minimum slope in degrees retained when
+#'   `orientation_weight = "slope"`.
+#' @param return Return type: `"transect_angle"` for the mathematical line angle
+#'   used by [make_transects()], `"bearing"` for the mean compass aspect, or
+#'   `"both"` for a tibble containing both values and the number of cells used.
+#'
+#' @return A numeric angle for `"transect_angle"` or `"bearing"`, or a tibble
+#'   with `bearing_deg`, `transect_angle_deg`, `orientation_weight`,
+#'   `min_slope`, and `n_orientation_cells` when `return = "both"`.
+#'
+#' @details
+#' Aspect is treated as a compass bearing where northness is `cos(aspect)` and
+#' eastness is `sin(aspect)`. Mean circular components are converted to a
+#' compass bearing with `atan2(eastness, northness)`. Transect lines are
+#' undirected, so the line angle is normalized to `[0, 180)`. A south-facing
+#' mean aspect near 180 degrees therefore produces a transect angle near 90
+#' degrees.
+#'
+#' @examples
+#' bathy <- read_bathy(blueterra_example("hitw"))
+#' zones <- terra::vect(blueterra_example("zones"))
+#' hitw <- zones[zones$site_id == "hitw", ]
+#' estimate_surface_orientation(bathy, hitw)
+#'
+#' @seealso [make_transects()], [derive_aspect()], [derive_slope()]
+#' @export
+estimate_surface_orientation <- function(
+    bathy,
+    area = NULL,
+    orientation_weight = c("slope", "none"),
+    min_slope = 0,
+    return = c("transect_angle", "bearing", "both")
+) {
+  orientation_weight <- match.arg(orientation_weight)
+  return <- match.arg(return)
+  if (!is.numeric(min_slope) || length(min_slope) != 1 || !is.finite(min_slope) || min_slope < 0) {
+    bt_abort("`min_slope` must be one non-negative numeric value.")
+  }
+
+  r <- first_layer(bathy)
+  if (!is.null(area)) {
+    zone <- as_spatvector(area)
+    if (!terra::same.crs(r, zone)) {
+      zone <- terra::project(zone, terra::crs(r))
+    }
+    r <- terra::crop(r, zone)
+    r <- terra::mask(r, zone)
+  }
+
+  aspect <- derive_aspect(r, units = "radians")
+  aspect_values <- terra::values(aspect, mat = FALSE)
+  northness <- cos(aspect_values)
+  eastness <- sin(aspect_values)
+  keep <- is.finite(northness) & is.finite(eastness)
+
+  weights <- rep(1, length(aspect_values))
+  if (orientation_weight == "slope") {
+    slope <- derive_slope(r, units = "degrees")
+    weights <- terra::values(slope, mat = FALSE)
+    keep <- keep & is.finite(weights) & weights >= min_slope & weights > 0
+  }
+
+  if (!any(keep)) {
+    bt_abort("No finite aspect cells were available for surface-orientation estimation.")
+  }
+
+  if (orientation_weight == "slope") {
+    w <- as.numeric(weights[keep])
+    if (!is.finite(sum(w)) || sum(w) <= 0) {
+      bt_abort("Slope weights were all zero; surface orientation could not be estimated.")
+    }
+    mean_north <- stats::weighted.mean(northness[keep], w = w)
+    mean_east <- stats::weighted.mean(eastness[keep], w = w)
+  } else {
+    mean_north <- mean(northness[keep])
+    mean_east <- mean(eastness[keep])
+  }
+
+  if (!is.finite(mean_north) || !is.finite(mean_east) ||
+      sqrt(mean_north^2 + mean_east^2) < .Machine$double.eps) {
+    bt_abort("Mean aspect components cancel out; surface orientation is ambiguous.")
+  }
+
+  bearing_deg <- atan2(mean_east, mean_north) * 180 / pi
+  if (bearing_deg < 0) {
+    bearing_deg <- bearing_deg + 360
+  }
+  transect_angle_deg <- (90 - bearing_deg) %% 180
+
+  if (return == "transect_angle") {
+    return(transect_angle_deg)
+  }
+  if (return == "bearing") {
+    return(bearing_deg)
+  }
+  tibble::tibble(
+    bearing_deg = bearing_deg,
+    transect_angle_deg = transect_angle_deg,
+    orientation_weight = orientation_weight,
+    min_slope = min_slope,
+    n_orientation_cells = sum(keep)
+  )
 }
 
 #' Sample rasters along transects
@@ -107,6 +366,8 @@ transects_for_zone <- function(zone, spacing, angle, length, zone_id) {
 #' @param spacing Optional sample spacing in map units.
 #' @param n Optional number of sample points per transect.
 #' @param method Extraction method passed to `terra::extract()`.
+#' @param drop_na Logical. If `TRUE`, remove sample rows where all raster value
+#'   columns are missing.
 #'
 #' @return A tibble with transect identifiers, distances, coordinates, and
 #'   raster values.
@@ -114,11 +375,13 @@ transects_for_zone <- function(zone, spacing, angle, length, zone_id) {
 #' @details
 #' If `spacing` and `n` are both `NULL`, twenty points are sampled per transect.
 #' Distances are measured from the first line vertex and are in map units.
+#' Transect attribute columns, including orientation metadata created by
+#' [make_transects()], are preserved in the sampled table.
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
 #' zones <- terra::vect(blueterra_example("zones"))
-#' transects <- make_transects(zones[1, ], spacing = 100)
+#' transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
 #' sample_transects(transects, bathy, n = 5)
 #'
 #' @seealso [make_transects()], [summarize_cross_sections()]
@@ -128,7 +391,8 @@ sample_transects <- function(
     x,
     spacing = NULL,
     n = NULL,
-    method = "bilinear"
+    method = "bilinear",
+    drop_na = FALSE
 ) {
   lines <- as_spatvector(transects)
   r <- as_bathy(x, check = TRUE)
@@ -142,7 +406,14 @@ sample_transects <- function(
   for (i in seq_len(nrow(lines))) {
     samples[[i]] <- sample_one_transect(lines[i, ], r, spacing, n, method)
   }
-  dplyr::bind_rows(samples)
+  out <- dplyr::bind_rows(samples)
+  if (isTRUE(drop_na) && nrow(out) > 0) {
+    value_cols <- setdiff(names(r), character())
+    value_cols <- intersect(value_cols, names(out))
+    keep <- rowSums(!is.na(out[, value_cols, drop = FALSE])) > 0
+    out <- out[keep, , drop = FALSE]
+  }
+  out
 }
 
 sample_one_transect <- function(line, r, spacing, n, method) {
@@ -170,8 +441,14 @@ sample_one_transect <- function(line, r, spacing, n, method) {
   )
   pts <- terra::vect(xy, type = "points", crs = terra::crs(r))
   vals <- terra::extract(r, pts, method = method, ID = FALSE)
+  attrs <- as.data.frame(line)
+  if (!"transect_id" %in% names(attrs)) {
+    attrs$transect_id <- seq_len(nrow(attrs))
+  }
+  attrs <- attrs[rep(1, n), , drop = FALSE]
+  row.names(attrs) <- NULL
   tibble::as_tibble(cbind(
-    transect_id = as.character(line$transect_id[[1]]),
+    attrs,
     distance = distance,
     x = xy[, "x"],
     y = xy[, "y"],
@@ -208,13 +485,17 @@ extract_cross_sections <- function(
 #' @param group_col Column used to group cross-section samples.
 #' @param fun Summary functions.
 #' @param na.rm Logical. Remove missing values.
+#' @param normalize_distance Logical. If `TRUE`, summarize values by normalized
+#'   position along each transect.
+#' @param n_bins Number of normalized-distance bins when
+#'   `normalize_distance = TRUE`.
 #'
 #' @return A tibble with one row per group.
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
 #' zones <- terra::vect(blueterra_example("zones"))
-#' transects <- make_transects(zones[1, ], spacing = 100)
+#' transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
 #' samples <- sample_transects(transects, bathy, n = 5)
 #' summarize_cross_sections(samples)
 #'
@@ -225,7 +506,9 @@ summarize_cross_sections <- function(
     value_col = NULL,
     group_col = "transect_id",
     fun = c("mean", "sd", "min", "max", "median"),
-    na.rm = TRUE
+    na.rm = TRUE,
+    normalize_distance = FALSE,
+    n_bins = 50
 ) {
   if (!is.data.frame(samples)) {
     bt_abort("`samples` must be a data frame.")
@@ -233,14 +516,36 @@ summarize_cross_sections <- function(
   if (!group_col %in% names(samples)) {
     bt_abort("`group_col` was not found in `samples`.")
   }
-  if (is.null(value_col)) {
-    numeric_cols <- names(samples)[vapply(samples, is.numeric, logical(1))]
-    value_col <- setdiff(numeric_cols, c("distance", "x", "y"))[1]
-  }
-  if (is.na(value_col) || !value_col %in% names(samples)) {
-    bt_abort("Could not identify a numeric value column.")
-  }
+  value_col <- terrain_value_column(samples, value_col, context = "value")
   fun <- safe_summary_funs(fun)
+  if (isTRUE(normalize_distance)) {
+    if (!"distance" %in% names(samples)) {
+      bt_abort("`samples` must contain `distance` for normalized-distance summaries.")
+    }
+    if (!is.numeric(n_bins) || length(n_bins) != 1 || n_bins < 2) {
+      bt_abort("`n_bins` must be an integer greater than one.")
+    }
+    samples <- add_normalized_distance(samples, group_col = group_col)
+    samples$distance_bin <- cut(
+      samples$normalized_distance,
+      breaks = seq(0, 1, length.out = as.integer(n_bins) + 1),
+      include.lowest = TRUE
+    )
+    pieces <- split(samples[[value_col]], list(samples[[group_col]], samples$distance_bin), drop = TRUE)
+    rows <- lapply(names(pieces), function(id) {
+      values <- as.numeric(pieces[[id]])
+      ids <- strsplit(id, ".", fixed = TRUE)[[1]]
+      out <- lapply(fun, function(f) apply_summary_fun(values, f, na.rm = na.rm))
+      names(out) <- paste(value_col, fun, sep = "_")
+      data.frame(
+        transect_id = ids[[1]],
+        distance_bin = ids[[2]],
+        out,
+        check.names = FALSE
+      )
+    })
+    return(tibble::as_tibble(do.call(rbind, rows)))
+  }
   pieces <- split(samples[[value_col]], samples[[group_col]])
   rows <- lapply(names(pieces), function(id) {
     values <- as.numeric(pieces[[id]])
@@ -259,8 +564,15 @@ summarize_cross_sections <- function(
 #' @param samples Output from [sample_transects()].
 #' @param value_col Optional value column.
 #' @param group_col Grouping column for transect lines.
+#' @param color_col Optional column used to color profiles. Defaults to
+#'   `group_col`.
+#' @param show_legend Logical. Show the line-color legend.
+#' @param mean_profile Logical. Overlay a binned mean profile across transects.
+#' @param normalize_distance Logical. Plot distance as 0-1 normalized position
+#'   along each transect.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
+#' @param title,subtitle,caption Plot text.
 #'
 #' @return A `ggplot` object.
 #'
@@ -268,7 +580,7 @@ summarize_cross_sections <- function(
 #' if (requireNamespace("ggplot2", quietly = TRUE)) {
 #'   bathy <- read_bathy(blueterra_example("bathy"))
 #'   zones <- terra::vect(blueterra_example("zones"))
-#'   transects <- make_transects(zones[1, ], spacing = 100)
+#'   transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
 #'   samples <- sample_transects(transects, bathy, n = 5)
 #'   plot_cross_sections(samples)
 #' }
@@ -279,18 +591,116 @@ plot_cross_sections <- function(
     samples,
     value_col = NULL,
     group_col = "transect_id",
-    depth_increases_down = TRUE
+    color_col = NULL,
+    show_legend = TRUE,
+    mean_profile = FALSE,
+    normalize_distance = FALSE,
+    depth_increases_down = TRUE,
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL
 ) {
   optional_ggplot2()
-  if (is.null(value_col)) {
-    numeric_cols <- names(samples)[vapply(samples, is.numeric, logical(1))]
-    value_col <- setdiff(numeric_cols, c("distance", "x", "y"))[1]
+  if (!is.data.frame(samples)) {
+    bt_abort("`samples` must be a data frame.")
   }
-  p <- ggplot2::ggplot(
-    samples,
-    ggplot2::aes(x = .data[["distance"]], y = .data[[value_col]], group = .data[[group_col]])
-  ) +
-    ggplot2::geom_line(alpha = 0.6) +
-    ggplot2::labs(x = "Distance", y = value_col)
-  orient_depth_axis(p, samples[[value_col]], depth_increases_down)
+  if (!"distance" %in% names(samples)) {
+    bt_abort("`samples` must contain a `distance` column.")
+  }
+  if (!group_col %in% names(samples)) {
+    bt_abort("`group_col` was not found in `samples`.")
+  }
+  value_col <- terrain_value_column(samples, value_col, context = "value")
+  color_col <- color_col %||% group_col
+  if (!is.null(color_col) && !color_col %in% names(samples)) {
+    bt_abort("`color_col` was not found in `samples`.")
+  }
+  plot_data <- samples
+  x_col <- "distance"
+  x_lab <- "Distance along transect (map units)"
+  if (isTRUE(normalize_distance)) {
+    plot_data <- add_normalized_distance(plot_data, group_col = group_col)
+    x_col <- "normalized_distance"
+    x_lab <- "Normalized distance along transect"
+  }
+
+  if (is.null(color_col)) {
+    mapping <- ggplot2::aes(
+      x = .data[[x_col]],
+      y = .data[[value_col]],
+      group = .data[[group_col]]
+    )
+  } else {
+    mapping <- ggplot2::aes(
+      x = .data[[x_col]],
+      y = .data[[value_col]],
+      group = .data[[group_col]],
+      color = .data[[color_col]]
+    )
+  }
+  p <- ggplot2::ggplot(plot_data, mapping) +
+    ggplot2::geom_line(alpha = 0.75, na.rm = TRUE) +
+    ggplot2::labs(
+      x = x_lab,
+      y = value_col,
+      color = if (identical(color_col, group_col)) "Transect" else color_col,
+      title = title,
+      subtitle = subtitle,
+      caption = caption
+    )
+
+  if (isTRUE(mean_profile)) {
+    mean_data <- mean_profile_data(plot_data, x_col = x_col, value_col = value_col, group_col = group_col)
+    p <- p +
+      ggplot2::geom_line(
+        data = mean_data,
+        ggplot2::aes(x = .data[[x_col]], y = .data[["mean_value"]]),
+        inherit.aes = FALSE,
+        linewidth = 1.1,
+        color = "black",
+        alpha = 0.9
+      )
+  }
+  if (!isTRUE(show_legend)) {
+    p <- p + ggplot2::guides(color = "none")
+  }
+  orient_depth_axis(p, plot_data[[value_col]], depth_increases_down)
+}
+
+add_normalized_distance <- function(samples, group_col = "transect_id") {
+  pieces <- split(samples, samples[[group_col]])
+  pieces <- lapply(pieces, function(piece) {
+    rng <- range(piece$distance, na.rm = TRUE)
+    if (!all(is.finite(rng)) || diff(rng) == 0) {
+      piece$normalized_distance <- 0
+    } else {
+      piece$normalized_distance <- (piece$distance - rng[1]) / diff(rng)
+    }
+    piece
+  })
+  dplyr::bind_rows(pieces)
+}
+
+mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50) {
+  data <- samples
+  if (!"normalized_distance" %in% names(data)) {
+    data <- add_normalized_distance(data, group_col = group_col)
+  }
+  data$profile_bin <- cut(
+    data$normalized_distance,
+    breaks = seq(0, 1, length.out = n_bins + 1),
+    include.lowest = TRUE
+  )
+  split_data <- split(data, data$profile_bin)
+  rows <- lapply(split_data, function(piece) {
+    if (nrow(piece) == 0) {
+      return(NULL)
+    }
+    tibble::tibble(
+      normalized_distance = mean(piece$normalized_distance, na.rm = TRUE),
+      distance = mean(piece$distance, na.rm = TRUE),
+      mean_value = mean(piece[[value_col]], na.rm = TRUE)
+    )
+  })
+  dplyr::bind_rows(Filter(Negate(is.null), rows))
 }

@@ -134,16 +134,23 @@ summarize_depth_bands(
   breaks = c(-220, -150, -100, -60, -30, -20)
 )
 
-transects <- make_transects(hitw_rect, spacing = 75)
+estimate_surface_orientation(prepared, hitw_rect)
+transects <- make_transects(hitw_rect, spacing = 75, bathy = prepared)
 samples <- sample_transects(transects, prepared, n = 12)
 summarize_cross_sections(samples)
 
+isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
 summarize_isobath_terrain(terrain, corridors)
 ```
 
 ```{r corridor-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobath corridors over hillshaded bathymetry."}
-plot_isobath_corridors(corridors, prepared, contour_interval = 25)
+plot_isobath_corridors(
+  corridors,
+  prepared,
+  isobaths = isobaths,
+  background_contours = FALSE
+)
 ```
 
 ## Model-Ready Tables
@@ -151,5 +158,7 @@ plot_isobath_corridors(corridors, prepared, contour_interval = 25)
 ```{r model-ready}
 cells <- sample_terrain_cells(terrain, size = 40, method = "regular")
 terrain_correlation(cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
-terrain_pca(cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])$variance
+pca <- terrain_pca(cells, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
+pca$variance
+pca_axis_labels(pca)
 ```

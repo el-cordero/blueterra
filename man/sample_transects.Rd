@@ -5,7 +5,14 @@
 \alias{extract_cross_sections}
 \title{Sample rasters along transects}
 \usage{
-sample_transects(transects, x, spacing = NULL, n = NULL, method = "bilinear")
+sample_transects(
+  transects,
+  x,
+  spacing = NULL,
+  n = NULL,
+  method = "bilinear",
+  drop_na = FALSE
+)
 
 extract_cross_sections(
   transects,
@@ -25,6 +32,9 @@ extract_cross_sections(
 \item{n}{Optional number of sample points per transect.}
 
 \item{method}{Extraction method passed to \code{terra::extract()}.}
+
+\item{drop_na}{Logical. If \code{TRUE}, remove sample rows where all raster value
+columns are missing.}
 }
 \value{
 A tibble with transect identifiers, distances, coordinates, and
@@ -36,11 +46,13 @@ Extracts raster values along transect lines at regular distances.
 \details{
 If \code{spacing} and \code{n} are both \code{NULL}, twenty points are sampled per transect.
 Distances are measured from the first line vertex and are in map units.
+Transect attribute columns, including orientation metadata created by
+\code{\link[=make_transects]{make_transects()}}, are preserved in the sampled table.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
 zones <- terra::vect(blueterra_example("zones"))
-transects <- make_transects(zones[1, ], spacing = 100)
+transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
 sample_transects(transects, bathy, n = 5)
 
 }

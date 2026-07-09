@@ -9,7 +9,9 @@ summarize_cross_sections(
   value_col = NULL,
   group_col = "transect_id",
   fun = c("mean", "sd", "min", "max", "median"),
-  na.rm = TRUE
+  na.rm = TRUE,
+  normalize_distance = FALSE,
+  n_bins = 50
 )
 }
 \arguments{
@@ -23,6 +25,12 @@ that is not an identifier or coordinate.}
 \item{fun}{Summary functions.}
 
 \item{na.rm}{Logical. Remove missing values.}
+
+\item{normalize_distance}{Logical. If \code{TRUE}, summarize values by normalized
+position along each transect.}
+
+\item{n_bins}{Number of normalized-distance bins when
+\code{normalize_distance = TRUE}.}
 }
 \value{
 A tibble with one row per group.
@@ -33,7 +41,7 @@ Summarizes raster values sampled along transects.
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
 zones <- terra::vect(blueterra_example("zones"))
-transects <- make_transects(zones[1, ], spacing = 100)
+transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
 samples <- sample_transects(transects, bathy, n = 5)
 summarize_cross_sections(samples)
 

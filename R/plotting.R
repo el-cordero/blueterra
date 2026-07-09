@@ -292,18 +292,54 @@ plot_sampling_rectangles <- function(
 
 #' @rdname plot_bathy
 #' @param transects Transect line geometry.
+#' @param color_by Optional transect attribute used to color lines, such as
+#'   `"transect_id"`.
+#' @param show_legend Logical. Show a legend when `color_by` is supplied.
 #' @export
 plot_transects <- function(
     bathy,
     transects,
+    color_by = NULL,
+    show_legend = FALSE,
     ...
 ) {
-  plot_bathy(
+  if (is.null(color_by)) {
+    return(plot_bathy(
+      bathy,
+      vectors = transects,
+      labels = FALSE,
+      ...
+    ))
+  }
+  optional_ggplot2()
+  transect_v <- as_spatvector(transects)
+  if (!color_by %in% names(transect_v)) {
+    bt_abort("`color_by` was not found in `transects`.")
+  }
+  p <- plot_bathy(
     bathy,
-    vectors = transects,
+    vectors = NULL,
     labels = FALSE,
     ...
   )
+  transect_df <- vector_plot_data(transect_v)
+  p <- p +
+    ggplot2::geom_path(
+      data = transect_df,
+      ggplot2::aes(
+        x = .data[["x"]],
+        y = .data[["y"]],
+        group = .data[["group"]],
+        color = .data[[color_by]]
+      ),
+      linewidth = 0.5,
+      inherit.aes = FALSE
+    ) +
+    ggplot2::labs(color = color_by)
+  if (!isTRUE(show_legend)) {
+    p <- p + ggplot2::guides(color = "none")
+  }
+  p
 }
 
 #' @rdname plot_bathy
@@ -372,6 +408,15 @@ plot_process_density <- function(data, value, group = NULL) {
 #' Plots the first two principal component score axes from [terrain_pca()].
 #'
 #' @param pca Output from [terrain_pca()].
+#' @param color_col Optional score metadata column used for point color.
+#' @param shape_col Optional score metadata column used for point shape.
+#' @param label_loadings Logical. Label the largest loading vectors.
+#' @param loading_arrows Logical. Draw loading arrows scaled into score space.
+#' @param top_loadings Number of high-magnitude loading vectors to draw or
+#'   label.
+#' @param axis_labels Axis label style: include dominant loadings and variance,
+#'   variance only, or plain component names.
+#' @param title,subtitle,caption Plot text.
 #'
 #' @return A `ggplot` object.
 #'
@@ -383,14 +428,108 @@ plot_process_density <- function(data, value, group = NULL) {
 #'
 #' @seealso [terrain_pca()]
 #' @export
-plot_process_pca <- function(pca) {
+plot_process_pca <- function(
+    pca,
+    color_col = NULL,
+    shape_col = NULL,
+    label_loadings = TRUE,
+    loading_arrows = TRUE,
+    top_loadings = 3,
+    axis_labels = c("loadings", "variance", "plain"),
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL
+) {
   optional_ggplot2()
   if (!is.list(pca) || is.null(pca$scores)) {
     bt_abort("`pca` must be output from `terrain_pca()`.")
   }
-  ggplot2::ggplot(pca$scores, ggplot2::aes(x = .data[["PC1"]], y = .data[["PC2"]])) +
-    ggplot2::geom_point() +
-    ggplot2::labs(x = "PC1", y = "PC2")
+  axis_labels <- match.arg(axis_labels)
+  scores <- pca$scores
+  if (!all(c("PC1", "PC2") %in% names(scores))) {
+    bt_abort("`pca$scores` must contain `PC1` and `PC2`.")
+  }
+  if (!is.null(color_col) && !color_col %in% names(scores)) {
+    bt_abort("`color_col` was not found in `pca$scores`.")
+  }
+  if (!is.null(shape_col) && !shape_col %in% names(scores)) {
+    bt_abort("`shape_col` was not found in `pca$scores`.")
+  }
+
+  if (!is.null(color_col) && !is.null(shape_col)) {
+    mapping <- ggplot2::aes(
+      x = .data[["PC1"]],
+      y = .data[["PC2"]],
+      color = .data[[color_col]],
+      shape = .data[[shape_col]]
+    )
+  } else if (!is.null(color_col)) {
+    mapping <- ggplot2::aes(
+      x = .data[["PC1"]],
+      y = .data[["PC2"]],
+      color = .data[[color_col]]
+    )
+  } else if (!is.null(shape_col)) {
+    mapping <- ggplot2::aes(
+      x = .data[["PC1"]],
+      y = .data[["PC2"]],
+      shape = .data[[shape_col]]
+    )
+  } else {
+    mapping <- ggplot2::aes(x = .data[["PC1"]], y = .data[["PC2"]])
+  }
+
+  labels <- switch(
+    axis_labels,
+    loadings = pca_axis_labels(pca, components = c("PC1", "PC2")),
+    variance = pca_variance_axis_labels(pca, components = c("PC1", "PC2")),
+    plain = c(PC1 = "PC1", PC2 = "PC2")
+  )
+
+  p <- ggplot2::ggplot(scores, mapping) +
+    ggplot2::geom_point(alpha = 0.82) +
+    ggplot2::labs(
+      x = unname(labels[["PC1"]]),
+      y = unname(labels[["PC2"]]),
+      color = color_col,
+      shape = shape_col,
+      title = title,
+      subtitle = subtitle,
+      caption = caption
+    )
+
+  if ((isTRUE(loading_arrows) || isTRUE(label_loadings)) &&
+      !is.null(pca$loadings) && all(c("variable", "PC1", "PC2") %in% names(pca$loadings))) {
+    loading_df <- top_loading_vectors(pca, top_n = top_loadings)
+    if (nrow(loading_df) > 0) {
+      scale_factor <- pca_loading_scale(scores, loading_df)
+      loading_df$xend <- loading_df$PC1 * scale_factor
+      loading_df$yend <- loading_df$PC2 * scale_factor
+      if (isTRUE(loading_arrows)) {
+        p <- p +
+          ggplot2::geom_segment(
+            data = loading_df,
+            ggplot2::aes(x = 0, y = 0, xend = .data[["xend"]], yend = .data[["yend"]]),
+            inherit.aes = FALSE,
+            linewidth = 0.35,
+            color = "grey25",
+            arrow = grid::arrow(length = grid::unit(0.12, "inches"))
+          )
+      }
+      if (isTRUE(label_loadings)) {
+        p <- p +
+          ggplot2::geom_text(
+            data = loading_df,
+            ggplot2::aes(x = .data[["xend"]], y = .data[["yend"]], label = .data[["variable"]]),
+            inherit.aes = FALSE,
+            size = 3,
+            color = "grey15",
+            vjust = -0.4
+          )
+      }
+    }
+  }
+  p
 }
 
 #' Plot a depth profile
@@ -403,8 +542,12 @@ plot_process_pca <- function(pca) {
 #' @param depth_col Depth or elevation column name. If `NULL`, the first numeric
 #'   non-coordinate value column is used.
 #' @param group_col Optional grouping column.
+#' @param points Logical. Draw profile points.
+#' @param line Logical. Draw profile lines when at least two finite samples are
+#'   available.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
+#' @param title,subtitle,caption Plot text.
 #'
 #' @return A `ggplot` object.
 #'
@@ -421,37 +564,93 @@ plot_depth_profile <- function(
     distance_col = "distance",
     depth_col = NULL,
     group_col = NULL,
-    depth_increases_down = TRUE
+    points = TRUE,
+    line = TRUE,
+    depth_increases_down = TRUE,
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL
 ) {
   optional_ggplot2()
   if (!is.data.frame(data) || !distance_col %in% names(data)) {
     bt_abort("`data` must contain `distance_col`.")
   }
-  if (is.null(depth_col)) {
-    numeric_cols <- names(data)[vapply(data, is.numeric, logical(1))]
-    depth_col <- setdiff(numeric_cols, c(distance_col, "x", "y"))[1]
+  depth_col <- terrain_value_column(data, depth_col, exclude = distance_col, context = "depth")
+  data <- data[order(data[[distance_col]]), , drop = FALSE]
+  finite <- is.finite(data[[distance_col]]) & is.finite(data[[depth_col]])
+  if (!any(finite)) {
+    bt_abort("No finite distance/value pairs were available for the depth profile.")
   }
-  if (is.na(depth_col) || !depth_col %in% names(data)) {
-    bt_abort("Could not identify a depth/value column.")
-  }
+  plot_data <- data[finite, , drop = FALSE]
   p <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[distance_col]], y = .data[[depth_col]]))
   if (!is.null(group_col)) {
     if (!group_col %in% names(data)) {
       bt_abort("`group_col` was not found in `data`.")
     }
     p <- ggplot2::ggplot(
-      data,
+      plot_data,
       ggplot2::aes(
         x = .data[[distance_col]],
         y = .data[[depth_col]],
         group = .data[[group_col]]
       )
     )
+  } else {
+    p <- ggplot2::ggplot(
+      plot_data,
+      ggplot2::aes(x = .data[[distance_col]], y = .data[[depth_col]])
+    )
+  }
+  if (isTRUE(line) && nrow(plot_data) >= 2) {
+    p <- p + ggplot2::geom_line(na.rm = TRUE)
+  } else if (isTRUE(line) && nrow(plot_data) == 1) {
+    bt_warn("Only one finite sample was available; drawing a point profile.")
+  }
+  if (isTRUE(points)) {
+    p <- p + ggplot2::geom_point(na.rm = TRUE, size = 1.8)
   }
   p <- p +
-    ggplot2::geom_line(na.rm = TRUE) +
-    ggplot2::labs(x = distance_col, y = depth_col)
-  orient_depth_axis(p, data[[depth_col]], depth_increases_down)
+    ggplot2::labs(
+      x = "Distance along transect (map units)",
+      y = depth_col,
+      title = title,
+      subtitle = subtitle,
+      caption = caption
+    )
+  orient_depth_axis(p, plot_data[[depth_col]], depth_increases_down)
+}
+
+pca_variance_axis_labels <- function(pca, components = c("PC1", "PC2")) {
+  out <- stats::setNames(components, components)
+  if (is.null(pca$variance) || !"component" %in% names(pca$variance)) {
+    return(out)
+  }
+  for (component in components) {
+    prop <- pca$variance$proportion[pca$variance$component == component][1]
+    if (is.finite(prop)) {
+      out[[component]] <- sprintf("%s (%.1f%%)", component, 100 * prop)
+    }
+  }
+  out
+}
+
+top_loading_vectors <- function(pca, top_n = 3) {
+  loadings <- pca$loadings
+  if (!is.numeric(top_n) || length(top_n) != 1 || top_n < 1) {
+    bt_abort("`top_loadings` must be one positive numeric value.")
+  }
+  loadings$loading_magnitude <- sqrt(loadings$PC1^2 + loadings$PC2^2)
+  loadings <- loadings[order(loadings$loading_magnitude, decreasing = TRUE), , drop = FALSE]
+  utils::head(loadings, as.integer(top_n))
+}
+
+pca_loading_scale <- function(scores, loadings) {
+  score_range <- max(abs(c(scores$PC1, scores$PC2)), na.rm = TRUE)
+  loading_range <- max(abs(c(loadings$PC1, loadings$PC2)), na.rm = TRUE)
+  if (!is.finite(score_range) || !is.finite(loading_range) || loading_range == 0) {
+    return(1)
+  }
+  0.75 * score_range / loading_range
 }
 
 #' Plot terrain summaries

@@ -12,13 +12,6 @@ corridors. The package is intended for analyses where terrain form, grid
 resolution, vertical sign convention, and coordinate reference system
 affect interpretation.
 
-<img src="man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
-
-*Study-area context for the example data. The package examples use
-reduced bathymetry and sampling rectangles from Hole-in-the-Wall, El
-Hoyo, and a broader slope clip along the southwest Puerto Rico shelf
-margin near La Parguera, Puerto Rico.*
-
 ## Installation
 
 ``` r
@@ -33,6 +26,13 @@ install.packages("path/to/blueterra", repos = NULL, type = "source")
 ```
 
 ## Example Data
+
+<img src="man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
+
+*Study-area context for the example data. The package examples use
+reduced bathymetry and sampling rectangles from Hole-in-the-Wall, El
+Hoyo, and a broader slope clip along the southwest Puerto Rico shelf
+margin near La Parguera, Puerto Rico.*
 
 The installed examples are reduced from analysis rasters and sampling
 rectangles used to test terrain workflows on real shelf-margin
@@ -539,54 +539,82 @@ positive_bands
 Transects convert the raster surface into cross-sectional profiles. They
 are useful for showing slope breaks, terraces, escarpments, and
 cross-shelf gradients that are not always obvious from cell-by-cell
-terrain metrics.
+terrain metrics. When `bathy` is supplied and `angle` is left unset,
+`make_transects()` estimates the transect direction from the
+slope-weighted mean aspect of the clipped bathymetry. An explicit
+`angle` remains the correct choice when the analysis requires a fixed
+survey bearing.
 
 ``` r
-hitw_transects <- make_transects(hitw_rect, spacing = 75)
+hitw_transects <- make_transects(
+  hitw_rect,
+  spacing = 75,
+  bathy = hitw_prepared
+)
 class(hitw_transects)
 #> [1] "SpatVector"
 #> attr(,"package")
 #> [1] "terra"
+unique(as.data.frame(hitw_transects)[, c("angle_deg", "angle_source", "mean_aspect_deg")])
+#>   angle_deg angle_source mean_aspect_deg
+#> 1  94.61515      surface        175.3849
+
+manual_transects <- make_transects(
+  hitw_rect,
+  spacing = 75,
+  angle = 90
+)
+unique(as.data.frame(manual_transects)[, c("angle_deg", "angle_source")])
+#>   angle_deg angle_source
+#> 1        90       manual
 
 transect_samples <- sample_transects(hitw_transects, hitw_prepared, n = 12)
 head(transect_samples)
-#> # A tibble: 6 × 5
-#>   transect_id distance       x       y focal_mean
-#>   <chr>          <dbl>   <dbl>   <dbl>      <dbl>
-#> 1 1_1              0   137475. 205617.        NaN
-#> 2 1_1             27.3 137502. 205617.        NaN
-#> 3 1_1             54.5 137530. 205617.        NaN
-#> 4 1_1             81.8 137557. 205617.        NaN
-#> 5 1_1            109.  137584. 205617.        NaN
-#> 6 1_1            136.  137612. 205617.        NaN
+#> # A tibble: 6 × 18
+#>   site_id site_name  feature_type source_name width_m height_m angle_deg zone_id
+#>   <chr>   <chr>      <chr>        <chr>         <dbl>    <dbl>     <dbl> <chr>  
+#> 1 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
+#> 2 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
+#> 3 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
+#> 4 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
+#> 5 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
+#> 6 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
+#> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
+#> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
+#> #   distance <dbl>, x <dbl>, y <dbl>, focal_mean <dbl>
 
 cross_sections <- extract_cross_sections(hitw_transects, hitw_prepared, n = 12)
 summarize_cross_sections(cross_sections)
 #> # A tibble: 4 × 6
-#>   transect_id focal_mean_mean focal_mean_sd focal_mean_min focal_mean_max
-#>   <chr>                 <dbl>         <dbl>          <dbl>          <dbl>
-#> 1 1_1                    NA           NA              NA             NA  
-#> 2 1_2                  -130.          30.3          -159.           -83.4
-#> 3 1_3                   -35.1          2.52          -38.5          -31.5
-#> 4 1_4                    NA           NA              NA             NA  
-#> # ℹ 1 more variable: focal_mean_median <dbl>
+#>   transect_id width_m_mean width_m_sd width_m_min width_m_max width_m_median
+#>   <chr>              <dbl>      <dbl>       <dbl>       <dbl>          <dbl>
+#> 1 1_1                  300          0         300         300            300
+#> 2 1_2                  300          0         300         300            300
+#> 3 1_3                  300          0         300         300            300
+#> 4 1_4                  300          0         300         300            300
 ```
 
 ``` r
 plot_transects(
   hitw_prepared,
   hitw_transects,
+  color_by = "transect_id",
+  show_legend = FALSE,
   contour_interval = 25,
-  title = "Transects Across Hole-in-the-Wall"
+  title = "Terrain-Oriented Transects Across Hole-in-the-Wall"
 )
 ```
 
 <img src="man/figures/README-plot-transects-1.png" alt="Transects over hillshaded Hole-in-the-Wall bathymetry." width="100%" />
 
 ``` r
-plot_cross_sections(cross_sections)
-#> Warning: Removed 29 rows containing missing values or values outside the scale range
-#> (`geom_line()`).
+plot_cross_sections(
+  cross_sections,
+  show_legend = TRUE,
+  mean_profile = TRUE,
+  normalize_distance = TRUE,
+  title = "Hole-in-the-Wall Cross-Sections"
+)
 ```
 
 <img src="man/figures/README-plot-cross-sections-1.png" alt="Bathymetric cross-section profiles with depth increasing downward." width="100%" />
@@ -659,11 +687,16 @@ plot_bathy(
 plot_isobath_corridors(
   hitw_corridors,
   hitw_prepared,
-  contour_interval = 25
+  isobaths = hitw_isobaths,
+  background_contours = FALSE,
+  title = "Isobath Corridors and Source Isobaths"
 )
 ```
 
 <img src="man/figures/README-plot-isobath-corridors-1.png" alt="Isobath corridors over hillshaded bathymetry." width="100%" />
+
+The black lines are the source isobaths. The corridor polygons buffer
+those depth horizons and define the terrain extraction zones.
 
 ## Model-Ready Terrain Tables
 
@@ -741,11 +774,12 @@ hoyo_cells$site <- "El Hoyo"
 
 comparison <- rbind(hitw_cells, hoyo_cells)
 
-pca <- terrain_pca(
+pca_set <- terrain_pca_by_group(
   comparison,
+  group = "site",
   vars = c("slope_deg", "tri", "bpi_3x3", "curvature")
 )
-pca$variance
+pca_set$overall$variance
 #> # A tibble: 4 × 3
 #>   component proportion cumulative
 #>   <chr>          <dbl>      <dbl>
@@ -753,6 +787,9 @@ pca$variance
 #> 2 PC2         0.234         0.968
 #> 3 PC3         0.0323        1.000
 #> 4 PC4         0.000144      1
+pca_axis_labels(pca_set$overall)
+#>                               PC1                               PC2 
+#> "PC1 (73.4%; bpi_3x3, curvature)"     "PC2 (23.4%; slope_deg, tri)"
 
 terrain_effect_size(
   comparison,
@@ -789,10 +826,32 @@ table(balanced$site)
 ```
 
 ``` r
-plot_process_pca(pca)
+plot_process_pca(
+  pca_set$overall,
+  color_col = "site",
+  title = "Overall Terrain PCA"
+)
 ```
 
 <img src="man/figures/README-plot-pca-1.png" alt="PCA scores for sampled terrain metrics." width="100%" />
+
+``` r
+plot_process_pca(
+  pca_set$groups[["Hole-in-the-Wall"]],
+  title = "Hole-in-the-Wall Terrain PCA"
+)
+```
+
+<img src="man/figures/README-plot-pca-hitw-1.png" alt="Hole-in-the-Wall PCA scores for sampled terrain metrics." width="100%" />
+
+``` r
+plot_process_pca(
+  pca_set$groups[["El Hoyo"]],
+  title = "El Hoyo Terrain PCA"
+)
+```
+
+<img src="man/figures/README-plot-pca-hoyo-1.png" alt="El Hoyo PCA scores for sampled terrain metrics." width="100%" />
 
 ## Plotting Guide
 
@@ -875,6 +934,117 @@ plot_depth_profile(
 ```
 
 <img src="man/figures/README-plotting-depth-profile-1.png" alt="Depth profile along one transect." width="100%" />
+
+## Custom Metrics and Process Groups
+
+Custom metrics should be raster layers on the same grid, CRS, and extent
+as the metric stack they extend. This keeps polygon summaries, PCA
+tables, and process group assignments aligned cell by cell. A custom
+metric can come from a precomputed raster, a quoted expression using
+existing layers, or a function that returns a single-layer
+`terra::SpatRaster`.
+
+``` r
+renamed <- rename_metric_layers(
+  hitw_metrics,
+  c(slope_deg = "local_slope", bpi_3x3 = "fine_bpi")
+)
+names(renamed)[1:4]
+#> [1] "local_slope" "aspect_deg"  "northness"   "eastness"
+
+slope_tri <- derive_custom_metric(
+  hitw_metrics,
+  name = "slope_tri_index",
+  expression = quote(slope_deg * tri)
+)
+
+relief_index <- derive_custom_metric(
+  hitw_metrics,
+  name = "relief_index",
+  fun = function(r) {
+    out <- r[["tri"]] + abs(r[["bpi_3x3"]])
+    names(out) <- "relief_index"
+    out
+  }
+)
+
+extended_metrics <- add_metric_layers(
+  hitw_metrics,
+  slope_tri,
+  relief_index
+)
+names(extended_metrics)
+#>  [1] "slope_deg"          "aspect_deg"         "northness"         
+#>  [4] "eastness"           "tri"                "rugosity_vrm_3x3"  
+#>  [7] "bpi_3x3"            "bpi_11x11"          "curvature"         
+#> [10] "surface_area_ratio" "slope_tri_index"    "relief_index"
+
+custom_catalog <- extend_metric_catalog(
+  metric_catalog(),
+  create_metric_catalog(
+    metric = "slope_tri_index",
+    label = "Slope-TRI index",
+    process_group = "custom_relief",
+    description = "Product of local slope and terrain ruggedness index.",
+    units = "index",
+    source_function = "derive_custom_metric",
+    interpretation_notes = "Example index for documentation; users should define metrics that match their own process model."
+  ),
+  create_metric_catalog(
+    metric = "relief_index",
+    label = "Relief index",
+    process_group = "custom_relief",
+    description = "Sum of TRI and absolute fine-scale BPI.",
+    units = "index",
+    source_function = "derive_custom_metric",
+    interpretation_notes = "Example index for documentation."
+  )
+)
+
+assign_process_groups(extended_metrics, catalog = custom_catalog)
+#> # A tibble: 12 × 7
+#>    metric        metric_standard label process_group description source_function
+#>    <chr>         <chr>           <chr> <chr>         <chr>       <chr>          
+#>  1 slope_deg     slope_deg       Slope slope_gradie… Local slop… derive_slope   
+#>  2 aspect_deg    aspect_deg      Aspe… orientation   Local down… derive_aspect  
+#>  3 northness     northness       Nort… orientation   Cosine tra… derive_northne…
+#>  4 eastness      eastness        East… orientation   Sine trans… derive_eastness
+#>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
+#>  6 rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… Vector rug… derive_rugosity
+#>  7 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
+#>  8 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
+#>  9 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
+#> 10 surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…
+#> 11 slope_tri_in… slope_tri_index Slop… custom_relief Product of… derive_custom_…
+#> 12 relief_index  relief_index    Reli… custom_relief Sum of TRI… derive_custom_…
+#> # ℹ 1 more variable: matched <lgl>
+summarize_process_groups(extended_metrics, catalog = custom_catalog)
+#> # A tibble: 7 × 3
+#>   process_group     n_metrics metrics                        
+#>   <chr>                 <int> <chr>                          
+#> 1 curvature                 1 curvature                      
+#> 2 custom_relief             2 slope_tri_index, relief_index  
+#> 3 orientation               3 aspect_deg, northness, eastness
+#> 4 seafloor_position         2 bpi_3x3, bpi_11x11             
+#> 5 seafloor_rugosity         2 tri, rugosity_vrm_3x3          
+#> 6 slope_gradient            1 slope_deg                      
+#> 7 surface_structure         1 surface_area_ratio
+```
+
+``` r
+plot_metric(
+  extended_metrics,
+  "slope_tri_index",
+  bathy = hitw_prepared,
+  hillshade = TRUE,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Custom Slope-TRI Index",
+  legend_title = "Index"
+)
+```
+
+<img src="man/figures/README-custom-metric-plot-1.png" alt="Custom Slope-TRI metric over hillshaded bathymetry." width="100%" />
 
 ## Function Cookbook
 
@@ -1286,6 +1456,23 @@ assign_process_groups(hitw_metrics)
 #>  9 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
 #> 10 surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…
 #> # ℹ 1 more variable: matched <lgl>
+assign_process_groups(extended_metrics, catalog = custom_catalog)
+#> # A tibble: 12 × 7
+#>    metric        metric_standard label process_group description source_function
+#>    <chr>         <chr>           <chr> <chr>         <chr>       <chr>          
+#>  1 slope_deg     slope_deg       Slope slope_gradie… Local slop… derive_slope   
+#>  2 aspect_deg    aspect_deg      Aspe… orientation   Local down… derive_aspect  
+#>  3 northness     northness       Nort… orientation   Cosine tra… derive_northne…
+#>  4 eastness      eastness        East… orientation   Sine trans… derive_eastness
+#>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
+#>  6 rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… Vector rug… derive_rugosity
+#>  7 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
+#>  8 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
+#>  9 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
+#> 10 surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…
+#> 11 slope_tri_in… slope_tri_index Slop… custom_relief Product of… derive_custom_…
+#> 12 relief_index  relief_index    Reli… custom_relief Sum of TRI… derive_custom_…
+#> # ℹ 1 more variable: matched <lgl>
 select_process_representatives(metrics_available = names(hitw_metrics))
 #> # A tibble: 6 × 9
 #>   metric             label       process_group description units source_function
@@ -1308,6 +1495,36 @@ summarize_process_groups(hitw_metrics)
 #> 4 seafloor_rugosity         2 tri, rugosity_vrm_3x3          
 #> 5 slope_gradient            1 slope_deg                      
 #> 6 surface_structure         1 surface_area_ratio
+create_metric_catalog(metric = "custom_index", process_group = "custom_relief")
+#> # A tibble: 1 × 9
+#>   metric       label        process_group description units source_function
+#>   <chr>        <chr>        <chr>         <chr>       <chr> <chr>          
+#> 1 custom_index custom_index custom_relief <NA>        <NA>  <NA>           
+#> # ℹ 3 more variables: requires_optional_dependency <lgl>,
+#> #   scale_sensitive <lgl>, interpretation_notes <chr>
+extend_metric_catalog(metric_catalog(), create_metric_catalog("custom_index", process_group = "custom_relief"))
+#> # A tibble: 17 × 9
+#>    metric             label      process_group description units source_function
+#>    <chr>              <chr>      <chr>         <chr>       <chr> <chr>          
+#>  1 bathy              Bathymetry base_bathyme… Input bath… inpu… as_bathy       
+#>  2 slope_deg          Slope      slope_gradie… Local slop… degr… derive_slope   
+#>  3 slope_rad          Slope      slope_gradie… Local slop… radi… derive_slope   
+#>  4 aspect_deg         Aspect     orientation   Local down… degr… derive_aspect  
+#>  5 aspect_rad         Aspect     orientation   Local down… radi… derive_aspect  
+#>  6 northness          Northness  orientation   Cosine tra… unit… derive_northne…
+#>  7 eastness           Eastness   orientation   Sine trans… unit… derive_eastness
+#>  8 hillshade          Hillshade  surface_stru… Illuminati… rela… derive_hillsha…
+#>  9 roughness          Roughness  seafloor_rug… Local rang… inpu… derive_roughne…
+#> 10 tri                Terrain R… seafloor_rug… Local terr… inpu… derive_tri     
+#> 11 tpi                Topograph… seafloor_pos… Cell posit… inpu… derive_tpi     
+#> 12 bpi_3x3            Fine BPI   seafloor_pos… Fine-scale… inpu… derive_bpi     
+#> 13 bpi_11x11          Broad BPI  seafloor_pos… Broad-scal… inpu… derive_bpi     
+#> 14 curvature          Curvature  curvature     Laplacian-… inpu… derive_curvatu…
+#> 15 surface_area_ratio Surface A… surface_stru… Approximat… unit… derive_surface…
+#> 16 rugosity_vrm_3x3   Vector Ru… seafloor_rug… Vector rug… unit… derive_rugosity
+#> 17 custom_index       custom_in… custom_relief <NA>        <NA>  <NA>           
+#> # ℹ 3 more variables: requires_optional_dependency <lgl>,
+#> #   scale_sensitive <lgl>, interpretation_notes <chr>
 standardize_metric_names(c("Slope degrees", "BPI 3 x 3"))
 #> [1] "slope_degrees" "bpi_3_x_3"
 rename_metric_layers(c("slope_old", "bpi_old"), c(slope_old = "slope_deg"))
@@ -1330,74 +1547,81 @@ These functions work with `terra::SpatVector` objects or local vector
 paths and return vectors, extracted cells, or summary tables.
 
 ``` r
-make_transects(hitw_rect, spacing = 100)
+estimate_surface_orientation(hitw_prepared, hitw_rect)
+#> [1] 94.61515
+make_transects(hitw_rect, spacing = 100, bathy = hitw_prepared)
 #> class       : SpatVector
 #> geometry    : lines
-#> dimensions  : 3, 10  (geometries, attributes)
-#> extent      : 137475.2, 137775.2, 205616.7, 205816.7  (xmin, xmax, ymin, ymax)
+#> dimensions  : 3, 14  (geometries, attributes)
+#> extent      : 137537.1, 137762, 205591, 205891  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset transect_id
-#> type        :   <chr>            <chr>           <chr>            <chr>   <num>    <num>     <num>   <chr>    <num>       <chr>
-#> values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0       1 -124.264         1_1
-#>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0       1 -24.2641         1_2
-#>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0       1  75.7359         1_3
+#> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset angle_source   (and 4 more)
+#> type        :   <chr>            <chr>           <chr>            <chr>   <num>    <num>     <num>   <chr>    <num>        <chr>
+#> values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300   94.6151       1 -124.264      surface
+#>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300   94.6151       1 -24.2641      surface
+#>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300   94.6151       1  75.7359      surface
 sample_transects(hitw_transects, hitw_prepared, n = 5)
-#> # A tibble: 20 × 5
-#>    transect_id distance       x       y focal_mean
-#>    <chr>          <dbl>   <dbl>   <dbl>      <dbl>
-#>  1 1_1                0 137475. 205617.      NaN  
-#>  2 1_1               75 137550. 205617.      NaN  
-#>  3 1_1              150 137625. 205617.      NaN  
-#>  4 1_1              225 137700. 205617.      NaN  
-#>  5 1_1              300 137775. 205617.      NaN  
-#>  6 1_2                0 137475. 205692.      -83.4
-#>  7 1_2               75 137550. 205692.     -114. 
-#>  8 1_2              150 137625. 205692.     -153. 
-#>  9 1_2              225 137700. 205692.     -158. 
-#> 10 1_2              300 137775. 205692.      NaN  
-#> 11 1_3                0 137475. 205767.      NaN  
-#> 12 1_3               75 137550. 205767.      -33.9
-#> 13 1_3              150 137625. 205767.      -34.3
-#> 14 1_3              225 137700. 205767.      -37.7
-#> 15 1_3              300 137775. 205767.      NaN  
-#> 16 1_4                0 137475. 205842.      NaN  
-#> 17 1_4               75 137550. 205842.      NaN  
-#> 18 1_4              150 137625. 205842.      NaN  
-#> 19 1_4              225 137700. 205842.      NaN  
-#> 20 1_4              300 137775. 205842.      NaN
+#> # A tibble: 20 × 18
+#>    site_id site_name feature_type source_name width_m height_m angle_deg zone_id
+#>    <chr>   <chr>     <chr>        <chr>         <dbl>    <dbl>     <dbl> <chr>  
+#>  1 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  2 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  3 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  4 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  5 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  6 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  7 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  8 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  9 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 10 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 11 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 12 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 13 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 14 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 15 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 16 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 17 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 18 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 19 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 20 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
+#> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
+#> #   distance <dbl>, x <dbl>, y <dbl>, focal_mean <dbl>
 extract_cross_sections(hitw_transects, hitw_prepared, n = 5)
-#> # A tibble: 20 × 5
-#>    transect_id distance       x       y focal_mean
-#>    <chr>          <dbl>   <dbl>   <dbl>      <dbl>
-#>  1 1_1                0 137475. 205617.      NaN  
-#>  2 1_1               75 137550. 205617.      NaN  
-#>  3 1_1              150 137625. 205617.      NaN  
-#>  4 1_1              225 137700. 205617.      NaN  
-#>  5 1_1              300 137775. 205617.      NaN  
-#>  6 1_2                0 137475. 205692.      -83.4
-#>  7 1_2               75 137550. 205692.     -114. 
-#>  8 1_2              150 137625. 205692.     -153. 
-#>  9 1_2              225 137700. 205692.     -158. 
-#> 10 1_2              300 137775. 205692.      NaN  
-#> 11 1_3                0 137475. 205767.      NaN  
-#> 12 1_3               75 137550. 205767.      -33.9
-#> 13 1_3              150 137625. 205767.      -34.3
-#> 14 1_3              225 137700. 205767.      -37.7
-#> 15 1_3              300 137775. 205767.      NaN  
-#> 16 1_4                0 137475. 205842.      NaN  
-#> 17 1_4               75 137550. 205842.      NaN  
-#> 18 1_4              150 137625. 205842.      NaN  
-#> 19 1_4              225 137700. 205842.      NaN  
-#> 20 1_4              300 137775. 205842.      NaN
+#> # A tibble: 20 × 18
+#>    site_id site_name feature_type source_name width_m height_m angle_deg zone_id
+#>    <chr>   <chr>     <chr>        <chr>         <dbl>    <dbl>     <dbl> <chr>  
+#>  1 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  2 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  3 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  4 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  5 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  6 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  7 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  8 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#>  9 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 10 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 11 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 12 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 13 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 14 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 15 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 16 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 17 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 18 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 19 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> 20 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
+#> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
+#> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
+#> #   distance <dbl>, x <dbl>, y <dbl>, focal_mean <dbl>
 summarize_cross_sections(cross_sections)
 #> # A tibble: 4 × 6
-#>   transect_id focal_mean_mean focal_mean_sd focal_mean_min focal_mean_max
-#>   <chr>                 <dbl>         <dbl>          <dbl>          <dbl>
-#> 1 1_1                    NA           NA              NA             NA  
-#> 2 1_2                  -130.          30.3          -159.           -83.4
-#> 3 1_3                   -35.1          2.52          -38.5          -31.5
-#> 4 1_4                    NA           NA              NA             NA  
-#> # ℹ 1 more variable: focal_mean_median <dbl>
+#>   transect_id width_m_mean width_m_sd width_m_min width_m_max width_m_median
+#>   <chr>              <dbl>      <dbl>       <dbl>       <dbl>          <dbl>
+#> 1 1_1                  300          0         300         300            300
+#> 2 1_2                  300          0         300         300            300
+#> 3 1_3                  300          0         300         300            300
+#> 4 1_4                  300          0         300         300            300
 extract_isobaths(hitw_prepared, depths = c(-50, -80))
 #> class       : SpatVector
 #> geometry    : lines
@@ -1508,37 +1732,37 @@ extract_terrain_points(hitw_metrics, terra::centroids(hitw_rect))
 #> # ℹ 10 more variables: slope_deg <dbl>, aspect_deg <dbl>, northness <dbl>,
 #> #   eastness <dbl>, tri <dbl>, rugosity_vrm_3x3 <dbl>, bpi_3x3 <dbl>,
 #> #   bpi_11x11 <dbl>, curvature <dbl>, surface_area_ratio <dbl>
-sample_terrain_cells(hitw_metrics, size = 10)
+sample_terrain_cells(hitw_metrics, size = 10, seed = 42)
 #> # A tibble: 10 × 12
 #>          x      y slope_deg aspect_deg northness eastness   tri rugosity_vrm_3x3
 #>      <dbl>  <dbl>     <dbl>      <dbl>     <dbl>    <dbl> <dbl>            <dbl>
-#>  1 137760. 2.06e5      80.5       159.    -0.935   0.353  19.1          0.00513 
-#>  2 137556. 2.06e5      62.1       145.    -0.816   0.578   5.85         0.0180  
-#>  3 137516. 2.06e5      38.4       175.    -0.996   0.0944  2.44         0.000209
-#>  4 137512. 2.06e5      35.2       173.    -0.992   0.128   2.19         0.000359
-#>  5 137696. 2.06e5      43.3       197.    -0.957  -0.291   2.96         0.00373 
-#>  6 137692. 2.06e5      46.9       193.    -0.974  -0.228   3.34         0.00503 
-#>  7 137656. 2.06e5      45.0       160.    -0.942   0.336   3.15         0.000798
-#>  8 137564. 2.06e5      74.4       169.    -0.983   0.185  11.0          0.00615 
-#>  9 137548. 2.06e5      47.6       175.    -0.997   0.0820  3.36         0.00196 
-#> 10 137564. 2.06e5      45.5       148.    -0.851   0.525   3.15         0.00846 
+#>  1 137564. 2.06e5      75.5       161.    -0.944   0.329  12.3          0.00724 
+#>  2 137540. 2.06e5      48.2       164.    -0.961   0.278   3.49         0.00927 
+#>  3 137572. 2.06e5      78.6       165.    -0.966   0.258  15.7          0.00234 
+#>  4 137728. 2.06e5      38.4       174.    -0.994   0.106   2.45         0.000596
+#>  5 137756. 2.06e5      63.3       178.    -0.999   0.0319  6.27         0.0329  
+#>  6 137580. 2.06e5      71.6       176.    -0.998   0.0624  9.15         0.00723 
+#>  7 137524. 2.06e5      44.8       166.    -0.970   0.243   3.15         0.00382 
+#>  8 137492. 2.06e5      47.6       170.    -0.984   0.178   3.46         0.00241 
+#>  9 137604. 2.06e5      53.8       172.    -0.990   0.143   4.24         0.00414 
+#> 10 137568. 2.06e5      37.7       153.    -0.893   0.450   2.44         0.0346  
 #> # ℹ 4 more variables: bpi_3x3 <dbl>, bpi_11x11 <dbl>, curvature <dbl>,
 #> #   surface_area_ratio <dbl>
 terrain_pca(terrain_cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
 #> $scores
 #> # A tibble: 100 × 5
 #>    row_id     PC1    PC2     PC3      PC4
-#>    <chr>    <dbl>  <dbl>   <dbl>    <dbl>
-#>  1 1       0.352   0.736  0.169  -0.00942
-#>  2 2      -0.124   1.56  -0.328   0.0748 
-#>  3 3      -0.221   0.251  0.134   0.0111 
-#>  4 4      -0.442  -0.122  0.195  -0.0215 
-#>  5 5      -0.0705  0.231  0.208   0.0314 
-#>  6 6      -0.348  -0.204  0.249   0.0124 
-#>  7 7       0.383   0.796  0.174   0.0231 
-#>  8 8      -0.621   0.370 -0.0515  0.00393
-#>  9 9       0.0587  0.146  0.300   0.0163 
-#> 10 10      0.206   0.970  0.0431 -0.00602
+#>     <int>   <dbl>  <dbl>   <dbl>    <dbl>
+#>  1      1  0.352   0.736  0.169  -0.00942
+#>  2      2 -0.124   1.56  -0.328   0.0748 
+#>  3      3 -0.221   0.251  0.134   0.0111 
+#>  4      4 -0.442  -0.122  0.195  -0.0215 
+#>  5      5 -0.0705  0.231  0.208   0.0314 
+#>  6      6 -0.348  -0.204  0.249   0.0124 
+#>  7      7  0.383   0.796  0.174   0.0231 
+#>  8      8 -0.621   0.370 -0.0515  0.00393
+#>  9      9  0.0587  0.146  0.300   0.0163 
+#> 10     10  0.206   0.970  0.0431 -0.00602
 #> # ℹ 90 more rows
 #> 
 #> $loadings
@@ -1569,6 +1793,186 @@ terrain_pca(terrain_cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
 #> tri        0.4909682 -0.5056483 -0.709256942 -0.01498749
 #> bpi_3x3   -0.5126137 -0.4866339 -0.022852027  0.70703071
 #> curvature  0.5118622  0.4881723 -0.008641577  0.70683110
+#> 
+#> $vars
+#> [1] "slope_deg" "tri"       "bpi_3x3"   "curvature"
+#> 
+#> $complete_rows
+#>   [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#>  [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#>  [31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#>  [46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#>  [61] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#>  [76] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#>  [91] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+pca_axis_labels(pca_set$overall)
+#>                               PC1                               PC2 
+#> "PC1 (73.4%; bpi_3x3, curvature)"     "PC2 (23.4%; slope_deg, tri)"
+terrain_pca_by_group(comparison, group = "site", vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
+#> $overall
+#> $overall$scores
+#> # A tibble: 60 × 6
+#>    row_id      PC1    PC2     PC3       PC4 site            
+#>     <int>    <dbl>  <dbl>   <dbl>     <dbl> <chr>           
+#>  1      1  0.00271 0.428  -0.308  -0.0102   Hole-in-the-Wall
+#>  2      2  0.313   0.0785 -0.215  -0.0905   Hole-in-the-Wall
+#>  3      3 -3.70    1.89    1.35   -0.00150  Hole-in-the-Wall
+#>  4      4 -0.932   3.77    1.15   -0.000698 Hole-in-the-Wall
+#>  5      5 -0.115   2.03   -0.0969  0.0347   Hole-in-the-Wall
+#>  6      6  0.151   0.526  -0.309  -0.00717  Hole-in-the-Wall
+#>  7      7  0.487   0.784  -0.247   0.00719  Hole-in-the-Wall
+#>  8      8  0.00662 0.499  -0.327   0.0150   Hole-in-the-Wall
+#>  9      9  0.218   0.331  -0.270   0.0175   Hole-in-the-Wall
+#> 10     10  0.581   0.477  -0.211   0.00287  Hole-in-the-Wall
+#> # ℹ 50 more rows
+#> 
+#> $overall$loadings
+#> # A tibble: 4 × 5
+#>   variable     PC1    PC2     PC3     PC4
+#>   <chr>      <dbl>  <dbl>   <dbl>   <dbl>
+#> 1 slope_deg -0.463  0.577 -0.672   0.0156
+#> 2 tri       -0.501  0.455  0.735  -0.0332
+#> 3 bpi_3x3   -0.520 -0.471 -0.0300  0.712 
+#> 4 curvature  0.514  0.487  0.0802  0.701 
+#> 
+#> $overall$variance
+#> # A tibble: 4 × 3
+#>   component proportion cumulative
+#>   <chr>          <dbl>      <dbl>
+#> 1 PC1         0.734         0.734
+#> 2 PC2         0.234         0.968
+#> 3 PC3         0.0323        1.000
+#> 4 PC4         0.000144      1    
+#> 
+#> $overall$model
+#> Standard deviations (1, .., p=4):
+#> [1] 1.71292914 0.96746341 0.35959847 0.02402639
+#> 
+#> Rotation (n x k) = (4 x 4):
+#>                  PC1        PC2         PC3         PC4
+#> slope_deg -0.4632561  0.5772409 -0.67226726  0.01560311
+#> tri       -0.5008467  0.4553379  0.73533587 -0.03318226
+#> bpi_3x3   -0.5195018 -0.4710937 -0.02998655  0.71224252
+#> curvature  0.5144552  0.4873716  0.08024145  0.70097509
+#> 
+#> $overall$vars
+#> [1] "slope_deg" "tri"       "bpi_3x3"   "curvature"
+#> 
+#> $overall$complete_rows
+#>  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> [31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> [46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> 
+#> 
+#> $groups
+#> $groups$`El Hoyo`
+#> $groups$`El Hoyo`$scores
+#> # A tibble: 21 × 6
+#>    row_id     PC1     PC2      PC3      PC4 site   
+#>     <int>   <dbl>   <dbl>    <dbl>    <dbl> <chr>  
+#>  1      1  0.253   0.256  -0.0601   0.0100  El Hoyo
+#>  2      2  1.54    0.129   0.0733   0.0174  El Hoyo
+#>  3      3 -4.62   -0.281   0.207   -0.0289  El Hoyo
+#>  4      4 -0.384   0.0859 -0.181   -0.0217  El Hoyo
+#>  5      5 -0.0783  0.536  -0.0447  -0.0293  El Hoyo
+#>  6      6  1.08   -1.03    0.00954 -0.0109  El Hoyo
+#>  7      7  1.38   -0.605   0.0616   0.00889 El Hoyo
+#>  8      8 -2.90    0.585   0.105    0.0356  El Hoyo
+#>  9      9 -0.657   0.0513 -0.153    0.00799 El Hoyo
+#> 10     10  1.81   -0.648   0.161   -0.0133  El Hoyo
+#> # ℹ 11 more rows
+#> 
+#> $groups$`El Hoyo`$loadings
+#> # A tibble: 4 × 5
+#>   variable     PC1    PC2     PC3    PC4
+#>   <chr>      <dbl>  <dbl>   <dbl>  <dbl>
+#> 1 slope_deg -0.482  0.609 -0.617  -0.124
+#> 2 tri       -0.513  0.387  0.750   0.159
+#> 3 bpi_3x3    0.503  0.485 -0.0577  0.713
+#> 4 curvature -0.502 -0.494 -0.231   0.671
+#> 
+#> $groups$`El Hoyo`$variance
+#> # A tibble: 4 × 3
+#>   component proportion cumulative
+#>   <chr>          <dbl>      <dbl>
+#> 1 PC1        0.873          0.873
+#> 2 PC2        0.124          0.997
+#> 3 PC3        0.00318        1.000
+#> 4 PC4        0.0000774      1    
+#> 
+#> $groups$`El Hoyo`$model
+#> Standard deviations (1, .., p=4):
+#> [1] 1.86830682 0.70456919 0.11270360 0.01760044
+#> 
+#> Rotation (n x k) = (4 x 4):
+#>                  PC1        PC2        PC3        PC4
+#> slope_deg -0.4820269  0.6090108 -0.6174660 -0.1244653
+#> tri       -0.5130162  0.3865783  0.7496345  0.1594355
+#> bpi_3x3    0.5029299  0.4852718 -0.0576920  0.7129126
+#> curvature -0.5015236 -0.4941400 -0.2312044  0.6714494
+#> 
+#> $groups$`El Hoyo`$vars
+#> [1] "slope_deg" "tri"       "bpi_3x3"   "curvature"
+#> 
+#> $groups$`El Hoyo`$complete_rows
+#>  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> [16] TRUE TRUE TRUE TRUE TRUE TRUE
+#> 
+#> 
+#> $groups$`Hole-in-the-Wall`
+#> $groups$`Hole-in-the-Wall`$scores
+#> # A tibble: 39 × 6
+#>    row_id     PC1     PC2     PC3      PC4 site            
+#>     <int>   <dbl>   <dbl>   <dbl>    <dbl> <chr>           
+#>  1      1  0.450   0.145  -0.253  -0.0153  Hole-in-the-Wall
+#>  2      2  0.826  -0.228  -0.0147 -0.0773  Hole-in-the-Wall
+#>  3      3 -3.11    1.96    0.759   0.00423 Hole-in-the-Wall
+#>  4      4 -0.785   3.51    0.249  -0.0112  Hole-in-the-Wall
+#>  5      5  0.0955  1.72   -0.515   0.0118  Hole-in-the-Wall
+#>  6      6  0.576   0.225  -0.269  -0.0134  Hole-in-the-Wall
+#>  7      7  0.867   0.442  -0.246  -0.00186 Hole-in-the-Wall
+#>  8      8  0.438   0.213  -0.296   0.00489 Hole-in-the-Wall
+#>  9      9  0.681   0.0286 -0.162   0.0100  Hole-in-the-Wall
+#> 10     10  1.02    0.133  -0.105  -0.00184 Hole-in-the-Wall
+#> # ℹ 29 more rows
+#> 
+#> $groups$`Hole-in-the-Wall`$loadings
+#> # A tibble: 4 × 5
+#>   variable     PC1    PC2     PC3      PC4
+#>   <chr>      <dbl>  <dbl>   <dbl>    <dbl>
+#> 1 slope_deg -0.503  0.463 -0.730  -0.00458
+#> 2 tri       -0.483  0.549  0.682  -0.0206 
+#> 3 bpi_3x3   -0.510 -0.477  0.0448  0.714  
+#> 4 curvature  0.503  0.506 -0.0305  0.700  
+#> 
+#> $groups$`Hole-in-the-Wall`$variance
+#> # A tibble: 4 × 3
+#>   component proportion cumulative
+#>   <chr>          <dbl>      <dbl>
+#> 1 PC1         0.791         0.791
+#> 2 PC2         0.193         0.984
+#> 3 PC3         0.0154        1.000
+#> 4 PC4         0.000122      1    
+#> 
+#> $groups$`Hole-in-the-Wall`$model
+#> Standard deviations (1, .., p=4):
+#> [1] 1.77915117 0.87888221 0.24839162 0.02210872
+#> 
+#> Rotation (n x k) = (4 x 4):
+#>                  PC1        PC2         PC3          PC4
+#> slope_deg -0.5032797  0.4627120 -0.72978497 -0.004583079
+#> tri       -0.4828993  0.5494592  0.68152810 -0.020551019
+#> bpi_3x3   -0.5101358 -0.4771661  0.04477657  0.714191180
+#> curvature  0.5032686  0.5062654 -0.03046964  0.699633911
+#> 
+#> $groups$`Hole-in-the-Wall`$vars
+#> [1] "slope_deg" "tri"       "bpi_3x3"   "curvature"
+#> 
+#> $groups$`Hole-in-the-Wall`$complete_rows
+#>  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#> [31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 terrain_effect_size(comparison, group = "site", vars = c("slope_deg", "tri"))
 #> # A tibble: 2 × 7
 #>   variable  group_1          group_2 mean_1 mean_2 effect_size method  
@@ -1721,6 +2125,33 @@ balance_samples(comparison, group = "site", seed = 42)
 #>  9 135754. 204753.     58.4  4.71  -0.454      1.31   El Hoyo
 #> 10 135698. 204753.     12.0  0.616  0.0421    -0.135  El Hoyo
 #> # ℹ 32 more rows
+derive_custom_metric(hitw_metrics, "slope_tri_index", expression = quote(slope_deg * tri))
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : slope_tri_index
+#> min value   :       11.522078
+#> max value   :     1759.994854
+add_metric_layers(hitw_metrics, slope_tri)
+#> class       : SpatRaster
+#> size        : 37, 75, 11  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varnames    : laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#>               ...
+#> names       : slope_deg, aspect_deg, northness,  eastness,       tri, rugos~m_3x3, ...
+#> min values  : 10.633082,  87.129591,        -1, -0.631231,  1.047873,    0.000016, ...
+#> max values  : 81.670015,  219.14099,  0.050077,  0.998745, 21.578462,    0.088559, ...
 ```
 
 ``` r
@@ -1730,12 +2161,12 @@ invisible(list(
   plot_terrain_map(hitw_prepared, hitw_metrics[["tri"]]),
   plot_sampling_rectangles(slope, rectangles),
   plot_transects(hitw_prepared, hitw_transects),
-  plot_isobath_corridors(hitw_corridors, hitw_prepared),
+  plot_isobath_corridors(hitw_corridors, hitw_prepared, isobaths = hitw_isobaths),
   plot_cross_sections(cross_sections),
   plot_depth_profile(transect_samples),
   plot_metric_stack(hitw_metrics[[c("slope_deg", "tri")]]),
   plot_process_density(comparison, value = "slope_deg", group = "site"),
-  plot_process_pca(pca),
+  plot_process_pca(pca_set$overall),
   plot_terrain_summary(sampling_summary, value = "slope_deg_mean"),
   plot_hillshade(hitw_prepared)
 ))
@@ -1759,11 +2190,9 @@ the input raster.
 
 ``` r
 citation("blueterra")
-#> Warning in citation("blueterra"): could not determine year for 'blueterra' from
-#> package DESCRIPTION file
 #> To cite package 'blueterra' in publications use:
 #> 
-#>   Cordero E (????). _blueterra: Process-Oriented Geomorphometry for
+#>   Cordero E (2026). _blueterra: Process-Oriented Geomorphometry for
 #>   Submerged Terrain_. R package version 0.1.0,
 #>   <https://github.com/el-cordero/blueterra>.
 #> 
@@ -1772,6 +2201,7 @@ citation("blueterra")
 #>   @Manual{,
 #>     title = {blueterra: Process-Oriented Geomorphometry for Submerged Terrain},
 #>     author = {Elvin Cordero},
+#>     year = {2026},
 #>     note = {R package version 0.1.0},
 #>     url = {https://github.com/el-cordero/blueterra},
 #>   }

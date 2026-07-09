@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 13:17:36 AST
-- Git commit: 9c44c8e013f0db1a4d4e09932d9b6f4d3e8219a3
-- Working tree dirty at proof start: FALSE
-- Dirty paths at proof start: none
+- Date/time: 2026-07-09 15:42:13 AST
+- Git commit: af4af071a3bd71790e325bafa69cb64d6a049e50
+- Working tree dirty at proof start: TRUE
+- Dirty paths at proof start:  M NAMESPACE;  M R/isobath-corridors.R;  M R/modeling-helpers.R;  M R/plotting.R;  M R/process-groups.R;  M R/summaries.R;  M R/transects.R;  M R/utils.R;  M README.Rmd;  M README.md;  M _pkgdown.yml;  M man/assign_process_groups.Rd;  M man/figures/README-plot-cross-sections-1.png;  M man/figures/README-plot-isobath-corridors-1.png;  M man/figures/README-plot-pca-1.png;  M man/figures/README-plot-transects-1.png;  M man/figures/README-plotting-depth-profile-1.png;  M man/make_transects.Rd;  M man/plot_bathy.Rd;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M man/plot_isobath_corridors.Rd;  M man/plot_process_pca.Rd;  M man/sample_terrain_cells.Rd;  M man/sample_transects.Rd;  M man/select_process_representatives.Rd;  M man/summarize_cross_sections.Rd;  M man/summarize_process_groups.Rd;  M man/terrain_pca.Rd;  M qa/visual-proof/visual-proof.R;  M tests/testthat/test-plotting.R;  M tests/testthat/test-process-groups.R;  M tests/testthat/test-real-examples.R;  M tests/testthat/test-summaries.R;  M tests/testthat/test-transects.R;  M vignettes/blueterra.Rmd;  M vignettes/isobath-corridors.Rmd;  M vignettes/process-groups.Rmd; ?? R/custom-metrics.R; ?? inst/CITATION; ?? man/add_metric_layers.Rd; ?? man/create_metric_catalog.Rd; ?? man/derive_custom_metric.Rd; ?? man/estimate_surface_orientation.Rd; ?? man/figures/README-custom-metric-plot-1.png; ?? man/figures/README-plot-pca-hitw-1.png; ?? man/figures/README-plot-pca-hoyo-1.png; ?? man/pca_axis_labels.Rd; ?? man/terrain_pca_by_group.Rd
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 3730050 bytes
-- Package tarball size: 3.73 MB
+- Package tarball size: 3916673 bytes
+- Package tarball size: 3.917 MB
 
 ## Example Files
 
@@ -49,13 +49,16 @@
 - [14-process-group-summary.png](figures/14-process-group-summary.png)
 - [15-sampling-rectangle-summary.png](figures/15-sampling-rectangle-summary.png)
 - [16-depth-band-summary.png](figures/16-depth-band-summary.png)
-- [17-transects-over-bathymetry.png](figures/17-transects-over-bathymetry.png)
-- [18-cross-sections.png](figures/18-cross-sections.png)
-- [19-isobaths-over-bathymetry.png](figures/19-isobaths-over-bathymetry.png)
-- [20-isobath-corridors.png](figures/20-isobath-corridors.png)
-- [21-isobath-terrain-summary.png](figures/21-isobath-terrain-summary.png)
-- [22-pca-plot.png](figures/22-pca-plot.png)
-- [23-correlation-plot.png](figures/23-correlation-plot.png)
+- [17-transects-over-bathymetry-auto-orientation.png](figures/17-transects-over-bathymetry-auto-orientation.png)
+- [18-cross-sections-with-legend.png](figures/18-cross-sections-with-legend.png)
+- [19-depth-profile-single-transect.png](figures/19-depth-profile-single-transect.png)
+- [20-isobaths-over-bathymetry.png](figures/20-isobaths-over-bathymetry.png)
+- [21-isobath-corridors-source-isobaths.png](figures/21-isobath-corridors-source-isobaths.png)
+- [22-isobath-terrain-summary.png](figures/22-isobath-terrain-summary.png)
+- [23-pca-overall.png](figures/23-pca-overall.png)
+- [24-pca-hole-in-the-wall.png](figures/24-pca-hole-in-the-wall.png)
+- [25-pca-el-hoyo.png](figures/25-pca-el-hoyo.png)
+- [26-correlation-plot.png](figures/26-correlation-plot.png)
 
 ## Screenshots
 
@@ -108,6 +111,13 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
 3 [-100,-60)  slope_deg     791  43.5  9.79  18.8  76.5   40.9
 4 [-60,-30)   slope_deg     521  45.7  4.87  10.6  55.5   45.5
 5 [-30,-20]   slope_deg       4  NA   NA     NA    NA     NA  
+# A tibble: 1 × 5
+  bearing_deg transect_angle_deg orientation_weight min_slope
+        <dbl>              <dbl> <chr>                  <dbl>
+1        175.               94.6 slope                      0
+# ℹ 1 more variable: n_orientation_cells <int>
+  angle_deg angle_source mean_aspect_deg
+1  94.61515      surface        175.3849
 # A tibble: 3 × 3
   contour_value slope_deg_mean bpi_3x3_mean
           <dbl>          <dbl>        <dbl>
@@ -121,6 +131,22 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
 2 PC2         0.257         0.968
 3 PC3         0.0317        1.000
 4 PC4         0.000138      1    
+                              PC1                               PC2 
+"PC1 (71.1%; bpi_3x3, curvature)"     "PC2 (25.7%; slope_deg, tri)" 
+# A tibble: 4 × 3
+  component proportion cumulative
+  <chr>          <dbl>      <dbl>
+1 PC1         0.779         0.779
+2 PC2         0.206         0.984
+3 PC3         0.0153        1.000
+4 PC4         0.000168      1    
+# A tibble: 4 × 3
+  component proportion cumulative
+  <chr>          <dbl>      <dbl>
+1 PC1       0.611           0.611
+2 PC2       0.369           0.980
+3 PC3       0.0201          1.000
+4 PC4       0.00000622      1    
 # A tibble: 4 × 7
   variable  group_1          group_2 mean_1  mean_2 effect_size method  
   <chr>     <chr>            <chr>    <dbl>   <dbl>       <dbl> <chr>   

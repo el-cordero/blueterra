@@ -62,6 +62,9 @@ and the feature scale of the analysis.
 
 ```{r reps}
 select_process_representatives(metrics_available = names(terrain))
+select_process_representatives(
+  representatives = c(orientation = "northness", slope_gradient = "slope_deg")
+)
 ```
 
 ```{r pca, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="PCA scores for sampled terrain metrics."}
@@ -71,5 +74,38 @@ cells <- sample_terrain_cells(
   method = "regular"
 )
 pca <- terrain_pca(cells, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
-plot_process_pca(pca)
+pca_axis_labels(pca)
+plot_process_pca(pca, title = "Terrain PCA with Dominant Loading Labels")
+```
+
+## Custom Metrics
+
+Custom metrics can be added to a stack when they share the same grid, CRS, and
+extent. Catalog rows then place those layers into process groups for summaries
+and model-ready tables.
+
+```{r custom}
+slope_tri <- derive_custom_metric(
+  terrain,
+  name = "slope_tri_index",
+  expression = quote(slope_deg * tri)
+)
+
+extended <- add_metric_layers(terrain, slope_tri)
+
+custom_catalog <- extend_metric_catalog(
+  metric_catalog(),
+  create_metric_catalog(
+    metric = "slope_tri_index",
+    label = "Slope-TRI index",
+    process_group = "custom_relief",
+    description = "Product of local slope and terrain ruggedness index.",
+    units = "index",
+    source_function = "derive_custom_metric",
+    interpretation_notes = "Example index; define custom metrics from an explicit process model."
+  )
+)
+
+assign_process_groups(extended, catalog = custom_catalog)
+summarize_process_groups(extended, catalog = custom_catalog)
 ```

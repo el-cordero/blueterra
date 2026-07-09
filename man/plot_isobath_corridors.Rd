@@ -7,11 +7,22 @@
 plot_isobath_corridors(
   corridors,
   bathy = NULL,
+  isobaths = NULL,
   hillshade = TRUE,
-  contours = TRUE,
-  contour_interval = NULL,
+  background_contours = FALSE,
+  source_isobaths = TRUE,
+  isobath_color = "black",
+  isobath_linewidth = 0.6,
+  corridor_color = "white",
+  corridor_linewidth = 0.45,
+  corridor_fill = NA,
+  corridor_alpha = 0.2,
   labels = TRUE,
   label_field = NULL,
+  title = "Isobath Corridors",
+  subtitle = NULL,
+  caption = NULL,
+  contours = NULL,
   ...
 )
 }
@@ -20,16 +31,28 @@ plot_isobath_corridors(
 
 \item{bathy}{Optional raster background.}
 
+\item{isobaths}{Optional source isobath lines to draw over the corridors.}
+
 \item{hillshade}{Logical. Draw hillshade from \code{bathy} when available.}
 
-\item{contours}{Logical. Draw bathymetric contours when \code{bathy} is supplied.}
+\item{background_contours}{Logical. Draw general bathymetric background
+contours. Defaults to \code{FALSE} to keep corridor figures readable.}
 
-\item{contour_interval}{Contour interval in raster units.}
+\item{source_isobaths}{Logical. Draw the source isobaths used to create the
+corridors.}
+
+\item{isobath_color, isobath_linewidth}{Source-isobath line styling.}
+
+\item{corridor_color, corridor_linewidth, corridor_fill, corridor_alpha}{Corridor polygon styling.}
 
 \item{labels}{Logical. Label corridors with \code{label_field}.}
 
 \item{label_field}{Attribute used for labels. Defaults to \code{depth_label} when
 present, otherwise \code{contour_value}.}
+
+\item{title, subtitle, caption}{Plot text.}
+
+\item{contours}{Deprecated alias for \code{background_contours}.}
 
 \item{...}{Additional arguments passed to \code{\link[=plot_bathy]{plot_bathy()}}.}
 }
@@ -44,7 +67,8 @@ contour lines. The hillshade layer is visual context only.
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   bathy <- read_bathy(blueterra_example("bathy"))
   corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
-  plot_isobath_corridors(corridors, bathy)
+  isobaths <- extract_isobaths(bathy, depths = -50)
+  plot_isobath_corridors(corridors, bathy, isobaths = isobaths)
 }
 
 }

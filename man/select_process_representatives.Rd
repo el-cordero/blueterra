@@ -7,7 +7,8 @@
 select_process_representatives(
   catalog = metric_catalog(),
   groups = NULL,
-  metrics_available = NULL
+  metrics_available = NULL,
+  representatives = NULL
 )
 }
 \arguments{
@@ -16,6 +17,9 @@ select_process_representatives(
 \item{groups}{Optional process groups to retain.}
 
 \item{metrics_available}{Optional vector of available metric names.}
+
+\item{representatives}{Optional named character vector mapping process-group
+names to representative metric names.}
 }
 \value{
 A tibble with one representative metric per process group.

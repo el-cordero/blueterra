@@ -30,8 +30,9 @@ test_that("real analysis example rasters and rectangles are usable", {
       expect_s3_class(zone_summary, "tbl_df")
       expect_true("slope_deg_mean" %in% names(zone_summary))
 
-      transects <- make_transects(site_zone, spacing = 100)
+      transects <- make_transects(site_zone, spacing = 100, bathy = prepared)
       expect_s4_class(transects, "SpatVector")
+      expect_true("angle_source" %in% names(transects))
       samples <- sample_transects(transects, prepared, n = 6)
       expect_s3_class(samples, "tbl_df")
     }
@@ -64,5 +65,5 @@ test_that("real examples support isobath-corridor workflows and plots", {
 
   expect_s3_class(plot_bathy(bathy), "ggplot")
   expect_s3_class(plot_metric(terrain, "slope_deg"), "ggplot")
-  expect_s3_class(plot_isobath_corridors(corridors, bathy), "ggplot")
+  expect_s3_class(plot_isobath_corridors(corridors, bathy, isobaths = iso), "ggplot")
 })

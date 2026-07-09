@@ -8,3 +8,5 @@
   margin near La Parguera, Puerto Rico, plus sampling rectangles.
 * Improved hillshade-supported terrain maps, site-location documentation, and
   scientific examples for README, vignettes, and visual proof.
+* Added surface-oriented transect defaults, richer cross-section and PCA plots,
+  citation metadata, and custom metric/process-group extension helpers.

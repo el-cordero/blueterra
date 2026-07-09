@@ -45,6 +45,8 @@ process_groups <- function() {
 #' @param x A `terra::SpatRaster`, character vector, or data frame with metric
 #'   columns.
 #' @param catalog Optional catalog table. Defaults to [metric_catalog()].
+#' @param groups Optional named character vector mapping metric names to process
+#'   groups. Supplied mappings override catalog matches for those metrics.
 #' @param unmatched Character value assigned to unmatched metrics.
 #'
 #' @return A tibble with one row per supplied metric.
@@ -62,8 +64,10 @@ process_groups <- function() {
 assign_process_groups <- function(
     x,
     catalog = metric_catalog(),
+    groups = NULL,
     unmatched = "unassigned"
 ) {
+  catalog <- validate_metric_catalog(catalog)
   metric_names <- metric_names_from_input(x)
   clean_metric <- clean_layer_name(metric_names)
   catalog$metric_clean <- clean_layer_name(catalog$metric)
@@ -77,6 +81,16 @@ assign_process_groups <- function(
     source_function = catalog$source_function[idx],
     matched = !is.na(idx)
   )
+  if (!is.null(groups)) {
+    if (!is.character(groups) || is.null(names(groups))) {
+      bt_abort("`groups` must be a named character vector.")
+    }
+    group_idx <- match(clean_metric, clean_layer_name(names(groups)))
+    has_group <- !is.na(group_idx)
+    out$process_group[has_group] <- unname(groups[group_idx[has_group]])
+    out$matched[has_group] <- TRUE
+    out$label[has_group & is.na(out$label)] <- out$metric[has_group & is.na(out$label)]
+  }
   out$process_group[is.na(out$process_group)] <- unmatched
   out
 }
@@ -103,6 +117,8 @@ metric_names_from_input <- function(x) {
 #' @param catalog Optional catalog table. Defaults to [metric_catalog()].
 #' @param groups Optional process groups to retain.
 #' @param metrics_available Optional vector of available metric names.
+#' @param representatives Optional named character vector mapping process-group
+#'   names to representative metric names.
 #'
 #' @return A tibble with one representative metric per process group.
 #'
@@ -119,8 +135,10 @@ metric_names_from_input <- function(x) {
 select_process_representatives <- function(
     catalog = metric_catalog(),
     groups = NULL,
-    metrics_available = NULL
+    metrics_available = NULL,
+    representatives = NULL
 ) {
+  catalog <- validate_metric_catalog(catalog)
   out <- catalog
   if (!is.null(groups)) {
     out <- out[out$process_group %in% groups, , drop = FALSE]
@@ -130,7 +148,31 @@ select_process_representatives <- function(
   }
   out <- out[order(out$process_group, out$metric), , drop = FALSE]
   keep <- !duplicated(out$process_group)
-  tibble::as_tibble(out[keep, , drop = FALSE])
+  out <- tibble::as_tibble(out[keep, , drop = FALSE])
+  if (!is.null(representatives)) {
+    if (!is.character(representatives) || is.null(names(representatives))) {
+      bt_abort("`representatives` must be a named character vector.")
+    }
+    rows <- lapply(names(representatives), function(group_name) {
+      metric_name <- representatives[[group_name]]
+      row <- catalog[clean_layer_name(catalog$metric) == clean_layer_name(metric_name), , drop = FALSE]
+      if (nrow(row) > 0) {
+        row <- row[1, , drop = FALSE]
+        row$process_group <- group_name
+        return(row)
+      }
+      create_metric_catalog(
+        metric = metric_name,
+        label = metric_name,
+        process_group = group_name,
+        description = "User-defined representative metric.",
+        source_function = NA_character_,
+        scale_sensitive = NA
+      )
+    })
+    out <- dplyr::bind_rows(out[!out$process_group %in% names(representatives), , drop = FALSE], rows)
+  }
+  tibble::as_tibble(out)
 }
 
 #' Summarize process group representation
@@ -141,6 +183,8 @@ select_process_representatives <- function(
 #' @param x A `terra::SpatRaster`, character vector, or data frame with metric
 #'   columns.
 #' @param catalog Optional catalog table. Defaults to [metric_catalog()].
+#' @param groups Optional named character vector passed to
+#'   [assign_process_groups()].
 #'
 #' @return A tibble with process group counts.
 #'
@@ -155,8 +199,8 @@ select_process_representatives <- function(
 #'
 #' @seealso [assign_process_groups()], [summarize_terrain()]
 #' @export
-summarize_process_groups <- function(x, catalog = metric_catalog()) {
-  assigned <- assign_process_groups(x, catalog = catalog)
+summarize_process_groups <- function(x, catalog = metric_catalog(), groups = NULL) {
+  assigned <- assign_process_groups(x, catalog = catalog, groups = groups)
   pieces <- split(assigned$metric, assigned$process_group)
   tibble::tibble(
     process_group = names(pieces),

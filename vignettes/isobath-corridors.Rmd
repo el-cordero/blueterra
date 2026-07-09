@@ -64,9 +64,14 @@ corridors[, c("contour_value", "depth_label", "corridor_id")]
 plot_isobath_corridors(
   corridors,
   prepared,
-  contour_interval = 25
+  isobaths = isobaths,
+  background_contours = FALSE,
+  title = "Isobath Corridors and Source Isobaths"
 )
 ```
+
+The black lines are the source isobaths. The corridor polygons buffer those
+depth horizons and define the terrain extraction zones used in the summary.
 
 ## Extract and Summarize Terrain
 

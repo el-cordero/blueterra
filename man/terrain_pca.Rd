@@ -4,7 +4,15 @@
 \alias{terrain_pca}
 \title{Principal components analysis for terrain tables}
 \usage{
-terrain_pca(data, vars = NULL, center = TRUE, scale. = TRUE, ...)
+terrain_pca(
+  data,
+  vars = NULL,
+  center = TRUE,
+  scale. = TRUE,
+  metadata_cols = NULL,
+  keep_metadata = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{A data frame.}
@@ -15,10 +23,15 @@ terrain_pca(data, vars = NULL, center = TRUE, scale. = TRUE, ...)
 
 \item{scale.}{Logical passed to \code{stats::prcomp()}.}
 
+\item{metadata_cols}{Optional non-PCA columns appended to the score table.}
+
+\item{keep_metadata}{Logical. Preserve non-PCA columns in \code{scores}.}
+
 \item{...}{Additional arguments passed to \code{stats::prcomp()}.}
 }
 \value{
-A list with \code{scores}, \code{loadings}, \code{variance}, and \code{model}.
+A list with \code{scores}, \code{loadings}, \code{variance}, \code{model}, \code{vars}, and
+\code{complete_rows}.
 }
 \description{
 Runs PCA on numeric terrain variables and returns tidy scores, loadings,

@@ -4,10 +4,37 @@
 \alias{plot_process_pca}
 \title{Plot terrain PCA}
 \usage{
-plot_process_pca(pca)
+plot_process_pca(
+  pca,
+  color_col = NULL,
+  shape_col = NULL,
+  label_loadings = TRUE,
+  loading_arrows = TRUE,
+  top_loadings = 3,
+  axis_labels = c("loadings", "variance", "plain"),
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL
+)
 }
 \arguments{
 \item{pca}{Output from \code{\link[=terrain_pca]{terrain_pca()}}.}
+
+\item{color_col}{Optional score metadata column used for point color.}
+
+\item{shape_col}{Optional score metadata column used for point shape.}
+
+\item{label_loadings}{Logical. Label the largest loading vectors.}
+
+\item{loading_arrows}{Logical. Draw loading arrows scaled into score space.}
+
+\item{top_loadings}{Number of high-magnitude loading vectors to draw or
+label.}
+
+\item{axis_labels}{Axis label style: include dominant loadings and variance,
+variance only, or plain component names.}
+
+\item{title, subtitle, caption}{Plot text.}
 }
 \value{
 A \code{ggplot} object.

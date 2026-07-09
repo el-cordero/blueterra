@@ -216,6 +216,7 @@ extract_terrain_points <- function(metrics, points, method = "bilinear", ...) {
 #' @param method Sampling method, `"random"` or `"regular"`.
 #' @param na.rm Logical. Omit rows with missing values.
 #' @param xy Logical. Include cell coordinates.
+#' @param seed Optional random seed used before sampling.
 #'
 #' @return A tibble of sampled cell values.
 #'
@@ -230,13 +231,17 @@ sample_terrain_cells <- function(
     size,
     method = c("random", "regular"),
     na.rm = TRUE,
-    xy = TRUE
+    xy = TRUE,
+    seed = NULL
 ) {
   method <- match.arg(method)
   r <- as_bathy(metrics, check = FALSE)
   validate_bathy(r, allow_multi = TRUE)
   if (!is.numeric(size) || length(size) != 1 || size <= 0) {
     bt_abort("`size` must be one positive numeric value.")
+  }
+  if (!is.null(seed)) {
+    set.seed(seed)
   }
   out <- terra::spatSample(
     r,

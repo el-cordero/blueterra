@@ -53,6 +53,11 @@ reference:
   - assign_process_groups
   - select_process_representatives
   - summarize_process_groups
+  - create_metric_catalog
+  - extend_metric_catalog
+  - validate_metric_catalog
+  - add_metric_layers
+  - derive_custom_metric
   - rename_metric_layers
   - standardize_metric_names
 - title: Summaries and geometry
@@ -63,6 +68,7 @@ reference:
   - extract_terrain_points
   - sample_terrain_cells
   - make_transects
+  - estimate_surface_orientation
   - sample_transects
   - extract_cross_sections
   - summarize_cross_sections
@@ -75,6 +81,8 @@ reference:
 - title: Modeling and plots
   contents:
   - terrain_pca
+  - terrain_pca_by_group
+  - pca_axis_labels
   - terrain_effect_size
   - terrain_correlation
   - prepare_model_matrix
