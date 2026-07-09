@@ -1,0 +1,58 @@
+---
+title: "User-Supplied Rasters"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{User-Supplied Rasters}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(blueterra)
+```
+
+`blueterra` works with user-supplied digital bathymetric models, digital
+elevation models, and other raster surfaces readable by `terra`.
+
+The package does not download BlueTopo data. BlueTopo download and mosaicking
+are intentionally outside the scope of `blueterra` and will be handled by a
+separate package.
+
+## Accepted Inputs
+
+Use a local raster path:
+
+```{r path}
+path <- blueterra_example("bathy")
+bathy <- read_bathy(path)
+```
+
+Or use an existing `terra::SpatRaster`:
+
+```{r spatraster}
+same_bathy <- as_bathy(bathy)
+```
+
+## CRS
+
+```{r crs}
+check_bathy_crs(bathy)
+```
+
+Use projected CRS when slope, buffers, focal windows, or distances need linear
+map units. `blueterra` warns or errors only where the operation requires a CRS;
+it does not silently reproject.
+
+## Depth Convention
+
+Some bathymetry stores depth as negative elevation, while other workflows use
+positive depth. `blueterra` preserves signs by default:
+
+```{r sign}
+check_bathy_units(bathy, units = "m", positive_depth = FALSE)
+set_depth_positive(bathy)
+```

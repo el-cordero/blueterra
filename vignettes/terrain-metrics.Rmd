@@ -1,0 +1,56 @@
+---
+title: "Terrain Metrics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Terrain Metrics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(blueterra)
+```
+
+Terrain derivatives are scale-sensitive. Resolution, smoothing, CRS, and focal
+window size affect slope, aspect, BPI, TPI, curvature, rugosity, and surface
+area style metrics.
+
+```{r metrics}
+bathy <- read_bathy(blueterra_example("bathy"))
+terrain <- derive_metric_stack(
+  bathy,
+  metrics = c("slope", "aspect", "northness", "eastness", "bpi", "roughness",
+              "tri", "tpi", "curvature", "surface_area_ratio")
+)
+names(terrain)
+```
+
+## Orientation
+
+Aspect is circular. Northness and eastness convert aspect into linear
+components:
+
+```{r orientation}
+orientation <- derive_metric_stack(
+  bathy,
+  metrics = c("aspect", "northness", "eastness")
+)
+names(orientation)
+```
+
+## BPI and Scale
+
+Bathymetric position index is a focal metric. Window size changes the scale of
+terrain position being summarized:
+
+```{r bpi}
+derive_multiscale_bpi(bathy, windows = c(3, 7, 11))
+```
+
+For elevation-like negative bathymetry, positive BPI means higher stored values
+relative to the neighborhood. For positive-depth rasters, interpretation is
+reversed unless users convert the sign convention first.

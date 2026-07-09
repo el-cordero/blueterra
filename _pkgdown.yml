@@ -5,9 +5,6 @@ template:
 home:
   title: Process-oriented geomorphometry for submerged terrain
   strip_header: true
-  links:
-  - text: Source repository
-    href: https://example.com/blueterra
 navbar:
   structure:
     left: [intro, reference, articles, news]

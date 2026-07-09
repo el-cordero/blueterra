@@ -1,4 +1,4 @@
-# blueterra 0.0.0.9000
+# blueterra 0.1.0
 
 * Initial development version.
 * Added raster input, validation, preparation, terrain metrics, process groups,

@@ -1,0 +1,40 @@
+---
+title: "Isobath Corridors"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Isobath Corridors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(blueterra)
+```
+
+Isobath corridors summarize terrain near depth contours. This workflow uses any
+user-supplied raster supported by `terra`; it does not require BlueTopo or any
+remote service.
+
+```{r data}
+bathy <- read_bathy(blueterra_example("bathy"))
+terrain <- derive_terrain(bathy, metrics = c("slope", "bpi", "roughness"))
+```
+
+The example bathymetry stores depths as negative elevation, so depths are passed
+as negative contour values:
+
+```{r isobaths}
+isobaths <- extract_isobaths(bathy, depths = c(-40, -60))
+isobaths
+```
+
+Buffers are measured in map units, so projected CRS are recommended:
+
+```{r corridors}
+corridors <- make_isobath_corridors(bathy, depths = c(-40, -60), width = 20)
+summarize_isobath_terrain(terrain, corridors)
+```

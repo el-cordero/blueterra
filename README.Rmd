@@ -1,0 +1,166 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  fig.width = 7,
+  fig.height = 4
+)
+```
+
+<img src="man/figures/logo.png" align="right" height="140" alt="blueterra logo" />
+
+# blueterra
+
+`blueterra` provides tools for process-oriented geomorphometry of submerged
+terrain from user-supplied bathymetric or elevation rasters. It derives terrain
+metrics, organizes them into geomorphic process groups, and summarizes terrain
+across polygons, transects, depth bands, and isobath corridors.
+
+`blueterra` does not download or mosaic BlueTopo data. BlueTopo acquisition will
+be handled by a separate package. Users can provide any suitable bathymetric or
+elevation raster supported by `terra`.
+
+## Installation
+
+Install from a local source checkout:
+
+```r
+install.packages("path/to/blueterra", repos = NULL, type = "source")
+```
+
+After a public repository is available, install from GitHub with:
+
+```r
+# install.packages("remotes")
+remotes::install_github("owner/blueterra")
+```
+
+## Scope
+
+`blueterra` focuses on local terrain analysis after a raster already exists:
+
+* read and validate user-supplied bathymetric or elevation rasters
+* prepare raster surfaces for terrain analysis
+* derive slope, aspect, orientation, ruggedness, BPI, TPI, curvature, and
+  surface-structure metrics
+* map metrics to process-oriented terrain groups
+* summarize metrics across polygons, depth bands, transects, and isobath
+  corridors
+* create model-ready tables and summary plots
+
+Out of scope:
+
+* BlueTopo download
+* BlueTopo tile discovery
+* BlueTopo mosaicking or combining
+* remote bathymetry acquisition
+* persistent download caches
+
+## Quick Start
+
+```{r quick-start}
+library(blueterra)
+
+bathy <- read_bathy(blueterra_example("bathy"))
+bathy_info(bathy)
+
+terrain <- derive_terrain(
+  bathy,
+  metrics = c("slope", "aspect", "northness", "eastness", "bpi", "roughness")
+)
+
+names(terrain)
+assign_process_groups(terrain)
+```
+
+Summarize terrain by polygons:
+
+```{r polygon-summary}
+sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
+summarize_terrain(terrain, sites)
+```
+
+Summarize by depth bands:
+
+```{r depth-bands}
+summarize_depth_bands(
+  bathy,
+  metrics = terrain,
+  breaks = c(-90, -60, -30, 0)
+)
+```
+
+Build and summarize an isobath corridor:
+
+```{r isobath}
+corridor <- make_isobath_corridors(bathy, depths = -50, width = 20)
+summarize_isobath_terrain(terrain, corridor)
+```
+
+## User-Supplied Rasters
+
+Use any local raster readable by `terra`:
+
+```r
+path <- "my_bathymetry_or_dem.tif"
+bathy <- read_bathy(path)
+terrain <- derive_terrain(bathy)
+```
+
+`blueterra` preserves depth sign conventions unless a function explicitly asks
+for a conversion:
+
+```r
+positive_depth <- set_depth_positive(bathy)
+negative_depth <- set_depth_negative(positive_depth)
+```
+
+Metric derivation is scale-sensitive. Use projected coordinate systems when
+distances, slopes, buffers, or focal windows need interpretable linear units.
+
+## Function Overview
+
+Input and validation:
+`read_bathy()`, `as_bathy()`, `validate_bathy()`, `check_bathy_crs()`,
+`check_bathy_units()`, `bathy_info()`.
+
+Raster preparation:
+`prepare_bathy()`, `crop_bathy()`, `mask_bathy()`, `resample_bathy()`,
+`project_bathy()`, `smooth_bathy()`, `depth_filter()`, `invert_depth()`,
+`set_depth_positive()`, `set_depth_negative()`.
+
+Terrain metrics:
+`derive_terrain()`, `derive_slope()`, `derive_aspect()`,
+`derive_northness()`, `derive_eastness()`, `derive_hillshade()`,
+`derive_rugosity()`, `derive_roughness()`, `derive_tri()`, `derive_tpi()`,
+`derive_bpi()`, `derive_multiscale_bpi()`, `derive_curvature()`,
+`derive_surface_area_ratio()`, `derive_metric_stack()`.
+
+Summaries and geometry:
+`summarize_terrain()`, `summarize_depth_bands()`, `make_transects()`,
+`sample_transects()`, `extract_cross_sections()`, `extract_isobaths()`,
+`make_isobath_corridors()`, `summarize_isobath_terrain()`.
+
+Modeling and plotting:
+`terrain_pca()`, `terrain_effect_size()`, `terrain_correlation()`,
+`prepare_model_matrix()`, `balance_samples()`, `plot_bathy()`,
+`plot_metric()`, `plot_metric_stack()`, `plot_depth_profile()`.
+
+## Citation
+
+Citation details will be added before release. Until then, cite the package
+source and version used in your analysis.
+
+## License
+
+MIT. See `LICENSE.md`.
+
+## Development Status
+
+Development version. Confirm author, maintainer, repository, copyright, and
+release metadata before CRAN submission.

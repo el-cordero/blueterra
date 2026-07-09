@@ -1,0 +1,72 @@
+---
+title: "blueterra"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{blueterra}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(blueterra)
+```
+
+`blueterra` is for submerged-terrain geomorphometry after the user already has a
+raster. It accepts local bathymetric or elevation rasters through `terra` and
+does not download, discover, mosaic, or cache BlueTopo data.
+
+## Start with a Raster
+
+```{r read}
+bathy <- read_bathy(blueterra_example("bathy"))
+bathy_info(bathy)
+```
+
+The example raster is synthetic and small enough for examples and tests.
+
+## Prepare the Surface
+
+```{r prepare}
+prepared <- prepare_bathy(
+  bathy,
+  depth_range = c(-90, -20),
+  smooth = TRUE,
+  smooth_window = 3
+)
+```
+
+Depth signs are preserved unless a conversion is explicit:
+
+```{r signs}
+positive_depth <- set_depth_positive(prepared)
+negative_depth <- set_depth_negative(positive_depth)
+check_bathy_units(negative_depth, units = "m", positive_depth = FALSE)
+```
+
+## Derive Terrain Metrics
+
+```{r metrics}
+terrain <- derive_terrain(
+  prepared,
+  metrics = c("slope", "aspect", "northness", "eastness", "bpi", "roughness")
+)
+names(terrain)
+```
+
+## Summarize Zones
+
+```{r zones}
+sites <- sf::st_read(blueterra_example("sites"), quiet = TRUE)
+summarize_terrain(terrain, sites)
+```
+
+## Model-Ready Tables
+
+```{r model-ready}
+cells <- sample_terrain_cells(terrain, size = 25)
+terrain_correlation(cells)
+```
