@@ -280,7 +280,7 @@ test_result <- capture_command(
 )
 check_result <- capture_command(
   if (requireNamespace("devtools", quietly = TRUE)) {
-    devtools::check(args = "--as-cran")
+    devtools::check(args = "--as-cran", error_on = "never")
   },
   file.path(log_dir, "devtools-check.log")
 )
