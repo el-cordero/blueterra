@@ -21,4 +21,5 @@
 #' area, or buffering operations depend on linear units.
 #'
 #' @keywords internal
+#' @importFrom rlang .data
 "_PACKAGE"
