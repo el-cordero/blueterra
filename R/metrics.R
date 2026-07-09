@@ -324,7 +324,7 @@ derive_multiscale_bpi <- function(
     ...
 ) {
   layers <- lapply(windows, function(w) derive_bpi(x, window = w, normalize = normalize))
-  out <- do.call(c, layers)
+  out <- combine_rasters(layers)
   write_raster_if_requested(out, filename, overwrite)
 }
 
@@ -426,7 +426,7 @@ derive_metric_stack <- function(
     )
     layers[[metric]] <- layer
   }
-  out <- do.call(c, layers)
+  out <- combine_rasters(layers)
   names(out) <- clean_layer_name(names(out))
   write_raster_if_requested(out, filename, overwrite)
 }

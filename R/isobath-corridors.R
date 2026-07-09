@@ -144,7 +144,8 @@ make_isobath_corridors <- function(
 #' @seealso [summarize_isobath_terrain()], [summarize_terrain()]
 #' @export
 extract_isobath_corridors <- function(metrics, corridors, ...) {
-  r <- as_bathy(metrics, check = TRUE)
+  r <- as_bathy(metrics, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   zones <- as_spatvector(corridors)
   if (!terra::same.crs(r, zones)) {
     zones <- terra::project(zones, terra::crs(r))

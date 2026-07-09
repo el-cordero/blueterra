@@ -24,11 +24,11 @@
 #' @seealso [derive_terrain()], [assign_process_groups()]
 #' @export
 metric_catalog <- function() {
-  if (exists("metric_catalog_data", envir = asNamespace("blueterra"), inherits = FALSE)) {
-    return(get("metric_catalog_data", envir = asNamespace("blueterra")))
+  if (exists("metric_catalog_data", inherits = TRUE)) {
+    return(get("metric_catalog_data", inherits = TRUE))
   }
   utils::data("metric_catalog_data", package = "blueterra", envir = environment())
-  metric_catalog_data
+  get("metric_catalog_data", envir = environment(), inherits = FALSE)
 }
 
 #' @rdname metric_catalog

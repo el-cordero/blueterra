@@ -36,7 +36,8 @@ plot_metric <- function(
     max_cells = getOption("blueterra.max_plot_cells", 10000)
 ) {
   optional_ggplot2()
-  r <- as_bathy(x, check = TRUE)
+  r <- as_bathy(x, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   if (!is.null(metric)) {
     r <- r[[metric]]
   } else if (terra::nlyr(r) > 1) {
@@ -54,14 +55,14 @@ plot_metric <- function(
 #' @rdname plot_bathy
 #' @export
 plot_hillshade <- function(x, max_cells = getOption("blueterra.max_plot_cells", 10000)) {
-  r <- as_bathy(x, check = TRUE)
+  r <- as_bathy(x, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   if (!"hillshade" %in% names(r)) {
     r <- derive_hillshade(r)
   } else {
     r <- r[["hillshade"]]
   }
-  plot_metric(r, max_cells = max_cells) +
-    ggplot2::scale_fill_gradient(low = "black", high = "white", na.value = NA)
+  plot_metric(r, max_cells = max_cells)
 }
 
 #' @rdname plot_bathy
@@ -71,7 +72,8 @@ plot_metric_stack <- function(
     max_cells = getOption("blueterra.max_plot_cells", 10000)
 ) {
   optional_ggplot2()
-  r <- as_bathy(x, check = TRUE)
+  r <- as_bathy(x, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   df <- raster_plot_data(r, max_cells = max_cells)
   long <- stats::reshape(
     as.data.frame(df),

@@ -1,10 +1,12 @@
-^\\.git$
-^\\.gitignore$
-^\\.Rbuildignore$
-^README\\.Rmd$
-^cran-comments\\.md$
+^\.git$
+^\.gitignore$
+^\.Rbuildignore$
+^\.lintr$
+^README\.Rmd$
+^cran-comments\.md$
+^LICENSE\.md$
 ^data-raw$
-^_pkgdown\\.yml$
+^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
 ^revdep$
@@ -14,6 +16,6 @@
 ^downloaded_data$
 ^bluetopo$
 ^BlueTopo$
-^.*\\.Rproj$
-^\\.Rproj\\.user$
+^.*\.Rproj$
+^\.Rproj\.user$
 ^CRAN-SUBMISSION$

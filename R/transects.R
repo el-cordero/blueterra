@@ -93,7 +93,7 @@ transects_for_polygon <- function(poly, spacing, angle, length, zone_id) {
   )
   clipped <- suppressWarnings(sf::st_intersection(line_sf, sf::st_geometry(poly)))
   clipped <- clipped[!sf::st_is_empty(clipped), , drop = FALSE]
-  clipped <- sf::st_collection_extract(clipped, "LINESTRING", warn = FALSE)
+  clipped <- suppressWarnings(sf::st_collection_extract(clipped, "LINESTRING", warn = FALSE))
   if (nrow(clipped) == 0) {
     bt_abort("No transects intersected the supplied polygon.")
   }

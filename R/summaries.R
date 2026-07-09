@@ -38,7 +38,8 @@ summarize_terrain <- function(
     exact = FALSE,
     ...
 ) {
-  r <- as_bathy(metrics, check = TRUE)
+  r <- as_bathy(metrics, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   fun <- safe_summary_funs(fun)
   if (isTRUE(exact)) {
     return(summarize_terrain_exact(r, zones, fun = fun, na.rm = na.rm, ...))
@@ -143,7 +144,8 @@ summarize_depth_bands <- function(
     na.rm = TRUE
 ) {
   b <- first_layer(bathy)
-  m <- if (is.null(metrics)) b else as_bathy(metrics, check = TRUE)
+  m <- if (is.null(metrics)) b else as_bathy(metrics, check = FALSE)
+  validate_bathy(m, allow_multi = TRUE)
   if (!terra::compareGeom(b, m, stopOnError = FALSE)) {
     bt_abort("`bathy` and `metrics` must have matching geometry.")
   }
@@ -192,7 +194,8 @@ summarize_depth_bands <- function(
 #' @seealso [sample_terrain_cells()]
 #' @export
 extract_terrain_points <- function(metrics, points, method = "bilinear", ...) {
-  r <- as_bathy(metrics, check = TRUE)
+  r <- as_bathy(metrics, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   pts <- as_spatvector(points)
   if (!terra::same.crs(r, pts)) {
     pts <- terra::project(pts, terra::crs(r))
@@ -229,7 +232,8 @@ sample_terrain_cells <- function(
     xy = TRUE
 ) {
   method <- match.arg(method)
-  r <- as_bathy(metrics, check = TRUE)
+  r <- as_bathy(metrics, check = FALSE)
+  validate_bathy(r, allow_multi = TRUE)
   if (!is.numeric(size) || length(size) != 1 || size <= 0) {
     bt_abort("`size` must be one positive numeric value.")
   }

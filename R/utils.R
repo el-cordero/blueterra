@@ -46,12 +46,26 @@ clean_layer_name <- function(x) {
   x <- gsub("[^a-z0-9]+", "_", x)
   x <- gsub("_+", "_", x)
   x <- gsub("^_|_$", "", x)
-  make.names(x, unique = TRUE)
+  make.unique(x, sep = "_")
 }
 
 set_clean_names <- function(x, names) {
   names(x) <- clean_layer_name(names)
   x
+}
+
+combine_rasters <- function(layers) {
+  layers <- Filter(Negate(is.null), layers)
+  if (length(layers) == 0) {
+    bt_abort("No raster layers were supplied.")
+  }
+  out <- layers[[1]]
+  if (length(layers) > 1) {
+    for (i in seq.int(2, length(layers))) {
+      out <- c(out, layers[[i]])
+    }
+  }
+  out
 }
 
 first_layer <- function(x) {
@@ -184,7 +198,8 @@ optional_ggplot2 <- function() {
 }
 
 raster_plot_data <- function(x, max_cells = 10000) {
-  x <- as_bathy(x)
+  x <- as_bathy(x, check = FALSE)
+  validate_bathy(x, allow_multi = TRUE)
   if (terra::ncell(x) > max_cells) {
     x <- terra::spatSample(x, size = max_cells, method = "regular", as.raster = TRUE)
   }

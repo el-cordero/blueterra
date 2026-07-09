@@ -1,0 +1,32 @@
+test_that("terrain metric generation returns clean layers", {
+  bathy <- example_bathy()
+  terrain <- derive_terrain(bathy, metrics = "default")
+  expect_s4_class(terrain, "SpatRaster")
+  expect_true(all(c("slope_deg", "aspect_deg", "bpi_3x3", "bpi_11x11") %in% names(terrain)))
+})
+
+test_that("individual metrics calculate expected raster outputs", {
+  bathy <- example_bathy()
+  expect_s4_class(derive_slope(bathy), "SpatRaster")
+  expect_s4_class(derive_aspect(bathy), "SpatRaster")
+  northness <- derive_northness(bathy)
+  eastness <- derive_eastness(bathy)
+  expect_s4_class(northness, "SpatRaster")
+  expect_s4_class(eastness, "SpatRaster")
+  expect_true(all(c(terra::minmax(northness), terra::minmax(eastness)) <= 1, na.rm = TRUE))
+  expect_s4_class(derive_hillshade(bathy), "SpatRaster")
+  expect_s4_class(derive_rugosity(bathy), "SpatRaster")
+  expect_s4_class(derive_roughness(bathy), "SpatRaster")
+  expect_s4_class(derive_tri(bathy), "SpatRaster")
+  expect_s4_class(derive_tpi(bathy), "SpatRaster")
+  expect_s4_class(derive_curvature(bathy), "SpatRaster")
+  expect_s4_class(derive_surface_area_ratio(bathy), "SpatRaster")
+})
+
+test_that("BPI and multiscale BPI are named predictably", {
+  bathy <- example_bathy()
+  bpi <- derive_bpi(bathy, window = 5)
+  expect_equal(names(bpi), "bpi_5x5")
+  multi <- derive_multiscale_bpi(bathy, windows = c(3, 7))
+  expect_equal(names(multi), c("bpi_3x3", "bpi_7x7"))
+})
