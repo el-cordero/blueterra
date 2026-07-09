@@ -108,13 +108,13 @@ rectangles. The explicitly named `"synthetic_bathy"` and
 
 ``` r
 blueterra_example("hitw")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpEaSVh9/temp_libpath12fd0ea5b10b/blueterra/extdata/laparguera_hitw_bathy.tif"
+#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpMKAx0b/temp_libpath1dce0a3d69/blueterra/extdata/laparguera_hitw_bathy.tif"
 blueterra_example("hoyo")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpEaSVh9/temp_libpath12fd0ea5b10b/blueterra/extdata/laparguera_hoyo_bathy.tif"
+#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpMKAx0b/temp_libpath1dce0a3d69/blueterra/extdata/laparguera_hoyo_bathy.tif"
 blueterra_example("slope")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpEaSVh9/temp_libpath12fd0ea5b10b/blueterra/extdata/laparguera_slope_bathy.tif"
+#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpMKAx0b/temp_libpath1dce0a3d69/blueterra/extdata/laparguera_slope_bathy.tif"
 blueterra_example("sampling_rectangles")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpEaSVh9/temp_libpath12fd0ea5b10b/blueterra/extdata/laparguera_sampling_rectangles.gpkg"
+#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpMKAx0b/temp_libpath1dce0a3d69/blueterra/extdata/laparguera_sampling_rectangles.gpkg"
 ```
 
 ## Raster Input and Validation

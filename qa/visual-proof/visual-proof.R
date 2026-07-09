@@ -36,6 +36,9 @@ capture_command <- function(expr, log_file) {
 
 save_plot <- function(plot, filename, width = 7, height = 4) {
   path <- file.path(fig_dir, filename)
+  if (file.exists(path)) {
+    unlink(path)
+  }
   ggplot2::ggsave(path, plot = plot, width = width, height = height, dpi = 160)
   path
 }
@@ -80,6 +83,11 @@ depth_summary <- summarize_depth_bands(
   metrics = metrics,
   breaks = c(-220, -150, -100, -60, -30, -20)
 )
+depth_summary_plot <- depth_summary[
+  depth_summary$metric == "slope_deg" & is.finite(depth_summary$mean),
+  ,
+  drop = FALSE
+]
 transects <- make_transects(hitw_rect, spacing = 75)
 samples <- sample_transects(transects, prepared, n = 12)
 samples_plot <- samples[is.finite(samples$focal_mean), , drop = FALSE]
@@ -153,8 +161,7 @@ figures <- c(figures, save_plot(
   "15-sampling-rectangle-summary.png"
 ))
 figures <- c(figures, save_plot(
-  ggplot2::ggplot(depth_summary[depth_summary$metric == "slope_deg", ],
-                  ggplot2::aes(x = depth_band, y = mean)) +
+  ggplot2::ggplot(depth_summary_plot, ggplot2::aes(x = depth_band, y = mean)) +
     ggplot2::geom_col() +
     ggplot2::labs(x = "Depth band", y = "Mean slope") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30, hjust = 1)),

@@ -1,14 +1,14 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 06:02:54 AST
-- Git commit: c114ee876393a2299c1822c8e7de189ed247c09a
-- Working tree dirty at proof start: TRUE
-- Dirty paths at proof start:  M .Rbuildignore;  M DESCRIPTION;  M NAMESPACE;  M R/metrics.R;  M R/utils.R;  M README.Rmd;  M README.md;  M _pkgdown.yml;  M data-raw/create-example-data.R;  D inst/extdata/example_bathy.tif;  D inst/extdata/example_zones.gpkg;  M man/blueterra_example.Rd;  M man/derive_slope.Rd;  M man/figures/README-plotting-1.png;  D man/figures/README-plotting-10.png;  D man/figures/README-plotting-2.png;  D man/figures/README-plotting-3.png;  D man/figures/README-plotting-4.png;  D man/figures/README-plotting-5.png;  D man/figures/README-plotting-6.png;  D man/figures/README-plotting-7.png;  D man/figures/README-plotting-8.png;  D man/figures/README-plotting-9.png;  M qa/visual-proof/visual-proof.R;  M tests/testthat/helper-data.R;  M tests/testthat/test-input.R;  M vignettes/blueterra.Rmd;  M vignettes/isobath-corridors.Rmd;  M vignettes/process-groups.Rmd;  M vignettes/terrain-metrics.Rmd;  M vignettes/user-supplied-rasters.Rmd; ?? data-raw/create-analysis-examples.R; ?? inst/extdata/laparguera_hitw_bathy.tif; ?? inst/extdata/laparguera_hoyo_bathy.tif; ?? inst/extdata/laparguera_sampling_rectangles.gpkg; ?? inst/extdata/laparguera_slope_bathy.tif; ?? inst/extdata/synthetic_test_bathy.tif; ?? inst/extdata/synthetic_test_zones.gpkg; ?? man/figures/README-plotting-cross-sections-1.png; ?? man/figures/README-plotting-hillshade-1.png; ?? man/figures/README-plotting-isobath-corridors-1.png; ?? man/figures/README-plotting-pca-1.png; ?? man/figures/README-plotting-profile-density-1.png; ?? man/figures/README-plotting-profile-density-2.png; ?? man/figures/README-plotting-slope-1.png; ?? man/figures/README-plotting-stack-1.png; ?? man/figures/README-plotting-summary-1.png; ?? tests/testthat/test-real-examples.R
+- Date/time: 2026-07-09 06:14:01 AST
+- Git commit: ba2d414348f8f377fb8caefaa7ce5828b0629314
+- Working tree dirty at proof start: FALSE
+- Dirty paths at proof start: none
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 1748675 bytes
+- Package tarball size: 1748708 bytes
 - Package tarball size: 1.749 MB
 
 ## Example Files
@@ -145,7 +145,7 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
 
 ## Check Results
 
-- devtools::check ok: FALSE
+- devtools::check ok: TRUE
 - Log: qa/visual-proof/logs/devtools-check.log
 - R CMD build ok: TRUE
 - Log: qa/visual-proof/logs/r-cmd-build.log
