@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 06:29:06 AST
-- Git commit: 9a4e105523fdafdb2aada0636a6fc8e1e8209953
+- Date/time: 2026-07-09 13:11:47 AST
+- Git commit: 118e54365f7c42ced56ca67cf28b8019cf1b3798
 - Working tree dirty at proof start: FALSE
 - Dirty paths at proof start: none
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 1748626 bytes
-- Package tarball size: 1.749 MB
+- Package tarball size: 3729976 bytes
+- Package tarball size: 3.73 MB
 
 ## Example Files
 
@@ -32,6 +32,7 @@
 
 ## Figures
 
+- [00-study-area-pr-southwest-shelf-margin.png](figures/00-study-area-pr-southwest-shelf-margin.png)
 - [01-hitw-bathymetry.png](figures/01-hitw-bathymetry.png)
 - [02-hoyo-bathymetry.png](figures/02-hoyo-bathymetry.png)
 - [03-slope-clip-bathymetry.png](figures/03-slope-clip-bathymetry.png)
@@ -87,7 +88,7 @@ coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
 names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg
 type        :   <chr>            <chr>           <chr>            <chr>   <num>    <num>     <num>
 values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0
-                 hoyo     Hoyo Terrace sampling_recta~     Hoyo Terrace     300      400       135
+                 hoyo          El Hoyo sampling_recta~     Hoyo Terrace     300      400       135
                 slope       Slope Clip analysis_extent  Slope_clip_bat~      NA       NA        NA
  [1] "slope_deg"          "aspect_deg"         "northness"         
  [4] "eastness"           "tri"                "rugosity_vrm_3x3"  
@@ -97,7 +98,7 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
   site_id site_name        slope_deg_mean bpi_3x3_mean
   <chr>   <chr>                     <dbl>        <dbl>
 1 hitw    Hole-in-the-Wall           31.6       0.223 
-2 hoyo    Hoyo Terrace               26.9       0.230 
+2 hoyo    El Hoyo                    26.9       0.230 
 3 slope   Slope Clip                 27.7      -0.0384
 # A tibble: 5 × 8
   depth_band  metric    n_cells  mean    sd   min   max median
@@ -121,12 +122,12 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
 3 PC3         0.0317        1.000
 4 PC4         0.000138      1    
 # A tibble: 4 × 7
-  variable  group_1          group_2      mean_1  mean_2 effect_size method  
-  <chr>     <chr>            <chr>         <dbl>   <dbl>       <dbl> <chr>   
-1 slope_deg Hole-in-the-Wall Hoyo Terrace 53.0   29.3          1.37  cohens_d
-2 tri       Hole-in-the-Wall Hoyo Terrace  5.65   2.45         0.781 cohens_d
-3 bpi_3x3   Hole-in-the-Wall Hoyo Terrace  0.464  0.0714       0.356 cohens_d
-4 curvature Hole-in-the-Wall Hoyo Terrace -1.41  -0.222       -0.352 cohens_d
+  variable  group_1          group_2 mean_1  mean_2 effect_size method  
+  <chr>     <chr>            <chr>    <dbl>   <dbl>       <dbl> <chr>   
+1 slope_deg Hole-in-the-Wall El Hoyo 53.0   29.3          1.37  cohens_d
+2 tri       Hole-in-the-Wall El Hoyo  5.65   2.45         0.781 cohens_d
+3 bpi_3x3   Hole-in-the-Wall El Hoyo  0.464  0.0714       0.356 cohens_d
+4 curvature Hole-in-the-Wall El Hoyo -1.41  -0.222       -0.352 cohens_d
 # A tibble: 6 × 3
   var1      var2      correlation
   <chr>     <chr>           <dbl>
