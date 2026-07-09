@@ -226,16 +226,18 @@ vector_plot_data <- function(x) {
 #' Returns the path to a small file installed with `blueterra`.
 #'
 #' @param name Example name. Use `"hitw"`, `"hoyo"`, or `"slope"` for
-#'   reduced La Parguera bathymetry rasters; `"sampling_rectangles"` for the
-#'   accompanying vector layer; `"bathy"` and `"zones"` as short aliases; or
-#'   `"synthetic_bathy"` and `"synthetic_zones"` for test fixtures.
+#'   reduced bathymetry rasters from the southwest Puerto Rico shelf margin
+#'   near La Parguera; `"sampling_rectangles"` for the accompanying vector
+#'   layer; `"bathy"` and `"zones"` as short aliases; or `"synthetic_bathy"`
+#'   and `"synthetic_zones"` for test fixtures.
 #'
 #' @return A normalized local file path.
 #'
 #' @details
 #' The primary examples are reduced analysis rasters and sampling rectangles
-#' from the La Parguera shelf margin. The synthetic files are retained for
-#' numerical tests where a simple known surface is useful.
+#' from the southwest Puerto Rico shelf margin near La Parguera. The synthetic
+#' files are retained for numerical tests where a simple known surface is
+#' useful.
 #'
 #' @examples
 #' hitw <- blueterra_example("hitw")
@@ -299,10 +301,10 @@ blueterra_examples <- function() {
     ),
     type = c("raster", "raster", "raster", "vector", "raster", "vector"),
     description = c(
-      "Reduced Hole-in-the-Wall bathymetry, La Parguera shelf margin.",
-      "Reduced Hoyo Terrace bathymetry, La Parguera shelf margin.",
-      "Aggregated slope-clip bathymetry spanning the local shelf margin.",
-      "Sampling rectangles and slope analysis extent used with the examples.",
+      "Reduced Hole-in-the-Wall bathymetry, southwest Puerto Rico shelf margin.",
+      "Reduced El Hoyo bathymetry, southwest Puerto Rico shelf margin.",
+      "Aggregated slope-clip bathymetry along the southwest Puerto Rico shelf margin.",
+      "Sampling rectangles and slope analysis extent near La Parguera, Puerto Rico.",
       "Synthetic bathymetry surface retained for numerical tests.",
       "Synthetic polygon zones retained for numerical tests."
     ),

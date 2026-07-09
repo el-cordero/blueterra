@@ -8,32 +8,48 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(blueterra)
 ```
 
-Isobath corridors summarize terrain near depth contours. They are useful when
-observations, surveys, or interpretations follow depth horizons rather than
-rectangular or administrative boundaries.
+Isobath corridors summarize terrain along depth horizons. They are useful when
+observations are collected along contours or when terrain structure needs to be
+compared at equivalent depths while retaining along-contour variability.
 
 ```{r data}
 bathy <- read_bathy(blueterra_example("hitw"))
 prepared <- prepare_bathy(bathy, depth_range = c(-220, -25), smooth = TRUE)
-terrain <- derive_terrain(prepared, metrics = c("slope", "bpi", "curvature"))
+terrain <- derive_terrain(
+  prepared,
+  metrics = c("slope", "bpi", "curvature", "surface_area_ratio")
+)
 ```
 
 The example bathymetry stores depth as negative elevation, so contour depths are
-passed as negative values:
+passed as negative values.
 
 ```{r isobaths}
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
-isobaths
+isobaths[, c("contour_value", "depth_label")]
 ```
 
-Buffers are measured in map units, so the raster should use a projected CRS:
+```{r isobath-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobaths over hillshaded bathymetry."}
+plot_bathy(
+  prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  vectors = isobaths,
+  vector_color = "black",
+  title = "Isobaths Over Hillshaded Bathymetry"
+)
+```
+
+Buffers are measured in map units, so the raster should use a projected CRS.
+The example raster is projected; other rasters should be reprojected explicitly
+when needed.
 
 ```{r corridors}
 corridors <- make_isobath_corridors(
@@ -41,5 +57,26 @@ corridors <- make_isobath_corridors(
   depths = c(-50, -80, -120),
   width = 20
 )
-summarize_isobath_terrain(terrain, corridors)
+corridors[, c("contour_value", "depth_label", "corridor_id")]
 ```
+
+```{r corridor-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobath corridors over hillshaded bathymetry."}
+plot_isobath_corridors(
+  corridors,
+  prepared,
+  contour_interval = 25
+)
+```
+
+## Extract and Summarize Terrain
+
+```{r summarize}
+cells <- extract_isobath_corridors(terrain, corridors)
+head(cells)
+
+summary <- summarize_isobath_terrain(terrain, corridors)
+summary[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean", "curvature_mean")]
+```
+
+The summary compares terrain structure at the selected depth horizons. BPI
+values should be interpreted using the raster's stored vertical convention.

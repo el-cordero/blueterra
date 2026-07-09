@@ -4,7 +4,12 @@
 \alias{plot_cross_sections}
 \title{Plot sampled cross-sections}
 \usage{
-plot_cross_sections(samples, value_col = NULL, group_col = "transect_id")
+plot_cross_sections(
+  samples,
+  value_col = NULL,
+  group_col = "transect_id",
+  depth_increases_down = TRUE
+)
 }
 \arguments{
 \item{samples}{Output from \code{\link[=sample_transects]{sample_transects()}}.}
@@ -12,6 +17,9 @@ plot_cross_sections(samples, value_col = NULL, group_col = "transect_id")
 \item{value_col}{Optional value column.}
 
 \item{group_col}{Grouping column for transect lines.}
+
+\item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
+plotted with a reversed y-axis so larger depths appear lower in the panel.}
 }
 \value{
 A \code{ggplot} object.

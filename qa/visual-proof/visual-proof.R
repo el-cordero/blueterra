@@ -43,12 +43,6 @@ save_plot <- function(plot, filename, width = 7, height = 4) {
   path
 }
 
-geom_path_data <- function(x) {
-  out <- as.data.frame(terra::geom(x))
-  out$group <- paste(out$geom, out$part, sep = "_")
-  out
-}
-
 if (requireNamespace("pkgload", quietly = TRUE)) {
   pkgload::load_all(quiet = TRUE)
 } else {
@@ -108,42 +102,98 @@ hoyo_cells <- sample_terrain_cells(
   size = 50,
   method = "regular"
 )
-hoyo_cells$site <- "Hoyo Terrace"
+hoyo_cells$site <- "El Hoyo"
 comparison <- rbind(hitw_cells, hoyo_cells)
 pca <- terrain_pca(comparison, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
 corr <- terrain_correlation(comparison, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
 effect <- terrain_effect_size(comparison, group = "site", vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
 process_summary <- summarize_process_groups(metrics)
 
-rect_df <- geom_path_data(rectangles)
-transect_df <- geom_path_data(transects)
-isobath_df <- geom_path_data(isobaths)
-
 figures <- character()
-figures <- c(figures, save_plot(plot_bathy(hitw), "01-hitw-bathymetry.png"))
-figures <- c(figures, save_plot(plot_bathy(hoyo), "02-hoyo-bathymetry.png"))
-figures <- c(figures, save_plot(plot_bathy(slope), "03-slope-clip-bathymetry.png"))
+site_map_src <- file.path("man", "figures", "study-area-pr-southwest-shelf-margin.png")
+site_map_proof <- file.path(fig_dir, "00-study-area-pr-southwest-shelf-margin.png")
+if (file.exists(site_map_src)) {
+  file.copy(site_map_src, site_map_proof, overwrite = TRUE)
+  figures <- c(figures, site_map_proof)
+}
 figures <- c(figures, save_plot(
-  plot_bathy(slope) +
-    ggplot2::geom_path(
-      data = rect_df,
-      ggplot2::aes(x = x, y = y, group = group),
-      inherit.aes = FALSE,
-      color = "white",
-      linewidth = 0.5
-    ),
+  plot_bathy(
+    hitw,
+    contours = TRUE,
+    contour_interval = 25,
+    title = "Hole-in-the-Wall Bathymetry",
+    subtitle = "Hillshade and bathymetric contours"
+  ),
+  "01-hitw-bathymetry.png"
+))
+figures <- c(figures, save_plot(
+  plot_bathy(
+    hoyo,
+    contours = TRUE,
+    contour_interval = 25,
+    vectors = hoyo_rect,
+    title = "El Hoyo Bathymetry",
+    subtitle = "Hillshade, contours, and sampling rectangle"
+  ),
+  "02-hoyo-bathymetry.png"
+))
+figures <- c(figures, save_plot(
+  plot_bathy(
+    slope,
+    contours = TRUE,
+    contour_interval = 50,
+    title = "Slope Clip Bathymetry",
+    subtitle = "Hillshade and bathymetric contours"
+  ),
+  "03-slope-clip-bathymetry.png"
+))
+figures <- c(figures, save_plot(
+  plot_sampling_rectangles(
+    slope,
+    rectangles,
+    contour_interval = 50,
+    title = "Sampling Rectangles",
+    subtitle = "Southwest Puerto Rico shelf margin near La Parguera"
+  ),
   "04-sampling-rectangles-over-bathymetry.png",
   width = 8,
   height = 4.5
 ))
-figures <- c(figures, save_plot(plot_bathy(prepared), "05-prepared-depth-filtered-bathymetry.png"))
+figures <- c(figures, save_plot(
+  plot_bathy(
+    prepared,
+    contours = TRUE,
+    contour_interval = 25,
+    title = "Prepared Bathymetry",
+    subtitle = "Depth-filtered and smoothed surface"
+  ),
+  "05-prepared-depth-filtered-bathymetry.png"
+))
 figures <- c(figures, save_plot(plot_hillshade(prepared), "06-hillshade.png"))
-figures <- c(figures, save_plot(plot_metric(metrics, "slope_deg"), "07-slope.png"))
-figures <- c(figures, save_plot(plot_metric(metrics, "northness"), "08-northness.png"))
-figures <- c(figures, save_plot(plot_metric(metrics, "rugosity_vrm_3x3"), "09-rugosity.png"))
-figures <- c(figures, save_plot(plot_metric(metrics, "bpi_3x3"), "10-bpi.png"))
-figures <- c(figures, save_plot(plot_metric(metrics, "curvature"), "11-curvature.png"))
-figures <- c(figures, save_plot(plot_metric(metrics, "surface_area_ratio"), "12-surface-area-ratio.png"))
+figures <- c(figures, save_plot(
+  plot_metric(metrics, "slope_deg", bathy = prepared, contours = TRUE, contour_interval = 25, title = "Slope Over Hillshade"),
+  "07-slope.png"
+))
+figures <- c(figures, save_plot(
+  plot_metric(metrics, "northness", bathy = prepared, contours = TRUE, contour_interval = 25, title = "Northness Over Hillshade"),
+  "08-northness.png"
+))
+figures <- c(figures, save_plot(
+  plot_metric(metrics, "rugosity_vrm_3x3", bathy = prepared, contours = TRUE, contour_interval = 25, title = "Rugosity Over Hillshade"),
+  "09-rugosity.png"
+))
+figures <- c(figures, save_plot(
+  plot_metric(metrics, "bpi_3x3", bathy = prepared, contours = TRUE, contour_interval = 25, title = "BPI Over Hillshade"),
+  "10-bpi.png"
+))
+figures <- c(figures, save_plot(
+  plot_metric(metrics, "curvature", bathy = prepared, contours = TRUE, contour_interval = 25, title = "Local Curvature Over Hillshade"),
+  "11-curvature.png"
+))
+figures <- c(figures, save_plot(
+  plot_metric(metrics, "surface_area_ratio", bathy = prepared, contours = TRUE, contour_interval = 25, title = "Surface Area Ratio Over Hillshade"),
+  "12-surface-area-ratio.png"
+))
 figures <- c(figures, save_plot(
   plot_metric_stack(metrics[[c("slope_deg", "tri", "bpi_3x3", "curvature")]]),
   "13-metric-stack-preview.png",
@@ -168,29 +218,30 @@ figures <- c(figures, save_plot(
   "16-depth-band-summary.png"
 ))
 figures <- c(figures, save_plot(
-  plot_bathy(prepared) +
-    ggplot2::geom_path(
-      data = transect_df,
-      ggplot2::aes(x = x, y = y, group = group),
-      inherit.aes = FALSE,
-      color = "white",
-      linewidth = 0.4
-    ),
+  plot_transects(
+    prepared,
+    transects,
+    contour_interval = 25,
+    title = "Transects Over Bathymetry"
+  ),
   "17-transects-over-bathymetry.png"
 ))
 figures <- c(figures, save_plot(plot_cross_sections(samples_plot), "18-cross-sections.png"))
 figures <- c(figures, save_plot(
-  plot_bathy(prepared) +
-    ggplot2::geom_path(
-      data = isobath_df,
-      ggplot2::aes(x = x, y = y, group = group),
-      inherit.aes = FALSE,
-      color = "white",
-      linewidth = 0.5
-    ),
+  plot_bathy(
+    prepared,
+    contours = TRUE,
+    contour_interval = 25,
+    vectors = isobaths,
+    vector_color = "black",
+    title = "Isobaths Over Bathymetry"
+  ),
   "19-isobaths-over-bathymetry.png"
 ))
-figures <- c(figures, save_plot(plot_isobath_corridors(corridors, prepared), "20-isobath-corridors.png"))
+figures <- c(figures, save_plot(
+  plot_isobath_corridors(corridors, prepared, contour_interval = 25),
+  "20-isobath-corridors.png"
+))
 figures <- c(figures, save_plot(
   ggplot2::ggplot(corridor_summary, ggplot2::aes(x = factor(contour_value), y = slope_deg_mean)) +
     ggplot2::geom_col() +
@@ -384,7 +435,7 @@ report <- c(
   "",
   "## Known Limitations",
   "",
-  if (length(screenshots)) "- None for generated proof artifacts." else paste("- ", screenshot_note)
+  if (length(screenshots)) "- None for proof artifacts." else paste("- ", screenshot_note)
 )
 
 writeLines(report, file.path("qa", "visual-proof", "visual-proof.md"))

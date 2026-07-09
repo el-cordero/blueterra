@@ -3,14 +3,21 @@
 
 # blueterra
 
-`blueterra` is an R package for submerged-terrain geomorphometry from
-bathymetric and elevation rasters. It uses `terra` as the spatial engine
-for raster preparation, terrain-derivative calculation, process-oriented
-metric grouping, polygon summaries, depth-band summaries, transects,
-isobath corridors, and model-ready terrain tables. The package is
-written for scientific workflows where seafloor form, grid resolution,
-vertical sign convention, and coordinate reference system all affect
-interpretation.
+`blueterra` is an R package for geomorphometric analysis of submerged
+terrain. It starts from user-supplied bathymetric or elevation rasters
+and builds `terra`-based workflows for deriving terrain metrics,
+organizing those metrics into process-oriented groups, and summarizing
+seafloor structure across polygons, transects, depth bands, and isobath
+corridors. The package is intended for analyses where terrain form, grid
+resolution, vertical sign convention, and coordinate reference system
+affect interpretation.
+
+<img src="man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
+
+*Study-area context for the example data. The package examples use
+reduced bathymetry and sampling rectangles from Hole-in-the-Wall, El
+Hoyo, and a broader slope clip along the southwest Puerto Rico shelf
+margin near La Parguera, Puerto Rico.*
 
 ## Installation
 
@@ -25,12 +32,13 @@ From a local checkout:
 install.packages("path/to/blueterra", repos = NULL, type = "source")
 ```
 
-## Core Workflow
+## Example Data
 
-The examples below use reduced bathymetry clips and sampling rectangles
-from the La Parguera shelf margin. The rasters are small enough for
-package examples but retain real depth gradients, local relief, and
-shelf-margin structure.
+The installed examples are reduced from analysis rasters and sampling
+rectangles used to test terrain workflows on real shelf-margin
+morphology. Their purpose is to provide compact rasters with actual
+depth gradients, slope breaks, local relief, and sampling geometry so
+examples behave like field data rather than idealized toy surfaces.
 
 ``` r
 library(blueterra)
@@ -50,6 +58,43 @@ hitw_rect <- rectangles[rectangles$site_id == "hitw", ]
 hoyo_rect <- rectangles[rectangles$site_id == "hoyo", ]
 slope_rect <- rectangles[rectangles$site_id == "slope", ]
 ```
+
+``` r
+examples <- blueterra_examples()
+examples$path <- basename(examples$path)
+examples
+#> # A tibble: 6 × 8
+#>   name                path     type  description crs    nrow  ncol feature_count
+#>   <chr>               <chr>    <chr> <chr>       <chr> <dbl> <dbl>         <dbl>
+#> 1 hitw                lapargu… rast… Reduced Ho… +pro…    75    75            NA
+#> 2 hoyo                lapargu… rast… Reduced El… +pro…   123   124            NA
+#> 3 slope               lapargu… rast… Aggregated… +pro…    90   190            NA
+#> 4 sampling_rectangles lapargu… vect… Sampling r… +pro…    NA    NA             3
+#> 5 synthetic_bathy     synthet… rast… Synthetic … +pro…    60    60            NA
+#> 6 synthetic_zones     synthet… vect… Synthetic … +pro…    NA    NA             2
+```
+
+`blueterra_example()` returns installed file paths. The short aliases
+`"bathy"` and `"zones"` point to the slope bathymetry and sampling
+rectangles. The explicitly named `"synthetic_bathy"` and
+`"synthetic_zones"` fixtures are kept for numerical tests.
+
+``` r
+basename(blueterra_example("hitw"))
+#> [1] "laparguera_hitw_bathy.tif"
+basename(blueterra_example("hoyo"))
+#> [1] "laparguera_hoyo_bathy.tif"
+basename(blueterra_example("slope"))
+#> [1] "laparguera_slope_bathy.tif"
+basename(blueterra_example("sampling_rectangles"))
+#> [1] "laparguera_sampling_rectangles.gpkg"
+```
+
+## Quick-Start Workflow
+
+This first pass prepares Hole-in-the-Wall bathymetry, derives a compact
+metric stack, and summarizes the metrics inside its sampling rectangle.
+The output is a table that can move directly into reporting or modeling.
 
 ``` r
 hitw_prepared <- prepare_bathy(
@@ -85,43 +130,18 @@ terrain_summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
 #> 1 hitw    Hole-in-the-Wall           50.9      0.00568
 ```
 
-## Example Data
+The metric names show which raster layers were created. The summary
+table gives site-level terrain values; here, slope and BPI summarize
+local gradient and relative position inside the Hole-in-the-Wall
+rectangle.
 
-``` r
-examples <- blueterra_examples()
-examples$path <- basename(examples$path)
-examples
-#> # A tibble: 6 × 8
-#>   name                path     type  description crs    nrow  ncol feature_count
-#>   <chr>               <chr>    <chr> <chr>       <chr> <dbl> <dbl>         <dbl>
-#> 1 hitw                lapargu… rast… Reduced Ho… +pro…    75    75            NA
-#> 2 hoyo                lapargu… rast… Reduced Ho… +pro…   123   124            NA
-#> 3 slope               lapargu… rast… Aggregated… +pro…    90   190            NA
-#> 4 sampling_rectangles lapargu… vect… Sampling r… +pro…    NA    NA             3
-#> 5 synthetic_bathy     synthet… rast… Synthetic … +pro…    60    60            NA
-#> 6 synthetic_zones     synthet… vect… Synthetic … +pro…    NA    NA             2
-```
+## Reading Bathymetry and Checking Raster Assumptions
 
-`blueterra_example()` returns installed file paths. The short aliases
-`"bathy"` and `"zones"` point to the slope bathymetry and sampling
-rectangles. The explicitly named `"synthetic_bathy"` and
-`"synthetic_zones"` fixtures are kept for small numerical tests.
-
-``` r
-basename(blueterra_example("hitw"))
-#> [1] "laparguera_hitw_bathy.tif"
-basename(blueterra_example("hoyo"))
-#> [1] "laparguera_hoyo_bathy.tif"
-basename(blueterra_example("slope"))
-#> [1] "laparguera_slope_bathy.tif"
-basename(blueterra_example("sampling_rectangles"))
-#> [1] "laparguera_sampling_rectangles.gpkg"
-```
-
-## Raster Input and Validation
-
-Depth sign conventions are preserved. These examples store bathymetry as
-negative elevation in metres.
+`read_bathy()` reads a local raster file and returns a
+`terra::SpatRaster`. `as_bathy()` accepts either a path or an existing
+`SpatRaster`. `bathy_info()` prints the pieces of raster metadata that
+usually matter first: dimensions, extent, cell size, value range, and
+CRS.
 
 ``` r
 class(hitw)
@@ -157,24 +177,72 @@ class(path_raster)
 #> [1] "terra"
 ```
 
+## Depth Sign Conventions
+
+Bathymetric rasters are commonly stored either as negative elevation or
+as positive depth. `blueterra` preserves the input convention unless the
+user explicitly converts it. This avoids silent sign changes in position
+metrics such as BPI and TPI, where the interpretation of positive and
+negative values depends on the stored vertical convention.
+
+``` r
+range(terra::values(hitw), na.rm = TRUE)
+#> [1] -268.95309  -16.63148
+
+positive_depth <- set_depth_positive(hitw)
+negative_depth <- set_depth_negative(positive_depth)
+
+range(terra::values(positive_depth), na.rm = TRUE)
+#> [1]  16.63148 268.95309
+range(terra::values(negative_depth), na.rm = TRUE)
+#> [1] -268.95309  -16.63148
+```
+
+`invert_depth()` is available when a full sign reversal is the explicit
+operation being performed.
+
+``` r
+range(terra::values(invert_depth(hitw)), na.rm = TRUE)
+#> [1]  16.63148 268.95309
+```
+
+## CRS and Map-Unit Requirements
+
+Distance-based operations require projected coordinates with linear map
+units. Buffering isobath corridors, spacing transects, calculating
+widths, and interpreting local neighborhoods are not reliable in
+longitude/latitude units. `blueterra` checks CRS assumptions where they
+affect the calculation and requires explicit reprojection rather than
+changing coordinate systems silently.
+
+``` r
+terra::crs(hitw, proj = TRUE)
+#> [1] "+proj=lcc +lat_0=17.8333333333333 +lon_0=-66.4333333333333 +lat_1=18.4333333333333 +lat_2=18.0333333333333 +x_0=200000 +y_0=200000 +datum=NAD83 +units=m +no_defs"
+terra::res(hitw)
+#> [1] 3.996743 3.996743
+
+template <- terra::aggregate(hitw, fact = 2)
+hitw_projected <- project_bathy(template, terra::crs(hitw))
+class(hitw_projected)
+#> [1] "SpatRaster"
+#> attr(,"package")
+#> [1] "terra"
+```
+
 ## Raster Preparation
 
 Raster preparation is explicit. Reprojection, resampling, cropping,
 masking, smoothing, and depth filtering are separate operations unless
-combined through `prepare_bathy()`.
+combined through `prepare_bathy()`. This makes it clear which
+transformations affect the surface before terrain derivatives are
+calculated.
 
 ``` r
 hitw_crop <- crop_bathy(hitw, terra::ext(hitw_rect))
 hitw_mask <- mask_bathy(hitw, hitw_rect)
 hitw_smooth <- smooth_bathy(hitw, window = 3)
 hitw_filtered <- depth_filter(hitw, depth_range = c(-180, -30))
-
-positive_depth <- set_depth_positive(hitw)
-negative_depth <- set_depth_negative(positive_depth)
-
-template <- terra::aggregate(hitw, fact = 2)
 hitw_resampled <- resample_bathy(hitw, template)
-hitw_projected <- project_bathy(template, terra::crs(hitw))
 
 c(
   cropped_cells = terra::ncell(hitw_crop),
@@ -185,23 +253,20 @@ c(
 #>            5625            5625            1444
 range(terra::values(hitw_filtered), na.rm = TRUE)
 #> [1] -179.88435  -30.45825
-range(terra::values(positive_depth), na.rm = TRUE)
-#> [1]  16.63148 268.95309
-range(terra::values(negative_depth), na.rm = TRUE)
-#> [1] -268.95309  -16.63148
 ```
 
-<details>
+The filtered range confirms that cells outside the requested depth
+interval were removed from the analysis surface.
 
-<summary>
+## Terrain Metrics
 
-Terrain Metric Examples
-</summary>
-
-Terrain derivatives are scale-sensitive; window sizes should match the
-feature scale being interpreted. BPI and TPI signs follow the stored
-vertical convention: for negative-elevation bathymetry, positive BPI
-indicates cells that are shallower than their local neighborhood.
+Terrain metrics describe different aspects of the same bathymetric
+surface. Slope and aspect describe local orientation; northness and
+eastness make aspect usable in linear models; TRI, roughness, and
+rugosity describe local relief variability; BPI and TPI describe
+relative position; curvature summarizes local bending of the surface.
+These metrics are scale-sensitive and should be selected with the
+feature size and raster resolution in mind.
 
 ``` r
 slope_deg <- derive_slope(hitw_prepared, units = "degrees")
@@ -223,7 +288,7 @@ metric_classes <- vapply(
     slope_deg, aspect_deg, northness, eastness, hillshade, roughness,
     tri, tpi, bpi_5, bpi_multi, rugosity, curvature, surface_ratio
   ),
-  class,
+  function(x) class(x)[1],
   character(1)
 )
 metric_classes
@@ -239,16 +304,81 @@ terra::global(bpi_5, c("min", "mean", "max"), na.rm = TRUE)
 #> bpi_5x5 -13.18512 0.01187423 13.61357
 ```
 
-`derive_curvature()` is a local Laplacian-style curvature index. It
-should not be interpreted as profile curvature or plan curvature.
+BPI signs follow the stored vertical convention. With negative-elevation
+bathymetry, positive BPI indicates cells that are shallower than their
+local neighborhood. `derive_curvature()` is a local Laplacian-style
+curvature index; it should not be interpreted as profile curvature or
+plan curvature.
 
-</details>
+## Hillshade-Supported Terrain Visualization
+
+Maps should show both the measured surface and the relief structure.
+These examples use hillshade as a visual relief layer, then add
+bathymetry, metric values, contours, sampling rectangles, transects, or
+isobath corridors. Hillshade is for interpretation of form in the
+figure; it should not be treated as a model predictor unless the user
+explicitly chooses to analyze it.
+
+``` r
+plot_sampling_rectangles(
+  slope,
+  rectangles,
+  contour_interval = 50,
+  title = "Slope Clip Bathymetry",
+  subtitle = "Hillshade, contours, and sampling rectangles",
+  caption = "Southwest Puerto Rico shelf margin near La Parguera, Puerto Rico"
+)
+```
+
+<img src="man/figures/README-map-slope-clip-1.png" alt="Slope clip bathymetry with hillshade, contours, and sampling rectangles." width="100%" />
+
+``` r
+plot_bathy(
+  hitw,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Hole-in-the-Wall Bathymetry",
+  subtitle = "Reduced example raster with real local relief"
+)
+```
+
+<img src="man/figures/README-map-hitw-1.png" alt="Hole-in-the-Wall bathymetry with hillshade and contours." width="100%" />
+
+``` r
+plot_bathy(
+  hoyo,
+  contours = TRUE,
+  contour_interval = 25,
+  vectors = hoyo_rect,
+  title = "El Hoyo Bathymetry",
+  subtitle = "Sampling rectangle over hillshaded bathymetry"
+)
+```
+
+<img src="man/figures/README-map-hoyo-1.png" alt="El Hoyo bathymetry with hillshade and contours." width="100%" />
+
+``` r
+plot_metric(
+  hitw_metrics,
+  "slope_deg",
+  bathy = hitw_prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Slope Over Hillshade",
+  legend_title = "Slope (degrees)"
+)
+```
+
+<img src="man/figures/README-map-metrics-1.png" alt="Slope metric over hillshaded bathymetry." width="100%" />
 
 ## Process Groups
 
-Process groups organize terrain metrics by interpretation. They are not
-measurements of a process by themselves; they help keep related terrain
-derivatives together for summaries and models.
+Process groups keep related terrain derivatives together so the analysis
+does not reduce seafloor structure to a single high-ranking variable.
+The group labels are interpretive categories. They do not claim to
+measure sediment transport, current velocity, or habitat condition
+directly; they organize terrain form in a way that can be summarized,
+compared, and modeled.
 
 ``` r
 catalog <- metric_catalog()
@@ -315,9 +445,11 @@ rename_metric_layers(c("old_slope", "old_bpi"), c(old_slope = "slope_deg"))
 
 ## Sampling Rectangles and Polygon Summaries
 
-Polygon summaries work with `terra::SpatVector` objects or local vector
-paths. Here the slope example is summarized across two site rectangles
-and a broader analysis extent.
+The sampling rectangles provide a compact example of zone-based terrain
+extraction. Each polygon is treated as a spatial sampling frame, and
+summary statistics are calculated from the raster cells inside that
+frame. This is useful when terrain conditions need to be compared across
+sites, mapped sectors, survey blocks, or habitat polygons.
 
 ``` r
 slope_metrics <- derive_terrain(
@@ -339,7 +471,7 @@ sampling_summary[, c(
 #>   site_id site_name        feature_type     slope_deg_mean tri_mean bpi_3x3_mean
 #>   <chr>   <chr>            <chr>                     <dbl>    <dbl>        <dbl>
 #> 1 hitw    Hole-in-the-Wall sampling_rectan…           31.6    12.9        0.223 
-#> 2 hoyo    Hoyo Terrace     sampling_rectan…           26.9     8.94       0.230 
+#> 2 hoyo    El Hoyo          sampling_rectan…           26.9     8.94       0.230 
 #> 3 slope   Slope Clip       analysis_extent            27.7     9.66      -0.0384
 
 summarize_terrain_by_zone(slope_metrics, rectangles, fun = "mean")
@@ -347,16 +479,28 @@ summarize_terrain_by_zone(slope_metrics, rectangles, fun = "mean")
 #>   site_id site_name  feature_type source_name width_m height_m angle_deg zone_id
 #>   <chr>   <chr>      <chr>        <chr>         <dbl>    <dbl>     <dbl>   <int>
 #> 1 hitw    Hole-in-t… sampling_re… Hole In th…     300      300         0       1
-#> 2 hoyo    Hoyo Terr… sampling_re… Hoyo Terra…     300      400       135       2
+#> 2 hoyo    El Hoyo    sampling_re… Hoyo Terra…     300      400       135       2
 #> 3 slope   Slope Clip analysis_ex… Slope_clip…     NaN      NaN       NaN       3
 #> # ℹ 5 more variables: slope_deg_mean <dbl>, tri_mean <dbl>, bpi_3x3_mean <dbl>,
 #> #   bpi_11x11_mean <dbl>, curvature_mean <dbl>
 ```
 
+``` r
+plot_terrain_summary(
+  sampling_summary,
+  value = "slope_deg_mean",
+  group = "site_id"
+)
+```
+
+<img src="man/figures/README-plot-polygon-summary-1.png" alt="Mean slope summarized by sampling rectangle." width="100%" />
+
 ## Depth-Band Summaries
 
-Depth bands can be applied to the stored values or to positive-depth
-values when `positive_depth = TRUE`.
+Depth-band summaries divide the raster into interpretable vertical
+intervals. This is useful when terrain changes with depth or when
+observations are collected within fixed depth ranges. The breaks should
+be chosen to match the vertical convention of the input raster.
 
 ``` r
 depth_bands <- summarize_depth_bands(
@@ -392,9 +536,10 @@ positive_bands
 
 ## Transects and Cross-Sections
 
-Transects are generated in projected map units. They are useful for
-summarizing cross-shelf or cross-slope profiles inside a sampling
-rectangle.
+Transects convert the raster surface into cross-sectional profiles. They
+are useful for showing slope breaks, terraces, escarpments, and
+cross-shelf gradients that are not always obvious from cell-by-cell
+terrain metrics.
 
 ``` r
 hitw_transects <- make_transects(hitw_rect, spacing = 75)
@@ -427,11 +572,31 @@ summarize_cross_sections(cross_sections)
 #> # ℹ 1 more variable: focal_mean_median <dbl>
 ```
 
+``` r
+plot_transects(
+  hitw_prepared,
+  hitw_transects,
+  contour_interval = 25,
+  title = "Transects Across Hole-in-the-Wall"
+)
+```
+
+<img src="man/figures/README-plot-transects-1.png" alt="Transects over hillshaded Hole-in-the-Wall bathymetry." width="100%" />
+
+``` r
+plot_cross_sections(cross_sections)
+#> Warning: Removed 29 rows containing missing values or values outside the scale range
+#> (`geom_line()`).
+```
+
+<img src="man/figures/README-plot-cross-sections-1.png" alt="Bathymetric cross-section profiles with depth increasing downward." width="100%" />
+
 ## Isobaths and Isobath Corridors
 
-Isobath corridors summarize terrain along depth horizons, which is
-useful when observations are collected or interpreted relative to
-contours.
+Isobath corridors summarize terrain along depth horizons. This is useful
+when observations are collected along contours or when the analysis
+needs to compare terrain structure at equivalent depths while retaining
+along-contour variability.
 
 ``` r
 hitw_isobaths <- extract_isobaths(hitw_prepared, depths = c(-50, -80, -120))
@@ -477,7 +642,35 @@ corridor_summary[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean")]
 #> 3          -120           61.6       0.0736
 ```
 
+``` r
+plot_bathy(
+  hitw_prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  vectors = hitw_isobaths,
+  vector_color = "black",
+  title = "Isobaths Over Hillshaded Bathymetry"
+)
+```
+
+<img src="man/figures/README-plot-isobaths-1.png" alt="Isobaths over hillshaded bathymetry." width="100%" />
+
+``` r
+plot_isobath_corridors(
+  hitw_corridors,
+  hitw_prepared,
+  contour_interval = 25
+)
+```
+
+<img src="man/figures/README-plot-isobath-corridors-1.png" alt="Isobath corridors over hillshaded bathymetry." width="100%" />
+
 ## Model-Ready Terrain Tables
+
+Raster cells, points, and polygon summaries can be converted into tables
+for classification, ordination, regression, or other spatial modeling
+workflows. The helpers return standard tabular objects and leave model
+choice to the user.
 
 ``` r
 terrain_cells <- sample_terrain_cells(
@@ -520,6 +713,11 @@ dim(model_matrix$x)
 
 ## PCA, Effect Size, and Correlation Helpers
 
+These helpers make exploratory comparisons reproducible. PCA describes
+dominant covariation among metrics, effect sizes compare groups in the
+original metric units, and correlations identify redundant terrain
+derivatives.
+
 ``` r
 hoyo_prepared <- prepare_bathy(hoyo, depth_range = c(-220, -25), smooth = TRUE)
 hoyo_metrics <- derive_terrain(
@@ -539,7 +737,7 @@ hoyo_cells <- sample_terrain_cells(
   size = 40,
   method = "regular"
 )
-hoyo_cells$site <- "Hoyo Terrace"
+hoyo_cells$site <- "El Hoyo"
 
 comparison <- rbind(hitw_cells, hoyo_cells)
 
@@ -562,12 +760,12 @@ terrain_effect_size(
   vars = c("slope_deg", "tri", "bpi_3x3", "curvature")
 )
 #> # A tibble: 4 × 7
-#>   variable  group_1          group_2      mean_1  mean_2 effect_size method  
-#>   <chr>     <chr>            <chr>         <dbl>   <dbl>       <dbl> <chr>   
-#> 1 slope_deg Hole-in-the-Wall Hoyo Terrace 53.4   30.1          1.53  cohens_d
-#> 2 tri       Hole-in-the-Wall Hoyo Terrace  5.73   1.98         0.964 cohens_d
-#> 3 bpi_3x3   Hole-in-the-Wall Hoyo Terrace  0.434 -0.0869       0.524 cohens_d
-#> 4 curvature Hole-in-the-Wall Hoyo Terrace -1.30   0.237       -0.510 cohens_d
+#>   variable  group_1          group_2 mean_1  mean_2 effect_size method  
+#>   <chr>     <chr>            <chr>    <dbl>   <dbl>       <dbl> <chr>   
+#> 1 slope_deg Hole-in-the-Wall El Hoyo 53.4   30.1          1.53  cohens_d
+#> 2 tri       Hole-in-the-Wall El Hoyo  5.73   1.98         0.964 cohens_d
+#> 3 bpi_3x3   Hole-in-the-Wall El Hoyo  0.434 -0.0869       0.524 cohens_d
+#> 4 curvature Hole-in-the-Wall El Hoyo -1.30   0.237       -0.510 cohens_d
 
 terrain_correlation(
   comparison,
@@ -586,77 +784,97 @@ terrain_correlation(
 balanced <- balance_samples(comparison, group = "site", seed = 42)
 table(balanced$site)
 #> 
-#> Hole-in-the-Wall     Hoyo Terrace 
+#>          El Hoyo Hole-in-the-Wall 
 #>               21               21
 ```
-
-## Plotting
-
-``` r
-plot_bathy(hitw)
-```
-
-<img src="man/figures/README-plotting-1.png" alt="Hole-in-the-Wall bathymetry map."  />
-
-``` r
-plot_hillshade(hitw_prepared)
-```
-
-<img src="man/figures/README-plotting-hillshade-1.png" alt="Hillshade derived from prepared Hole-in-the-Wall bathymetry."  />
-
-``` r
-plot_metric(hitw_metrics, "slope_deg")
-```
-
-<img src="man/figures/README-plotting-slope-1.png" alt="Slope metric map for prepared Hole-in-the-Wall bathymetry."  />
-
-``` r
-plot_metric_stack(hitw_metrics[[c("slope_deg", "tri", "bpi_3x3")]])
-```
-
-<img src="man/figures/README-plotting-stack-1.png" alt="Metric stack preview for slope, TRI, and BPI."  />
-
-``` r
-plot_cross_sections(cross_sections)
-#> Warning: Removed 29 rows containing missing values or values outside the scale range
-#> (`geom_line()`).
-```
-
-<img src="man/figures/README-plotting-cross-sections-1.png" alt="Bathymetric cross-section profiles sampled across Hole-in-the-Wall."  />
-
-``` r
-plot_isobath_corridors(hitw_corridors, hitw_prepared)
-```
-
-<img src="man/figures/README-plotting-isobath-corridors-1.png" alt="Isobath corridors over Hole-in-the-Wall bathymetry."  />
 
 ``` r
 plot_process_pca(pca)
 ```
 
-<img src="man/figures/README-plotting-pca-1.png" alt="PCA scores for sampled terrain metrics."  />
+<img src="man/figures/README-plot-pca-1.png" alt="PCA scores for sampled terrain metrics." width="100%" />
+
+## Plotting Guide
+
+The plotting functions return `ggplot` objects. That keeps the default
+maps usable while allowing users to add themes, titles, annotations, or
+publication styling with normal `ggplot2` code.
 
 ``` r
-plot_terrain_summary(sampling_summary, value = "slope_deg_mean")
+plot_metric_stack(hitw_metrics[[c("slope_deg", "tri", "bpi_3x3", "curvature")]])
 ```
 
-<img src="man/figures/README-plotting-summary-1.png" alt="Mean slope summarized by sampling rectangle."  />
+<img src="man/figures/README-plotting-stack-1.png" alt="Metric stack preview for slope, TRI, BPI, and curvature." width="100%" />
 
 ``` r
-plot_depth_profile(
-  transect_samples[transect_samples$transect_id == transect_samples$transect_id[1], ],
-  depth_col = "focal_mean"
+plot_metric(
+  hitw_metrics,
+  "rugosity_vrm_3x3",
+  bathy = hitw_prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Rugosity Over Hillshade",
+  legend_title = "VRM"
 )
 ```
 
-<img src="man/figures/README-plotting-profile-density-1.png" alt="Depth profile and process-density plot examples."  />
+<img src="man/figures/README-plotting-rugosity-1.png" alt="Rugosity over hillshaded bathymetry." width="100%" />
 
 ``` r
+plot_metric(
+  hitw_metrics,
+  "bpi_3x3",
+  bathy = hitw_prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "BPI Over Hillshade",
+  legend_title = "BPI"
+)
+```
 
+<img src="man/figures/README-plotting-bpi-1.png" alt="BPI over hillshaded bathymetry." width="100%" />
+
+``` r
+plot_metric(
+  hitw_metrics,
+  "curvature",
+  bathy = hitw_prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Local Curvature Over Hillshade",
+  legend_title = "Curvature"
+)
+```
+
+<img src="man/figures/README-plotting-curvature-1.png" alt="Curvature over hillshaded bathymetry." width="100%" />
+
+``` r
+plot_metric(
+  hitw_metrics,
+  "surface_area_ratio",
+  bathy = hitw_prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Surface Area Ratio Over Hillshade",
+  legend_title = "Ratio"
+)
+```
+
+<img src="man/figures/README-plotting-surface-ratio-1.png" alt="Surface area ratio over hillshaded bathymetry." width="100%" />
+
+``` r
 plot_process_density(comparison, value = "slope_deg", group = "site")
 ```
 
-<img src="man/figures/README-plotting-profile-density-2.png" alt="Depth profile and process-density plot examples."  />
+<img src="man/figures/README-plotting-density-1.png" alt="Process-density plot for slope values." width="100%" />
+
+``` r
+plot_depth_profile(
+  transect_samples[transect_samples$transect_id == transect_samples$transect_id[1], ]
+)
+```
+
+<img src="man/figures/README-plotting-depth-profile-1.png" alt="Depth profile along one transect." width="100%" />
 
 ## Function Cookbook
 
@@ -664,47 +882,55 @@ plot_process_density(comparison, value = "slope_deg", group = "site")
 
 <summary>
 
-Input and preparation
+Input and validation functions
 </summary>
 
+Use these functions when a raster enters the workflow. They return
+`terra::SpatRaster` objects or compact metadata tables.
+
 ``` r
-read_bathy(hitw_path)
-#> class       : SpatRaster
-#> size        : 75, 75, 1  (nrow, ncol, nlyr)
-#> resolution  : 3.996743, 3.996743  (x, y)
-#> extent      : 137474.2, 137774, 205590.5, 205890.2  (xmin, xmax, ymin, ymax)
-#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> source      : laparguera_hitw_bathy.tif
-#> name        :     bathy_m
-#> min value   : -268.953094
-#> max value   :  -16.631475
-as_bathy(hitw)
-#> class       : SpatRaster
-#> size        : 75, 75, 1  (nrow, ncol, nlyr)
-#> resolution  : 3.996743, 3.996743  (x, y)
-#> extent      : 137474.2, 137774, 205590.5, 205890.2  (xmin, xmax, ymin, ymax)
-#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> source      : laparguera_hitw_bathy.tif
-#> name        :     bathy_m
-#> min value   : -268.953094
-#> max value   :  -16.631475
-validate_bathy(hitw)
-check_bathy_crs(hitw)
+hitw_file <- blueterra_example("hitw")
+hitw_from_file <- read_bathy(hitw_file)
+hitw_from_object <- as_bathy(hitw_from_file)
+validate_bathy(hitw_from_object)
+check_bathy_crs(hitw_from_object)
 #> # A tibble: 1 × 4
 #>   has_crs is_lonlat is_projected crs                                            
 #>   <lgl>   <lgl>     <lgl>        <chr>                                          
 #> 1 TRUE    FALSE     TRUE         "PROJCRS[\"NAD83 / Puerto Rico & Virgin Is.\",…
-check_bathy_units(hitw, units = "m", positive_depth = FALSE)
+check_bathy_units(hitw_from_object, units = "m", positive_depth = FALSE)
 #> # A tibble: 1 × 5
 #>   layer     min   max units positive_depth
 #>   <chr>   <dbl> <dbl> <chr> <lgl>         
 #> 1 bathy_m -269. -16.6 m     FALSE
-bathy_info(hitw)
+bathy_info(hitw_from_object)
 #> # A tibble: 1 × 13
 #>   layer    nrow  ncol ncell    xmin   xmax   ymin   ymax  xres  yres   min   max
 #>   <chr>   <dbl> <dbl> <dbl>   <dbl>  <dbl>  <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl>
 #> 1 bathy_m    75    75  5625 137474. 1.38e5 2.06e5 2.06e5  4.00  4.00 -269. -16.6
 #> # ℹ 1 more variable: crs <chr>
+class(hitw_from_file)
+#> [1] "SpatRaster"
+#> attr(,"package")
+#> [1] "terra"
+```
+
+`read_bathy()` is the file-path entry point; `as_bathy()` is useful
+inside workflows that already hold a raster object.
+
+</details>
+
+<details>
+
+<summary>
+
+Raster preparation functions
+</summary>
+
+These functions make preprocessing choices explicit and return
+`terra::SpatRaster` objects.
+
+``` r
 prepare_bathy(hitw, depth_range = c(-180, -30))
 #> class       : SpatRaster
 #> size        : 28, 75, 1  (nrow, ncol, nlyr)
@@ -814,16 +1040,166 @@ set_depth_negative(positive_depth)
 #> max value   :  -16.631475
 ```
 
+The parameter variation is usually the analysis decision: target CRS,
+target resolution, depth interval, smoothing window, or sign convention.
+
 </details>
 
 <details>
 
 <summary>
 
-Metrics, summaries, and models
+Terrain metric functions
 </summary>
 
+Each metric function returns a `terra::SpatRaster`. The stack helpers
+return a multi-layer `SpatRaster` with clean layer names.
+
 ``` r
+derive_slope(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : slope_deg
+#> min value   : 10.633082
+#> max value   : 81.670015
+derive_aspect(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : aspect_deg
+#> min value   :  87.129591
+#> max value   :  219.14099
+derive_northness(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : northness
+#> min value   :        -1
+#> max value   :  0.050077
+derive_eastness(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        :  eastness
+#> min value   : -0.631231
+#> max value   :  0.998745
+derive_hillshade(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : hillshade
+#> min value   : -0.523672
+#> max value   :  0.619912
+derive_roughness(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : roughness
+#> min value   :         0
+#> max value   : 65.460165
+derive_tri(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        :       tri
+#> min value   :  1.047873
+#> max value   : 21.578462
+derive_tpi(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        :       tpi
+#> min value   : -6.241576
+#> max value   :  6.279038
+derive_bpi(hitw_prepared, window = 5)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        :    bpi_5x5
+#> min value   : -13.185123
+#> max value   :  13.613569
+derive_multiscale_bpi(hitw_prepared, windows = c(3, 7))
+#> class       : SpatRaster
+#> size        : 37, 75, 2  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varnames    : laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#> names       :   bpi_3x3,    bpi_7x7
+#> min values  : -5.548068, -18.969588
+#> max values  :  5.581367,  20.310758
+derive_rugosity(hitw_prepared, window = 3)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : rugosity_vrm_3x3
+#> min value   :         0.000016
+#> max value   :         0.088559
+derive_curvature(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        :  curvature
+#> min value   : -17.331033
+#> max value   :  17.263913
+derive_surface_area_ratio(hitw_prepared)
+#> class       : SpatRaster
+#> size        : 37, 75, 1  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varname     : laparguera_hitw_bathy
+#> name        : surface_area_ratio
+#> min value   :           1.017471
+#> max value   :           6.902548
 derive_metric_stack(hitw_prepared, metrics = c("slope", "bpi"))
 #> class       : SpatRaster
 #> size        : 37, 75, 3  (nrow, ncol, nlyr)
@@ -837,6 +1213,91 @@ derive_metric_stack(hitw_prepared, metrics = c("slope", "bpi"))
 #> names       : slope_deg,   bpi_3x3,  bpi_11x11
 #> min values  : 10.633082, -5.548068, -24.949998
 #> max values  : 81.670015,  5.581367,  29.158179
+derive_terrain(hitw_prepared, metrics = c("slope", "tri", "bpi"))
+#> class       : SpatRaster
+#> size        : 37, 75, 4  (nrow, ncol, nlyr)
+#> resolution  : 3.996743, 3.996743  (x, y)
+#> extent      : 137474.2, 137774, 205626.5, 205774.3  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> source(s)   : memory
+#> varnames    : laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#>               laparguera_hitw_bathy
+#> names       : slope_deg,       tri,   bpi_3x3,  bpi_11x11
+#> min values  : 10.633082,  1.047873, -5.548068, -24.949998
+#> max values  : 81.670015, 21.578462,  5.581367,  29.158179
+```
+
+Use smaller focal windows for fine features and larger windows for
+broader terrain position.
+
+</details>
+
+<details>
+
+<summary>
+
+Process group functions
+</summary>
+
+These functions return tibbles, character vectors, or renamed metric
+labels that keep terrain interpretation organized.
+
+``` r
+metric_catalog()
+#> # A tibble: 16 × 9
+#>    metric             label      process_group description units source_function
+#>    <chr>              <chr>      <chr>         <chr>       <chr> <chr>          
+#>  1 bathy              Bathymetry base_bathyme… Input bath… inpu… as_bathy       
+#>  2 slope_deg          Slope      slope_gradie… Local slop… degr… derive_slope   
+#>  3 slope_rad          Slope      slope_gradie… Local slop… radi… derive_slope   
+#>  4 aspect_deg         Aspect     orientation   Local down… degr… derive_aspect  
+#>  5 aspect_rad         Aspect     orientation   Local down… radi… derive_aspect  
+#>  6 northness          Northness  orientation   Cosine tra… unit… derive_northne…
+#>  7 eastness           Eastness   orientation   Sine trans… unit… derive_eastness
+#>  8 hillshade          Hillshade  surface_stru… Illuminati… rela… derive_hillsha…
+#>  9 roughness          Roughness  seafloor_rug… Local rang… inpu… derive_roughne…
+#> 10 tri                Terrain R… seafloor_rug… Local terr… inpu… derive_tri     
+#> 11 tpi                Topograph… seafloor_pos… Cell posit… inpu… derive_tpi     
+#> 12 bpi_3x3            Fine BPI   seafloor_pos… Fine-scale… inpu… derive_bpi     
+#> 13 bpi_11x11          Broad BPI  seafloor_pos… Broad-scal… inpu… derive_bpi     
+#> 14 curvature          Curvature  curvature     Laplacian-… inpu… derive_curvatu…
+#> 15 surface_area_ratio Surface A… surface_stru… Approximat… unit… derive_surface…
+#> 16 rugosity_vrm_3x3   Vector Ru… seafloor_rug… Vector rug… unit… derive_rugosity
+#> # ℹ 3 more variables: requires_optional_dependency <lgl>,
+#> #   scale_sensitive <lgl>, interpretation_notes <chr>
+process_groups()
+#> [1] "base_bathymetry"   "slope_gradient"    "orientation"      
+#> [4] "surface_structure" "seafloor_rugosity" "seafloor_position"
+#> [7] "curvature"
+assign_process_groups(hitw_metrics)
+#> # A tibble: 10 × 7
+#>    metric        metric_standard label process_group description source_function
+#>    <chr>         <chr>           <chr> <chr>         <chr>       <chr>          
+#>  1 slope_deg     slope_deg       Slope slope_gradie… Local slop… derive_slope   
+#>  2 aspect_deg    aspect_deg      Aspe… orientation   Local down… derive_aspect  
+#>  3 northness     northness       Nort… orientation   Cosine tra… derive_northne…
+#>  4 eastness      eastness        East… orientation   Sine trans… derive_eastness
+#>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
+#>  6 rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… Vector rug… derive_rugosity
+#>  7 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
+#>  8 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
+#>  9 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
+#> 10 surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…
+#> # ℹ 1 more variable: matched <lgl>
+select_process_representatives(metrics_available = names(hitw_metrics))
+#> # A tibble: 6 × 9
+#>   metric             label       process_group description units source_function
+#>   <chr>              <chr>       <chr>         <chr>       <chr> <chr>          
+#> 1 curvature          Curvature   curvature     Laplacian-… inpu… derive_curvatu…
+#> 2 aspect_deg         Aspect      orientation   Local down… degr… derive_aspect  
+#> 3 bpi_11x11          Broad BPI   seafloor_pos… Broad-scal… inpu… derive_bpi     
+#> 4 rugosity_vrm_3x3   Vector Rug… seafloor_rug… Vector rug… unit… derive_rugosity
+#> 5 slope_deg          Slope       slope_gradie… Local slop… degr… derive_slope   
+#> 6 surface_area_ratio Surface Ar… surface_stru… Approximat… unit… derive_surface…
+#> # ℹ 3 more variables: requires_optional_dependency <lgl>,
+#> #   scale_sensitive <lgl>, interpretation_notes <chr>
 summarize_process_groups(hitw_metrics)
 #> # A tibble: 6 × 3
 #>   process_group     n_metrics metrics                        
@@ -847,6 +1308,148 @@ summarize_process_groups(hitw_metrics)
 #> 4 seafloor_rugosity         2 tri, rugosity_vrm_3x3          
 #> 5 slope_gradient            1 slope_deg                      
 #> 6 surface_structure         1 surface_area_ratio
+standardize_metric_names(c("Slope degrees", "BPI 3 x 3"))
+#> [1] "slope_degrees" "bpi_3_x_3"
+rename_metric_layers(c("slope_old", "bpi_old"), c(slope_old = "slope_deg"))
+#> [1] "slope_deg" "bpi_old"
+```
+
+Interpret process groups as terrain-form categories, not direct
+measurements of physical forcing.
+
+</details>
+
+<details>
+
+<summary>
+
+Transects, isobaths, and summaries
+</summary>
+
+These functions work with `terra::SpatVector` objects or local vector
+paths and return vectors, extracted cells, or summary tables.
+
+``` r
+make_transects(hitw_rect, spacing = 100)
+#> class       : SpatVector
+#> geometry    : lines
+#> dimensions  : 3, 10  (geometries, attributes)
+#> extent      : 137475.2, 137775.2, 205616.7, 205816.7  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset transect_id
+#> type        :   <chr>            <chr>           <chr>            <chr>   <num>    <num>     <num>   <chr>    <num>       <chr>
+#> values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0       1 -124.264         1_1
+#>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0       1 -24.2641         1_2
+#>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300         0       1  75.7359         1_3
+sample_transects(hitw_transects, hitw_prepared, n = 5)
+#> # A tibble: 20 × 5
+#>    transect_id distance       x       y focal_mean
+#>    <chr>          <dbl>   <dbl>   <dbl>      <dbl>
+#>  1 1_1                0 137475. 205617.      NaN  
+#>  2 1_1               75 137550. 205617.      NaN  
+#>  3 1_1              150 137625. 205617.      NaN  
+#>  4 1_1              225 137700. 205617.      NaN  
+#>  5 1_1              300 137775. 205617.      NaN  
+#>  6 1_2                0 137475. 205692.      -83.4
+#>  7 1_2               75 137550. 205692.     -114. 
+#>  8 1_2              150 137625. 205692.     -153. 
+#>  9 1_2              225 137700. 205692.     -158. 
+#> 10 1_2              300 137775. 205692.      NaN  
+#> 11 1_3                0 137475. 205767.      NaN  
+#> 12 1_3               75 137550. 205767.      -33.9
+#> 13 1_3              150 137625. 205767.      -34.3
+#> 14 1_3              225 137700. 205767.      -37.7
+#> 15 1_3              300 137775. 205767.      NaN  
+#> 16 1_4                0 137475. 205842.      NaN  
+#> 17 1_4               75 137550. 205842.      NaN  
+#> 18 1_4              150 137625. 205842.      NaN  
+#> 19 1_4              225 137700. 205842.      NaN  
+#> 20 1_4              300 137775. 205842.      NaN
+extract_cross_sections(hitw_transects, hitw_prepared, n = 5)
+#> # A tibble: 20 × 5
+#>    transect_id distance       x       y focal_mean
+#>    <chr>          <dbl>   <dbl>   <dbl>      <dbl>
+#>  1 1_1                0 137475. 205617.      NaN  
+#>  2 1_1               75 137550. 205617.      NaN  
+#>  3 1_1              150 137625. 205617.      NaN  
+#>  4 1_1              225 137700. 205617.      NaN  
+#>  5 1_1              300 137775. 205617.      NaN  
+#>  6 1_2                0 137475. 205692.      -83.4
+#>  7 1_2               75 137550. 205692.     -114. 
+#>  8 1_2              150 137625. 205692.     -153. 
+#>  9 1_2              225 137700. 205692.     -158. 
+#> 10 1_2              300 137775. 205692.      NaN  
+#> 11 1_3                0 137475. 205767.      NaN  
+#> 12 1_3               75 137550. 205767.      -33.9
+#> 13 1_3              150 137625. 205767.      -34.3
+#> 14 1_3              225 137700. 205767.      -37.7
+#> 15 1_3              300 137775. 205767.      NaN  
+#> 16 1_4                0 137475. 205842.      NaN  
+#> 17 1_4               75 137550. 205842.      NaN  
+#> 18 1_4              150 137625. 205842.      NaN  
+#> 19 1_4              225 137700. 205842.      NaN  
+#> 20 1_4              300 137775. 205842.      NaN
+summarize_cross_sections(cross_sections)
+#> # A tibble: 4 × 6
+#>   transect_id focal_mean_mean focal_mean_sd focal_mean_min focal_mean_max
+#>   <chr>                 <dbl>         <dbl>          <dbl>          <dbl>
+#> 1 1_1                    NA           NA              NA             NA  
+#> 2 1_2                  -130.          30.3          -159.           -83.4
+#> 3 1_3                   -35.1          2.52          -38.5          -31.5
+#> 4 1_4                    NA           NA              NA             NA  
+#> # ℹ 1 more variable: focal_mean_median <dbl>
+extract_isobaths(hitw_prepared, depths = c(-50, -80))
+#> class       : SpatVector
+#> geometry    : lines
+#> dimensions  : 2, 3  (geometries, attributes)
+#> extent      : 137476.2, 137772, 205696.8, 205756.6  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> names       : level contour_value depth_label
+#> type        : <num>         <num>       <num>
+#> values      :   -50           -50         -50
+#>                 -80           -80         -80
+make_isobath_corridors(hitw_prepared, depths = c(-50, -80), width = 20)
+#> class       : SpatVector
+#> geometry    : polygons
+#> dimensions  : 2, 4  (geometries, attributes)
+#> extent      : 137456.2, 137792, 205676.8, 205776.5  (xmin, xmax, ymin, ymax)
+#> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
+#> names       : level contour_value depth_label corridor_id
+#> type        : <num>         <num>       <num>       <int>
+#> values      :   -50           -50         -50           1
+#>                 -80           -80         -80           2
+extract_isobath_corridors(hitw_metrics, hitw_corridors)
+#> # A tibble: 2,295 × 15
+#>       ID level contour_value depth_label corridor_id slope_deg aspect_deg
+#>    <int> <dbl>         <dbl>       <dbl>       <int>     <dbl>      <dbl>
+#>  1     1   -50           -50         -50           1        NA         NA
+#>  2     1   -50           -50         -50           1        NA         NA
+#>  3     1   -50           -50         -50           1        NA         NA
+#>  4     1   -50           -50         -50           1        NA         NA
+#>  5     1   -50           -50         -50           1        NA         NA
+#>  6     1   -50           -50         -50           1        NA         NA
+#>  7     1   -50           -50         -50           1        NA         NA
+#>  8     1   -50           -50         -50           1        NA         NA
+#>  9     1   -50           -50         -50           1        NA         NA
+#> 10     1   -50           -50         -50           1        NA         NA
+#> # ℹ 2,285 more rows
+#> # ℹ 8 more variables: northness <dbl>, eastness <dbl>, tri <dbl>,
+#> #   rugosity_vrm_3x3 <dbl>, bpi_3x3 <dbl>, bpi_11x11 <dbl>, curvature <dbl>,
+#> #   surface_area_ratio <dbl>
+summarize_isobath_terrain(hitw_metrics, hitw_corridors)
+#> # A tibble: 3 × 55
+#>   level contour_value depth_label corridor_id zone_id slope_deg_mean
+#>   <dbl>         <dbl>       <dbl>       <int>   <int>          <dbl>
+#> 1   -50           -50         -50           1       1           45.0
+#> 2   -80           -80         -80           2       2           45.6
+#> 3  -120          -120        -120           3       3           61.6
+#> # ℹ 49 more variables: slope_deg_sd <dbl>, slope_deg_min <dbl>,
+#> #   slope_deg_max <dbl>, slope_deg_median <dbl>, aspect_deg_mean <dbl>,
+#> #   aspect_deg_sd <dbl>, aspect_deg_min <dbl>, aspect_deg_max <dbl>,
+#> #   aspect_deg_median <dbl>, northness_mean <dbl>, northness_sd <dbl>,
+#> #   northness_min <dbl>, northness_max <dbl>, northness_median <dbl>,
+#> #   eastness_mean <dbl>, eastness_sd <dbl>, eastness_min <dbl>,
+#> #   eastness_max <dbl>, eastness_median <dbl>, tri_mean <dbl>, tri_sd <dbl>, …
 summarize_terrain(hitw_metrics, hitw_rect)
 #> # A tibble: 1 × 58
 #>   site_id site_name  feature_type source_name width_m height_m angle_deg zone_id
@@ -859,12 +1462,44 @@ summarize_terrain(hitw_metrics, hitw_rect)
 #> #   northness_sd <dbl>, northness_min <dbl>, northness_max <dbl>,
 #> #   northness_median <dbl>, eastness_mean <dbl>, eastness_sd <dbl>,
 #> #   eastness_min <dbl>, eastness_max <dbl>, eastness_median <dbl>, …
+summarize_terrain_by_zone(slope_metrics, rectangles)
+#> # A tibble: 3 × 33
+#>   site_id site_name  feature_type source_name width_m height_m angle_deg zone_id
+#>   <chr>   <chr>      <chr>        <chr>         <dbl>    <dbl>     <dbl>   <int>
+#> 1 hitw    Hole-in-t… sampling_re… Hole In th…     300      300         0       1
+#> 2 hoyo    El Hoyo    sampling_re… Hoyo Terra…     300      400       135       2
+#> 3 slope   Slope Clip analysis_ex… Slope_clip…     NaN      NaN       NaN       3
+#> # ℹ 25 more variables: slope_deg_mean <dbl>, slope_deg_sd <dbl>,
+#> #   slope_deg_min <dbl>, slope_deg_max <dbl>, slope_deg_median <dbl>,
+#> #   tri_mean <dbl>, tri_sd <dbl>, tri_min <dbl>, tri_max <dbl>,
+#> #   tri_median <dbl>, bpi_3x3_mean <dbl>, bpi_3x3_sd <dbl>, bpi_3x3_min <dbl>,
+#> #   bpi_3x3_max <dbl>, bpi_3x3_median <dbl>, bpi_11x11_mean <dbl>,
+#> #   bpi_11x11_sd <dbl>, bpi_11x11_min <dbl>, bpi_11x11_max <dbl>,
+#> #   bpi_11x11_median <dbl>, curvature_mean <dbl>, curvature_sd <dbl>, …
 summarize_depth_bands(hitw_prepared, breaks = c(-220, -100, -20))
 #> # A tibble: 2 × 8
 #>   depth_band  metric     n_cells   mean    sd    min    max median
 #>   <chr>       <chr>        <int>  <dbl> <dbl>  <dbl>  <dbl>  <dbl>
 #> 1 [-220,-100) focal_mean     999 -180.   31.9 -218.  -100.  -190. 
 #> 2 [-100,-20]  focal_mean    1316  -64.9  18.6  -99.9  -27.2  -66.3
+```
+
+Spacing, width, and contour depth are map-unit or vertical-unit
+decisions and should match the stored CRS and depth convention.
+
+</details>
+
+<details>
+
+<summary>
+
+Modeling and plotting helpers
+</summary>
+
+These helpers return tibbles, model matrices, PCA objects, or `ggplot`
+objects.
+
+``` r
 extract_terrain_points(hitw_metrics, terra::centroids(hitw_rect))
 #> # A tibble: 1 × 17
 #>   site_id site_name        feature_type   source_name width_m height_m angle_deg
@@ -877,16 +1512,16 @@ sample_terrain_cells(hitw_metrics, size = 10)
 #> # A tibble: 10 × 12
 #>          x      y slope_deg aspect_deg northness eastness   tri rugosity_vrm_3x3
 #>      <dbl>  <dbl>     <dbl>      <dbl>     <dbl>    <dbl> <dbl>            <dbl>
-#>  1 137516. 2.06e5      38.4       175.    -0.996   0.0944  2.44        0.000209 
-#>  2 137512. 2.06e5      35.2       173.    -0.992   0.128   2.19        0.000359 
-#>  3 137696. 2.06e5      43.3       197.    -0.957  -0.291   2.96        0.00373  
-#>  4 137692. 2.06e5      46.9       193.    -0.974  -0.228   3.34        0.00503  
-#>  5 137656. 2.06e5      45.0       160.    -0.942   0.336   3.15        0.000798 
-#>  6 137564. 2.06e5      74.4       169.    -0.983   0.185  11.0         0.00615  
-#>  7 137548. 2.06e5      47.6       175.    -0.997   0.0820  3.36        0.00196  
-#>  8 137564. 2.06e5      45.5       148.    -0.851   0.525   3.15        0.00846  
-#>  9 137500. 2.06e5      34.2       170.    -0.984   0.176   2.12        0.0000156
-#> 10 137512. 2.06e5      51.1       173.    -0.993   0.117   3.85        0.00118  
+#>  1 137760. 2.06e5      80.5       159.    -0.935   0.353  19.1          0.00513 
+#>  2 137556. 2.06e5      62.1       145.    -0.816   0.578   5.85         0.0180  
+#>  3 137516. 2.06e5      38.4       175.    -0.996   0.0944  2.44         0.000209
+#>  4 137512. 2.06e5      35.2       173.    -0.992   0.128   2.19         0.000359
+#>  5 137696. 2.06e5      43.3       197.    -0.957  -0.291   2.96         0.00373 
+#>  6 137692. 2.06e5      46.9       193.    -0.974  -0.228   3.34         0.00503 
+#>  7 137656. 2.06e5      45.0       160.    -0.942   0.336   3.15         0.000798
+#>  8 137564. 2.06e5      74.4       169.    -0.983   0.185  11.0          0.00615 
+#>  9 137548. 2.06e5      47.6       175.    -0.997   0.0820  3.36         0.00196 
+#> 10 137564. 2.06e5      45.5       148.    -0.851   0.525   3.15         0.00846 
 #> # ℹ 4 more variables: bpi_3x3 <dbl>, bpi_11x11 <dbl>, curvature <dbl>,
 #> #   surface_area_ratio <dbl>
 terrain_pca(terrain_cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
@@ -934,16 +1569,19 @@ terrain_pca(terrain_cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
 #> tri        0.4909682 -0.5056483 -0.709256942 -0.01498749
 #> bpi_3x3   -0.5126137 -0.4866339 -0.022852027  0.70703071
 #> curvature  0.5118622  0.4881723 -0.008641577  0.70683110
-terrain_correlation(terrain_cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
-#> # A tibble: 6 × 3
-#>   var1      var2      correlation
-#>   <chr>     <chr>           <dbl>
-#> 1 slope_deg tri             0.937
-#> 2 slope_deg bpi_3x3        -0.303
-#> 3 tri       bpi_3x3        -0.319
-#> 4 slope_deg curvature       0.299
-#> 5 tri       curvature       0.318
-#> 6 bpi_3x3   curvature      -0.998
+terrain_effect_size(comparison, group = "site", vars = c("slope_deg", "tri"))
+#> # A tibble: 2 × 7
+#>   variable  group_1          group_2 mean_1 mean_2 effect_size method  
+#>   <chr>     <chr>            <chr>    <dbl>  <dbl>       <dbl> <chr>   
+#> 1 slope_deg Hole-in-the-Wall El Hoyo  53.4   30.1        1.53  cohens_d
+#> 2 tri       Hole-in-the-Wall El Hoyo   5.73   1.98       0.964 cohens_d
+terrain_correlation(terrain_cells[, c("slope_deg", "tri", "bpi_3x3")])
+#> # A tibble: 3 × 3
+#>   var1      var2    correlation
+#>   <chr>     <chr>         <dbl>
+#> 1 slope_deg tri           0.937
+#> 2 slope_deg bpi_3x3      -0.303
+#> 3 tri       bpi_3x3      -0.319
 prepare_model_matrix(terrain_cells, vars = c("slope_deg", "tri"))
 #> $x
 #>        slope_deg       tri
@@ -1068,7 +1706,43 @@ prepare_model_matrix(terrain_cells, vars = c("slope_deg", "tri"))
 #> # ℹ 90 more rows
 #> # ℹ 4 more variables: bpi_3x3 <dbl>, bpi_11x11 <dbl>, curvature <dbl>,
 #> #   surface_area_ratio <dbl>
+balance_samples(comparison, group = "site", seed = 42)
+#> # A tibble: 42 × 7
+#>          x       y slope_deg   tri  bpi_3x3 curvature site   
+#>      <dbl>   <dbl>     <dbl> <dbl>    <dbl>     <dbl> <chr>  
+#>  1 135698. 204865.     38.5  2.30  -0.165      0.537  El Hoyo
+#>  2 135586. 204753.     36.7  2.30  -0.0225     0.0208 El Hoyo
+#>  3 135698. 204641.     31.2  1.87  -0.00338    0.0224 El Hoyo
+#>  4 135526. 204809.      7.13 0.370  0.0960    -0.345  El Hoyo
+#>  5 135754. 204697.     36.0  2.12  -0.137      0.401  El Hoyo
+#>  6 135642. 204697.     18.1  0.942  0.182     -0.538  El Hoyo
+#>  7 135754. 204865.      8.24 0.423 -0.0317     0.0878 El Hoyo
+#>  8 135810. 204865.     31.6  1.85   0.377     -1.18   El Hoyo
+#>  9 135754. 204753.     58.4  4.71  -0.454      1.31   El Hoyo
+#> 10 135698. 204753.     12.0  0.616  0.0421    -0.135  El Hoyo
+#> # ℹ 32 more rows
 ```
+
+``` r
+invisible(list(
+  plot_bathy(hitw_prepared),
+  plot_metric(hitw_metrics, "slope_deg", bathy = hitw_prepared),
+  plot_terrain_map(hitw_prepared, hitw_metrics[["tri"]]),
+  plot_sampling_rectangles(slope, rectangles),
+  plot_transects(hitw_prepared, hitw_transects),
+  plot_isobath_corridors(hitw_corridors, hitw_prepared),
+  plot_cross_sections(cross_sections),
+  plot_depth_profile(transect_samples),
+  plot_metric_stack(hitw_metrics[[c("slope_deg", "tri")]]),
+  plot_process_density(comparison, value = "slope_deg", group = "site"),
+  plot_process_pca(pca),
+  plot_terrain_summary(sampling_summary, value = "slope_deg_mean"),
+  plot_hillshade(hitw_prepared)
+))
+```
+
+The map helpers use hillshade as a visual layer and return standard
+`ggplot` objects for further styling.
 
 </details>
 

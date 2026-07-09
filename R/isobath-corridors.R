@@ -202,40 +202,80 @@ summarize_isobath_terrain <- function(
 #' Plot isobath corridors
 #'
 #' @description
-#' Plots corridor polygons, optionally over a raster background.
+#' Plots isobath corridor polygons, optionally over hillshaded bathymetry with
+#' contour lines. The hillshade layer is visual context only.
 #'
 #' @param corridors Corridor polygons.
 #' @param bathy Optional raster background.
+#' @param hillshade Logical. Draw hillshade from `bathy` when available.
+#' @param contours Logical. Draw bathymetric contours when `bathy` is supplied.
+#' @param contour_interval Contour interval in raster units.
+#' @param labels Logical. Label corridors with `label_field`.
+#' @param label_field Attribute used for labels. Defaults to `depth_label` when
+#'   present, otherwise `contour_value`.
+#' @param ... Additional arguments passed to [plot_bathy()].
 #'
 #' @return A `ggplot` object.
 #'
 #' @examples
-#' bathy <- read_bathy(blueterra_example("bathy"))
-#' corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
-#' plot_isobath_corridors(corridors, bathy)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   bathy <- read_bathy(blueterra_example("bathy"))
+#'   corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+#'   plot_isobath_corridors(corridors, bathy)
+#' }
 #'
-#' @seealso [make_isobath_corridors()]
+#' @seealso [make_isobath_corridors()], [plot_bathy()]
 #' @export
-plot_isobath_corridors <- function(corridors, bathy = NULL) {
+plot_isobath_corridors <- function(
+    corridors,
+    bathy = NULL,
+    hillshade = TRUE,
+    contours = TRUE,
+    contour_interval = NULL,
+    labels = TRUE,
+    label_field = NULL,
+    ...
+) {
   optional_ggplot2()
   corridor_v <- as_spatvector(corridors)
-  p <- ggplot2::ggplot()
-  if (!is.null(bathy)) {
-    df <- raster_plot_data(bathy)
-    value_col <- setdiff(names(df), c("x", "y"))[1]
-    p <- p +
-      ggplot2::geom_raster(
-        data = df,
-        ggplot2::aes(x = .data[["x"]], y = .data[["y"]], fill = .data[[value_col]])
-      ) +
-      ggplot2::scale_fill_viridis_c(option = "C", na.value = NA)
+  if (is.null(label_field)) {
+    label_field <- intersect(c("depth_label", "contour_value", "corridor_id"), names(corridor_v))[1]
   }
-  corridor_df <- vector_plot_data(corridor_v)
-  p +
-    ggplot2::geom_path(
-      data = corridor_df,
-      ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
-      color = "white"
-    ) +
-    ggplot2::labs(x = NULL, y = NULL)
+  if (is.null(bathy)) {
+    corridor_df <- vector_plot_data(corridor_v)
+    p <- ggplot2::ggplot() +
+      ggplot2::geom_path(
+        data = corridor_df,
+        ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["group"]]),
+        color = "black",
+        linewidth = 0.5
+      ) +
+      ggplot2::coord_equal() +
+      ggplot2::labs(x = NULL, y = NULL)
+    if (isTRUE(labels) && !is.na(label_field)) {
+      label_df <- vector_label_data(corridor_v, label_field = label_field)
+      p <- p +
+        ggplot2::geom_text(
+          data = label_df,
+          ggplot2::aes(x = .data[["x"]], y = .data[["y"]], label = .data[["label"]]),
+          inherit.aes = FALSE,
+          size = 3
+        )
+    }
+    return(p)
+  }
+  plot_bathy(
+    bathy,
+    hillshade = hillshade,
+    contours = contours,
+    contour_interval = contour_interval,
+    vectors = corridor_v,
+    vector_color = "white",
+    vector_linewidth = 0.45,
+    labels = if (isTRUE(labels)) corridor_v else NULL,
+    label_field = label_field,
+    title = "Isobath Corridors",
+    legend_title = "Bathymetry",
+    ...
+  )
 }

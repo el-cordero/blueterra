@@ -4,25 +4,50 @@
 \alias{plot_isobath_corridors}
 \title{Plot isobath corridors}
 \usage{
-plot_isobath_corridors(corridors, bathy = NULL)
+plot_isobath_corridors(
+  corridors,
+  bathy = NULL,
+  hillshade = TRUE,
+  contours = TRUE,
+  contour_interval = NULL,
+  labels = TRUE,
+  label_field = NULL,
+  ...
+)
 }
 \arguments{
 \item{corridors}{Corridor polygons.}
 
 \item{bathy}{Optional raster background.}
+
+\item{hillshade}{Logical. Draw hillshade from \code{bathy} when available.}
+
+\item{contours}{Logical. Draw bathymetric contours when \code{bathy} is supplied.}
+
+\item{contour_interval}{Contour interval in raster units.}
+
+\item{labels}{Logical. Label corridors with \code{label_field}.}
+
+\item{label_field}{Attribute used for labels. Defaults to \code{depth_label} when
+present, otherwise \code{contour_value}.}
+
+\item{...}{Additional arguments passed to \code{\link[=plot_bathy]{plot_bathy()}}.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Plots corridor polygons, optionally over a raster background.
+Plots isobath corridor polygons, optionally over hillshaded bathymetry with
+contour lines. The hillshade layer is visual context only.
 }
 \examples{
-bathy <- read_bathy(blueterra_example("bathy"))
-corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
-plot_isobath_corridors(corridors, bathy)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  bathy <- read_bathy(blueterra_example("bathy"))
+  corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+  plot_isobath_corridors(corridors, bathy)
+}
 
 }
 \seealso{
-\code{\link[=make_isobath_corridors]{make_isobath_corridors()}}
+\code{\link[=make_isobath_corridors]{make_isobath_corridors()}}, \code{\link[=plot_bathy]{plot_bathy()}}
 }

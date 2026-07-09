@@ -8,17 +8,17 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(blueterra)
 library(terra)
 ```
 
-`blueterra` works with digital bathymetric models, digital elevation models, and
-other raster surfaces readable by `terra`. A raster can enter the workflow as a
-local file path or as an existing `terra::SpatRaster`.
+`blueterra` starts with a local raster path or an existing
+`terra::SpatRaster`. Region, datum, grid resolution, and depth sign convention
+stay visible in the analysis code because those choices affect interpretation.
 
 ## Raster Paths and SpatRasters
 
@@ -30,21 +30,21 @@ same_hoyo <- as_bathy(hoyo)
 class(path)
 class(hoyo)
 class(same_hoyo)
+bathy_info(hoyo)
 ```
+
+`read_bathy()` is the local file reader. `as_bathy()` is useful when functions
+need to accept either file paths or raster objects.
 
 ## Vector Inputs
 
-Use `terra::vect()` for local vector files:
+Use `terra::vect()` for local vector files. Functions that take zones, masks,
+or transect boundaries also accept a local vector path.
 
 ```{r vector}
 rectangles <- terra::vect(blueterra_example("sampling_rectangles"))
 rectangles[, c("site_id", "site_name", "feature_type")]
-```
 
-Functions that take zones, masks, or transect boundaries also accept a local
-vector path:
-
-```{r vector-path}
 hoyo_rect <- rectangles[rectangles$site_id == "hoyo", ]
 masked <- mask_bathy(hoyo, hoyo_rect)
 class(masked)
@@ -54,17 +54,30 @@ class(masked)
 
 ```{r crs}
 check_bathy_crs(hoyo)
+terra::crs(hoyo, proj = TRUE)
+terra::res(hoyo)
 ```
 
 Slope, buffers, transects, focal windows in map units, and isobath corridors
-should be interpreted in a projected CRS. `blueterra` does not silently
-reproject; use `project_bathy()` or `terra::project()` when a CRS conversion is
-part of the analysis design.
+should be interpreted in a projected CRS. `blueterra` requires explicit
+reprojection when a CRS conversion is part of the analysis design.
+
+```{r project}
+coarse_template <- terra::aggregate(hoyo, fact = 2)
+projected <- project_bathy(coarse_template, terra::crs(hoyo))
+class(projected)
+```
 
 ## Depth Convention
 
+Bathymetric rasters are commonly stored as negative elevation or positive
+depth. `blueterra` preserves the stored convention unless conversion is
+requested explicitly.
+
 ```{r sign}
 check_bathy_units(hoyo, units = "m", positive_depth = FALSE)
+range(terra::values(hoyo), na.rm = TRUE)
+
 positive_depth <- set_depth_positive(hoyo)
 range(terra::values(positive_depth), na.rm = TRUE)
 ```
@@ -75,5 +88,21 @@ Depth bands follow the stored values unless `positive_depth = TRUE` is used.
 summarize_depth_bands(
   hoyo,
   breaks = c(-260, -180, -120, -60, -20)
+)
+```
+
+## Visual Check
+
+The first map should show the measured bathymetric surface and the relief
+structure that will influence slope, position, and curvature metrics.
+
+```{r map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="El Hoyo bathymetry with hillshade, contours, and sampling rectangle."}
+plot_bathy(
+  hoyo,
+  contours = TRUE,
+  contour_interval = 25,
+  vectors = hoyo_rect,
+  title = "El Hoyo Bathymetry",
+  subtitle = "Hillshade, contours, and sampling rectangle"
 )
 ```

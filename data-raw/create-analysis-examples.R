@@ -1,9 +1,9 @@
 ## Regenerate package example data from the local geomorphometry project.
 ##
-## This script is for maintainers. It reads the local La Parguera analysis
-## rasters and sampling rectangles, writes reduced CRAN-safe examples to
-## inst/extdata, and reports file sizes. The installed package never uses these
-## source paths.
+## This script is for maintainers. It reads local analysis rasters and sampling
+## rectangles from study sites along the southwest Puerto Rico shelf margin near
+## La Parguera, writes reduced CRAN-safe examples to inst/extdata, and reports
+## file sizes. The installed package never uses these source paths.
 
 library(terra)
 
@@ -90,7 +90,7 @@ site_id <- c(
 )[rect_site]
 site_name <- c(
   "Hole In the Wall" = "Hole-in-the-Wall",
-  "Hoyo Terrace" = "Hoyo Terrace"
+  "Hoyo Terrace" = "El Hoyo"
 )[rect_site]
 
 rects <- rects[, 0]

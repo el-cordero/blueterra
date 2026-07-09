@@ -8,31 +8,45 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(blueterra)
 library(terra)
 ```
 
-`blueterra` supports submerged-terrain geomorphometry from bathymetric and
-elevation rasters. The package keeps raster and vector operations in `terra`,
-which helps keep CRS, extent, resolution, and geometry handling consistent
-throughout an analysis.
+`blueterra` supports geomorphometric analysis of submerged terrain from
+bathymetric and elevation rasters. The workflow stays close to `terra` objects:
+rasters remain `SpatRaster` objects, zones and transects remain `SpatVector`
+objects, and derived metrics can be summarized as ordinary tabular outputs.
 
-## Start with Real Example Data
+<img src="../man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
+
+The examples use reduced bathymetry and sampling rectangles from
+Hole-in-the-Wall, El Hoyo, and a broader slope clip along the southwest Puerto
+Rico shelf margin near La Parguera, Puerto Rico. The files are compact, but
+they retain real relief and depth gradients.
+
+## Read Example Rasters
 
 ```{r read}
 hitw <- read_bathy(blueterra_example("hitw"))
+hoyo <- read_bathy(blueterra_example("hoyo"))
 rectangles <- terra::vect(blueterra_example("sampling_rectangles"))
 hitw_rect <- rectangles[rectangles$site_id == "hitw", ]
 
 bathy_info(hitw)
-hitw_rect
+rectangles[, c("site_id", "site_name", "feature_type")]
 ```
 
+`bathy_info()` is a first check on whether the surface has the dimensions, value
+range, cell size, and CRS expected for the analysis.
+
 ## Prepare the Surface
+
+The example bathymetry stores depth as negative elevation. The sign is
+preserved during preparation.
 
 ```{r prepare}
 prepared <- prepare_bathy(
@@ -42,34 +56,94 @@ prepared <- prepare_bathy(
   smooth_window = 3
 )
 check_bathy_units(prepared, units = "m", positive_depth = FALSE)
+range(terra::values(prepared), na.rm = TRUE)
 ```
 
-Depth signs are preserved unless a conversion is explicit:
+Depth conversion is explicit when a positive-depth convention is needed.
 
 ```{r signs}
 positive_depth <- set_depth_positive(prepared)
 range(terra::values(positive_depth), na.rm = TRUE)
 ```
 
+## Map the Surface
+
+Hillshade is a visual relief layer. It helps the reader see escarpments and
+local relief, but it is not treated as a predictor unless the user explicitly
+derives and analyzes it.
+
+```{r map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Hole-in-the-Wall bathymetry with hillshade and contours."}
+plot_bathy(
+  prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  vectors = hitw_rect,
+  title = "Hole-in-the-Wall Bathymetry",
+  subtitle = "Hillshade, contours, and sampling rectangle"
+)
+```
+
 ## Derive Terrain Metrics
+
+Terrain derivatives describe different aspects of the same surface. Slope and
+aspect describe local orientation, TRI and rugosity describe local relief
+variability, BPI describes relative position, and curvature summarizes local
+surface bending.
 
 ```{r metrics}
 terrain <- derive_terrain(
   prepared,
   metrics = c("slope", "aspect", "northness", "eastness", "tri", "bpi",
-              "curvature")
+              "curvature", "surface_area_ratio")
 )
 names(terrain)
+```
+
+```{r metric-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Slope over hillshaded bathymetry."}
+plot_metric(
+  terrain,
+  "slope_deg",
+  bathy = prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Slope Over Hillshade"
+)
 ```
 
 ## Summarize Sampling Rectangles
 
 ```{r zones}
-summarize_terrain(
+summary <- summarize_terrain(
   terrain,
   hitw_rect,
   fun = c("mean", "sd", "min", "max")
 )
+summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
+```
+
+## Depth Bands, Transects, and Isobaths
+
+These summaries answer different spatial questions. Depth bands compare
+vertical intervals, transects show cross-sectional profiles, and isobath
+corridors compare terrain along depth horizons.
+
+```{r sections}
+summarize_depth_bands(
+  prepared,
+  metrics = terrain,
+  breaks = c(-220, -150, -100, -60, -30, -20)
+)
+
+transects <- make_transects(hitw_rect, spacing = 75)
+samples <- sample_transects(transects, prepared, n = 12)
+summarize_cross_sections(samples)
+
+corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
+summarize_isobath_terrain(terrain, corridors)
+```
+
+```{r corridor-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobath corridors over hillshaded bathymetry."}
+plot_isobath_corridors(corridors, prepared, contour_interval = 25)
 ```
 
 ## Model-Ready Tables

@@ -17,9 +17,10 @@ blueterra_extdata(file = NULL)
 }
 \arguments{
 \item{name}{Example name. Use \code{"hitw"}, \code{"hoyo"}, or \code{"slope"} for
-reduced La Parguera bathymetry rasters; \code{"sampling_rectangles"} for the
-accompanying vector layer; \code{"bathy"} and \code{"zones"} as short aliases; or
-\code{"synthetic_bathy"} and \code{"synthetic_zones"} for test fixtures.}
+reduced bathymetry rasters from the southwest Puerto Rico shelf margin
+near La Parguera; \code{"sampling_rectangles"} for the accompanying vector
+layer; \code{"bathy"} and \code{"zones"} as short aliases; or \code{"synthetic_bathy"}
+and \code{"synthetic_zones"} for test fixtures.}
 
 \item{file}{File name under \code{inst/extdata}.}
 }
@@ -34,8 +35,9 @@ Returns the path to a small file installed with \code{blueterra}.
 }
 \details{
 The primary examples are reduced analysis rasters and sampling rectangles
-from the La Parguera shelf margin. The synthetic files are retained for
-numerical tests where a simple known surface is useful.
+from the southwest Puerto Rico shelf margin near La Parguera. The synthetic
+files are retained for numerical tests where a simple known surface is
+useful.
 }
 \examples{
 hitw <- blueterra_example("hitw")

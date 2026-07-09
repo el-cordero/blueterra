@@ -8,7 +8,8 @@ plot_depth_profile(
   data,
   distance_col = "distance",
   depth_col = NULL,
-  group_col = NULL
+  group_col = NULL,
+  depth_increases_down = TRUE
 )
 }
 \arguments{
@@ -20,6 +21,9 @@ plot_depth_profile(
 non-coordinate value column is used.}
 
 \item{group_col}{Optional grouping column.}
+
+\item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
+plotted with a reversed y-axis so larger depths appear lower in the panel.}
 }
 \value{
 A \code{ggplot} object.

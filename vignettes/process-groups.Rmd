@@ -8,41 +8,68 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(blueterra)
 ```
 
-`blueterra` groups terrain metrics into process-oriented terrain-form groups.
-The groups support interpretation, variable selection, and reporting. They are
-terrain-form proxies; they do not directly measure currents, sediment flux, or
-ecological processes.
+Process groups keep related terrain derivatives together so interpretation does
+not rest on a single high-ranking variable. The labels are terrain-form
+categories. They organize surface form for summaries and models; they are not
+direct measurements of currents, sediment flux, habitat condition, or ecological
+processes.
+
+## Metric Catalog
 
 ```{r catalog}
-metric_catalog()
+catalog <- metric_catalog()
+catalog[, c("metric", "label", "process_group", "scale_sensitive")]
 ```
+
+The catalog records the source function, units, and interpretation notes for
+the exported terrain metrics.
 
 ## Assigning Groups
 
 ```{r assign}
 bathy <- read_bathy(blueterra_example("hitw"))
+prepared <- prepare_bathy(bathy, depth_range = c(-220, -25), smooth = TRUE)
 terrain <- derive_terrain(
-  bathy,
+  prepared,
   metrics = c("slope", "aspect", "northness", "eastness", "tri", "bpi",
-              "curvature")
+              "curvature", "surface_area_ratio")
 )
+
 assign_process_groups(terrain)
 summarize_process_groups(terrain)
+```
+
+The assignment is based on layer names. `standardize_metric_names()` is useful
+when metric names come from external rasters or older project files.
+
+```{r names}
+standardize_metric_names(c("Slope degrees", "Broad BPI", "Curvature index"))
+rename_metric_layers(c("slope_old", "curv_old"), c(slope_old = "slope_deg"))
 ```
 
 ## Representatives
 
 Representative metrics are starting points for compact reporting. The final
-choice should still follow the resolution, sampling design, and feature scale
-of the analysis.
+choice should still follow raster resolution, sampling design, collinearity,
+and the feature scale of the analysis.
 
 ```{r reps}
 select_process_representatives(metrics_available = names(terrain))
+```
+
+```{r pca, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="PCA scores for sampled terrain metrics."}
+cells <- sample_terrain_cells(
+  terrain[[c("slope_deg", "tri", "bpi_3x3", "curvature")]],
+  size = 50,
+  method = "regular"
+)
+pca <- terrain_pca(cells, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
+plot_process_pca(pca)
 ```

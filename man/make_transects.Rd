@@ -37,7 +37,7 @@ Builds regularly spaced straight transects through polygon features.
 }
 \details{
 Transect spacing and length are interpreted in map units. Use a projected CRS
-for metric distances. Candidate lines are generated through each polygon
+for metric distances. Candidate lines are created through each polygon
 bounding box and clipped to the polygon with \code{terra::intersect()}.
 }
 \examples{

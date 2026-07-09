@@ -3,45 +3,139 @@
 \name{plot_bathy}
 \alias{plot_bathy}
 \alias{plot_metric}
+\alias{plot_terrain_map}
 \alias{plot_hillshade}
+\alias{plot_sampling_rectangles}
+\alias{plot_transects}
 \alias{plot_metric_stack}
 \title{Plot bathymetry and terrain rasters}
 \usage{
-plot_bathy(x, max_cells = getOption("blueterra.max_plot_cells", 10000))
+plot_bathy(
+  x,
+  hillshade = TRUE,
+  hillshade_alpha = 0.3,
+  contours = TRUE,
+  contour_interval = NULL,
+  contour_color = "white",
+  contour_linewidth = 0.25,
+  vectors = NULL,
+  vector_color = "white",
+  vector_linewidth = 0.5,
+  labels = NULL,
+  label_field = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  legend_title = "Bathymetry",
+  max_cells = getOption("blueterra.max_plot_cells", 10000)
+)
 
 plot_metric(
   x,
   metric = NULL,
+  bathy = NULL,
+  hillshade = TRUE,
+  hillshade_alpha = 0.3,
+  contours = FALSE,
+  contour_interval = NULL,
+  contour_color = "white",
+  contour_linewidth = 0.25,
+  vectors = NULL,
+  vector_color = "white",
+  vector_linewidth = 0.5,
+  labels = NULL,
+  label_field = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  legend_title = NULL,
   max_cells = getOption("blueterra.max_plot_cells", 10000)
 )
 
+plot_terrain_map(
+  bathy,
+  metric = NULL,
+  vectors = NULL,
+  contours = TRUE,
+  contour_interval = 20,
+  hillshade = TRUE,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  ...
+)
+
 plot_hillshade(x, max_cells = getOption("blueterra.max_plot_cells", 10000))
+
+plot_sampling_rectangles(bathy, rectangles, label_field = "site_id", ...)
+
+plot_transects(bathy, transects, ...)
 
 plot_metric_stack(x, max_cells = getOption("blueterra.max_plot_cells", 10000))
 }
 \arguments{
 \item{x}{A raster-like object accepted by \code{\link[=as_bathy]{as_bathy()}}.}
 
+\item{hillshade}{Logical. Draw hillshade as a visual relief layer.}
+
+\item{hillshade_alpha}{Maximum alpha for the hillshade shadow overlay.}
+
+\item{contours}{Logical. Draw contour lines from \code{bathy} or \code{x}.}
+
+\item{contour_interval}{Optional contour interval in raster units.}
+
+\item{contour_color}{Contour line color.}
+
+\item{contour_linewidth}{Contour line width.}
+
+\item{vectors}{Optional \code{terra::SpatVector}, \code{sf} object, or local vector path
+drawn over the raster.}
+
+\item{vector_color}{Vector outline color.}
+
+\item{vector_linewidth}{Vector outline width.}
+
+\item{labels}{Optional label source. Use \code{TRUE} to label \code{vectors}, or supply
+a vector object/path.}
+
+\item{label_field}{Optional field used for vector labels.}
+
+\item{title, subtitle, caption}{Plot text passed to \code{ggplot2::labs()}.}
+
+\item{legend_title}{Optional raster legend title.}
+
 \item{max_cells}{Maximum raster cells used for plotting.}
 
-\item{metric}{Optional layer name or index.}
+\item{metric}{Optional metric raster or a layer name/index in \code{bathy}.}
+
+\item{bathy}{Optional bathymetry raster used to derive hillshade and contours
+when \code{x} is a metric raster.}
+
+\item{rectangles}{Sampling rectangles or polygon zones.}
+
+\item{transects}{Transect line geometry.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Creates quick \code{ggplot2} raster maps for bathymetry and derived terrain
-metrics.
+Creates \code{ggplot2} maps for bathymetry and derived terrain metrics using
+\code{terra} rasters and vectors. Hillshade can be drawn as a semitransparent
+visual relief layer, and bathymetric contours, sampling rectangles, transects,
+or other \code{terra::SpatVector} geometries can be overlaid.
 }
 \details{
 Plotting functions require \code{ggplot2}, which is suggested rather than
 imported. Large rasters are regularly sampled before plotting to keep
-examples and interactive work responsive.
+examples and interactive work responsive. Hillshade is used only as a visual
+relief layer; it is not a terrain predictor unless a user explicitly derives
+and analyzes it as one.
 }
 \examples{
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   bathy <- read_bathy(blueterra_example("bathy"))
-  plot_bathy(bathy)
+  zones <- terra::vect(blueterra_example("zones"))
+  plot_bathy(bathy, vectors = zones, labels = TRUE, label_field = "site_id")
 }
 
 }

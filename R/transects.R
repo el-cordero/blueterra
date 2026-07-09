@@ -17,7 +17,7 @@
 #'
 #' @details
 #' Transect spacing and length are interpreted in map units. Use a projected CRS
-#' for metric distances. Candidate lines are generated through each polygon
+#' for metric distances. Candidate lines are created through each polygon
 #' bounding box and clipped to the polygon with `terra::intersect()`.
 #'
 #' @examples
@@ -259,6 +259,8 @@ summarize_cross_sections <- function(
 #' @param samples Output from [sample_transects()].
 #' @param value_col Optional value column.
 #' @param group_col Grouping column for transect lines.
+#' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
+#'   plotted with a reversed y-axis so larger depths appear lower in the panel.
 #'
 #' @return A `ggplot` object.
 #'
@@ -276,17 +278,19 @@ summarize_cross_sections <- function(
 plot_cross_sections <- function(
     samples,
     value_col = NULL,
-    group_col = "transect_id"
+    group_col = "transect_id",
+    depth_increases_down = TRUE
 ) {
   optional_ggplot2()
   if (is.null(value_col)) {
     numeric_cols <- names(samples)[vapply(samples, is.numeric, logical(1))]
     value_col <- setdiff(numeric_cols, c("distance", "x", "y"))[1]
   }
-  ggplot2::ggplot(
+  p <- ggplot2::ggplot(
     samples,
     ggplot2::aes(x = .data[["distance"]], y = .data[[value_col]], group = .data[[group_col]])
   ) +
     ggplot2::geom_line(alpha = 0.6) +
     ggplot2::labs(x = "Distance", y = value_col)
+  orient_depth_axis(p, samples[[value_col]], depth_increases_down)
 }

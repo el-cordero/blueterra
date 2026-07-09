@@ -82,6 +82,9 @@ reference:
   - plot_bathy
   - plot_hillshade
   - plot_metric
+  - plot_terrain_map
+  - plot_sampling_rectangles
+  - plot_transects
   - plot_metric_stack
   - plot_process_density
   - plot_process_pca
