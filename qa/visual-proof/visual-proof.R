@@ -212,6 +212,7 @@ readme_result <- capture_command(
     "README.Rmd",
     output_format = rmarkdown::github_document(html_preview = FALSE),
     clean = TRUE,
+    envir = new.env(parent = globalenv()),
     quiet = TRUE
   ),
   file.path(log_dir, "build-readme.log")
