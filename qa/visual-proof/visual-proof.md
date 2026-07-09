@@ -1,14 +1,14 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 15:42:13 AST
-- Git commit: af4af071a3bd71790e325bafa69cb64d6a049e50
-- Working tree dirty at proof start: TRUE
-- Dirty paths at proof start:  M NAMESPACE;  M R/isobath-corridors.R;  M R/modeling-helpers.R;  M R/plotting.R;  M R/process-groups.R;  M R/summaries.R;  M R/transects.R;  M R/utils.R;  M README.Rmd;  M README.md;  M _pkgdown.yml;  M man/assign_process_groups.Rd;  M man/figures/README-plot-cross-sections-1.png;  M man/figures/README-plot-isobath-corridors-1.png;  M man/figures/README-plot-pca-1.png;  M man/figures/README-plot-transects-1.png;  M man/figures/README-plotting-depth-profile-1.png;  M man/make_transects.Rd;  M man/plot_bathy.Rd;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M man/plot_isobath_corridors.Rd;  M man/plot_process_pca.Rd;  M man/sample_terrain_cells.Rd;  M man/sample_transects.Rd;  M man/select_process_representatives.Rd;  M man/summarize_cross_sections.Rd;  M man/summarize_process_groups.Rd;  M man/terrain_pca.Rd;  M qa/visual-proof/visual-proof.R;  M tests/testthat/test-plotting.R;  M tests/testthat/test-process-groups.R;  M tests/testthat/test-real-examples.R;  M tests/testthat/test-summaries.R;  M tests/testthat/test-transects.R;  M vignettes/blueterra.Rmd;  M vignettes/isobath-corridors.Rmd;  M vignettes/process-groups.Rmd; ?? R/custom-metrics.R; ?? inst/CITATION; ?? man/add_metric_layers.Rd; ?? man/create_metric_catalog.Rd; ?? man/derive_custom_metric.Rd; ?? man/estimate_surface_orientation.Rd; ?? man/figures/README-custom-metric-plot-1.png; ?? man/figures/README-plot-pca-hitw-1.png; ?? man/figures/README-plot-pca-hoyo-1.png; ?? man/pca_axis_labels.Rd; ?? man/terrain_pca_by_group.Rd
+- Date/time: 2026-07-09 15:55:48 AST
+- Git commit: b1d6c1914c5a427ec58030a8c6698fe6c68d8f57
+- Working tree dirty at proof start: FALSE
+- Dirty paths at proof start: none
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 3916673 bytes
+- Package tarball size: 3916735 bytes
 - Package tarball size: 3.917 MB
 
 ## Example Files
