@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 15:55:48 AST
-- Git commit: b1d6c1914c5a427ec58030a8c6698fe6c68d8f57
+- Date/time: 2026-07-09 17:18:54 AST
+- Git commit: 9105f1eb8abd57ba212bfac84680264ef40eddd3
 - Working tree dirty at proof start: FALSE
 - Dirty paths at proof start: none
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 3916735 bytes
-- Package tarball size: 3.917 MB
+- Package tarball size: 3908859 bytes
+- Package tarball size: 3.909 MB
 
 ## Example Files
 
@@ -181,8 +181,8 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
 
 - pkgdown build ok: TRUE
 - xml2 HTML parse ok: TRUE
-- HTML Tidy path: /usr/bin/tidy
-- HTML Tidy status: 2
+- HTML Tidy path: /opt/homebrew/opt/tidy-html5/bin/tidy
+- HTML Tidy status: 1
 - HTML Tidy log: qa/visual-proof/logs/html-tidy.log
 
 ## Known Limitations
