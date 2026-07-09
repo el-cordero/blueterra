@@ -1,8 +1,8 @@
 ---
-title: "Process Groups"
+title: "Process groups"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Process Groups}
+  %\VignetteIndexEntry{Process groups}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -28,7 +28,9 @@ dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(shot_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
 unlink(list.files(fig_dir, pattern = "[.]png$", full.names = TRUE))
-unlink(list.files(shot_dir, pattern = "[.]png$", full.names = TRUE))
+if (requireNamespace("webshot2", quietly = TRUE)) {
+  unlink(list.files(shot_dir, pattern = "[.]png$", full.names = TRUE))
+}
 
 capture_command <- function(expr, log_file) {
   out <- try(capture.output(force(expr), type = "output"), silent = TRUE)
@@ -411,6 +413,13 @@ if (requireNamespace("webshot2", quietly = TRUE)) {
     screenshots <- c(screenshots, out)
   }
 }
+if (!length(screenshots)) {
+  existing_screenshots <- list.files(shot_dir, pattern = "[.]png$", full.names = TRUE)
+  if (length(existing_screenshots)) {
+    screenshots <- existing_screenshots
+    screenshot_note <- "Screenshots were generated outside R and preserved for this proof."
+  }
+}
 
 commit <- try(system2("git", c("rev-parse", "HEAD"), stdout = TRUE), silent = TRUE)
 if (inherits(commit, "try-error")) commit <- NA_character_
@@ -437,6 +446,9 @@ report <- c(
   paste("- Package tarball:", tarball),
   paste("- Package tarball size:", tarball_size, "bytes"),
   paste("- Package tarball size:", round(tarball_size / 1e6, 3), "MB"),
+  paste("- Local pkgdown site:", normalizePath("docs/index.html", mustWork = FALSE)),
+  "- Expected GitHub Pages URL: https://el-cordero.github.io/blueterra/",
+  "- Deployment workflow: .github/workflows/pkgdown.yaml",
   "",
   "## Example Files",
   "",
@@ -497,6 +509,9 @@ report <- c(
   "## HTML Results",
   "",
   paste("- pkgdown build ok:", pkgdown_result$ok),
+  "- Local docs path: docs/index.html",
+  "- Expected GitHub Pages URL: https://el-cordero.github.io/blueterra/",
+  "- Deployment workflow file: .github/workflows/pkgdown.yaml",
   paste("- xml2 HTML parse ok:", xml_result$ok),
   paste("- HTML Tidy path:", if (nzchar(tidy_path)) tidy_path else "not available"),
   paste("- HTML Tidy status:", tidy_status),

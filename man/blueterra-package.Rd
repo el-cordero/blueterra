@@ -28,6 +28,7 @@ area, or buffering operations depend on linear units.
 Useful links:
 \itemize{
   \item \url{https://github.com/el-cordero/blueterra}
+  \item \url{https://el-cordero.github.io/blueterra/}
   \item Report bugs at \url{https://github.com/el-cordero/blueterra/issues}
 }
 

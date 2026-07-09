@@ -1,8 +1,8 @@
 ---
-title: "Isobath Corridors"
+title: "Isobath corridors"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Isobath Corridors}
+  %\VignetteIndexEntry{Isobath corridors}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,8 +1,8 @@
 ---
-title: "User-Supplied Rasters"
+title: "Working with user-supplied rasters"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{User-Supplied Rasters}
+  %\VignetteIndexEntry{Working with user-supplied rasters}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

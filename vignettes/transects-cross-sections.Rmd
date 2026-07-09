@@ -1,0 +1,146 @@
+---
+title: "Transects and cross-sections"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Transects and cross-sections}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
+```
+
+```{r setup, message = FALSE}
+library(blueterra)
+library(terra)
+```
+
+Transects turn a bathymetric raster into cross-sectional profiles. They are
+useful for showing terraces, escarpments, slope breaks, and cross-shelf
+gradients that are not always obvious from cell-by-cell terrain metrics.
+
+## Data and Surface Orientation
+
+```{r data}
+bathy <- read_bathy(blueterra_example("hitw"))
+rectangles <- terra::vect(blueterra_example("sampling_rectangles"))
+hitw_rect <- rectangles[rectangles$site_id == "hitw", ]
+
+prepared <- prepare_bathy(
+  bathy,
+  depth_range = c(-220, -25),
+  smooth = TRUE
+)
+
+estimate_surface_orientation(prepared, hitw_rect)
+```
+
+`estimate_surface_orientation()` converts local aspect into a representative
+bearing and a transect angle. Slope weighting emphasizes cells where orientation
+is better defined.
+
+## Automatic Transect Orientation
+
+```{r automatic}
+transects <- make_transects(
+  hitw_rect,
+  spacing = 75,
+  bathy = prepared
+)
+
+transects[, c("transect_id", "angle_deg", "angle_source", "mean_aspect_deg")]
+```
+
+```{r automatic-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Automatically oriented transects over hillshaded bathymetry."}
+plot_transects(
+  prepared,
+  transects,
+  color_by = "transect_id",
+  show_legend = FALSE,
+  contour_interval = 25,
+  title = "Terrain-Oriented Transects",
+  subtitle = "Line angle estimated from local surface aspect"
+)
+```
+
+## Manual Angle Override
+
+Manual angles remain useful when transects need to match survey design, a
+predefined grid, or a known field orientation.
+
+```{r manual}
+manual_transects <- make_transects(
+  hitw_rect,
+  spacing = 75,
+  angle = 45
+)
+
+manual_transects[, c("transect_id", "angle_deg", "angle_source")]
+```
+
+## Sampling Cross-Sections
+
+`sample_transects()` extracts raster values at regular positions along each
+line. `extract_cross_sections()` is an alias for the same operation when the
+output is being used as a profile table.
+
+```{r sample}
+samples <- sample_transects(transects, prepared, n = 12)
+sections <- extract_cross_sections(transects, prepared, n = 12)
+
+head(samples[, c("transect_id", "distance", "x", "y", "bathy_m")])
+summarize_cross_sections(samples, value_col = "bathy_m")
+identical(names(samples), names(sections))
+```
+
+```{r cross-section-plot, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Bathymetric cross-sections with bathy_m on the y-axis."}
+plot_cross_sections(
+  samples,
+  value_col = "bathy_m",
+  show_legend = TRUE,
+  mean_profile = TRUE,
+  normalize_distance = TRUE,
+  title = "Bathymetric Cross-Sections"
+)
+```
+
+The value column is explicit. This matters because transect tables include
+numeric metadata such as `width_m`, `height_m`, `angle_deg`, and `offset`.
+
+## Single-Transect Profile
+
+```{r profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Bathymetric profile along a single transect."}
+one <- samples[samples$transect_id == samples$transect_id[1], ]
+
+plot_depth_profile(
+  one,
+  value_col = "bathy_m",
+  title = "Bathymetry Along One Transect"
+)
+```
+
+## Metric Profiles
+
+The same plotting functions work with derived metrics. Here the profile shows
+slope rather than bathymetric elevation.
+
+```{r slope-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Slope profile along one transect."}
+metrics <- derive_terrain(prepared, metrics = c("slope", "tri", "bpi"))
+metric_samples <- sample_transects(
+  transects,
+  metrics[["slope_deg"]],
+  n = 25
+)
+metric_one <- metric_samples[metric_samples$transect_id == metric_samples$transect_id[1], ]
+
+plot_depth_profile(
+  metric_one,
+  value_col = "slope_deg",
+  title = "Slope Along One Transect"
+)
+```
+
+The profile y-axis changes with the selected raster value. The function name is
+historical; the plotted variable can be bathymetry, elevation, slope, rugosity,
+BPI, or a custom metric.

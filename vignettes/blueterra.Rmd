@@ -1,8 +1,8 @@
 ---
-title: "blueterra"
+title: "Get started with blueterra"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{blueterra}
+  %\VignetteIndexEntry{Get started with blueterra}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,37 +16,41 @@ library(blueterra)
 library(terra)
 ```
 
-`blueterra` supports geomorphometric analysis of submerged terrain from
-bathymetric and elevation rasters. The workflow stays close to `terra` objects:
-rasters remain `SpatRaster` objects, zones and transects remain `SpatVector`
-objects, and derived metrics can be summarized as ordinary tabular outputs.
+`blueterra` works from bathymetric and elevation rasters already available to
+the analyst. The package keeps the workflow close to `terra`: rasters remain
+`SpatRaster` objects, sampling zones and transects remain `SpatVector` objects,
+and extracted values become ordinary tables for summaries and models.
 
 <img src="../man/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin." />
 
 The examples use reduced bathymetry and sampling rectangles from
 Hole-in-the-Wall, El Hoyo, and a broader slope clip along the southwest Puerto
 Rico shelf margin near La Parguera, Puerto Rico. The files are compact, but
-they retain real relief and depth gradients.
+they retain real relief, depth gradients, slope breaks, and sampling geometry.
 
-## Read Example Rasters
+## Read Example Data
 
 ```{r read}
 hitw <- read_bathy(blueterra_example("hitw"))
 hoyo <- read_bathy(blueterra_example("hoyo"))
+slope <- read_bathy(blueterra_example("slope"))
 rectangles <- terra::vect(blueterra_example("sampling_rectangles"))
+
 hitw_rect <- rectangles[rectangles$site_id == "hitw", ]
+hoyo_rect <- rectangles[rectangles$site_id == "hoyo", ]
 
 bathy_info(hitw)
 rectangles[, c("site_id", "site_name", "feature_type")]
 ```
 
-`bathy_info()` is a first check on whether the surface has the dimensions, value
-range, cell size, and CRS expected for the analysis.
+`bathy_info()` is a first check on raster dimensions, value range, resolution,
+extent, and CRS. These fields affect slope, focal-window metrics, buffers, and
+distance along transects.
 
-## Prepare the Surface
+## Prepare the Bathymetry
 
-The example bathymetry stores depth as negative elevation. The sign is
-preserved during preparation.
+The example rasters store bathymetry as negative elevation. `prepare_bathy()`
+preserves that convention unless a conversion is requested explicitly.
 
 ```{r prepare}
 prepared <- prepare_bathy(
@@ -55,24 +59,12 @@ prepared <- prepare_bathy(
   smooth = TRUE,
   smooth_window = 3
 )
+
 check_bathy_units(prepared, units = "m", positive_depth = FALSE)
 range(terra::values(prepared), na.rm = TRUE)
 ```
 
-Depth conversion is explicit when a positive-depth convention is needed.
-
-```{r signs}
-positive_depth <- set_depth_positive(prepared)
-range(terra::values(positive_depth), na.rm = TRUE)
-```
-
-## Map the Surface
-
-Hillshade is a visual relief layer. It helps the reader see escarpments and
-local relief, but it is not treated as a predictor unless the user explicitly
-derives and analyzes it.
-
-```{r map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Hole-in-the-Wall bathymetry with hillshade and contours."}
+```{r map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Hole-in-the-Wall bathymetry with hillshade, contours, and sampling rectangle."}
 plot_bathy(
   prepared,
   contours = TRUE,
@@ -83,82 +75,158 @@ plot_bathy(
 )
 ```
 
-## Derive Terrain Metrics
+Hillshade is used here as visual relief. It helps the reader see escarpments
+and local relief, but it is not a predictor unless the analyst explicitly
+derives and includes it.
 
-Terrain derivatives describe different aspects of the same surface. Slope and
-aspect describe local orientation, TRI and rugosity describe local relief
-variability, BPI describes relative position, and curvature summarizes local
+## Derive Metrics and Process Groups
+
+Terrain metrics describe different aspects of the same bathymetric surface.
+Slope and aspect describe local orientation; northness and eastness convert
+aspect to linear components; TRI and rugosity describe local relief
+variability; BPI describes relative position; curvature summarizes local
 surface bending.
 
 ```{r metrics}
 terrain <- derive_terrain(
   prepared,
-  metrics = c("slope", "aspect", "northness", "eastness", "tri", "bpi",
-              "curvature", "surface_area_ratio")
+  metrics = c(
+    "slope", "aspect", "northness", "eastness", "tri", "rugosity",
+    "bpi", "curvature", "surface_area_ratio"
+  )
 )
+
 names(terrain)
+assign_process_groups(terrain)
+summarize_process_groups(terrain)
 ```
 
-```{r metric-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Slope over hillshaded bathymetry."}
-plot_metric(
-  terrain,
-  "slope_deg",
-  bathy = prepared,
-  contours = TRUE,
-  contour_interval = 25,
-  title = "Slope Over Hillshade"
-)
+```{r metric-stack, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Metric stack showing slope, TRI, BPI, and curvature."}
+plot_metric_stack(terrain[[c("slope_deg", "tri", "bpi_3x3", "curvature")]])
 ```
+
+Process groups keep related derivatives together. They are interpretation
+categories for terrain form, not direct measurements of currents, sediment
+transport, habitat condition, or ecological response.
 
 ## Summarize Sampling Rectangles
 
+Sampling rectangles provide a compact example of zone-based extraction. Each
+polygon is treated as a spatial sampling frame, and summary statistics are
+calculated from raster cells inside that frame.
+
 ```{r zones}
-summary <- summarize_terrain(
+zone_summary <- summarize_terrain(
   terrain,
   hitw_rect,
   fun = c("mean", "sd", "min", "max")
 )
-summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
+
+zone_summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
 ```
 
-## Depth Bands, Transects, and Isobaths
+## Transects and Cross-Sections
 
-These summaries answer different spatial questions. Depth bands compare
-vertical intervals, transects show cross-sectional profiles, and isobath
-corridors compare terrain along depth horizons.
+Transects convert the raster surface into profiles. When `bathy` is supplied,
+`make_transects()` can estimate a terrain-oriented line angle from local aspect
+instead of requiring the analyst to choose a fixed direction by hand.
 
-```{r sections}
-summarize_depth_bands(
-  prepared,
-  metrics = terrain,
-  breaks = c(-220, -150, -100, -60, -30, -20)
-)
-
-estimate_surface_orientation(prepared, hitw_rect)
+```{r transects}
+orientation <- estimate_surface_orientation(prepared, hitw_rect)
 transects <- make_transects(hitw_rect, spacing = 75, bathy = prepared)
-samples <- sample_transects(transects, prepared, n = 12)
-summarize_cross_sections(samples)
+cross_sections <- sample_transects(transects, prepared, n = 12)
 
+orientation
+unique(as.data.frame(transects)[, c("angle_deg", "angle_source", "mean_aspect_deg")])
+head(cross_sections[, c("transect_id", "distance", "bathy_m")])
+```
+
+```{r transect-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Terrain-oriented transects over hillshaded bathymetry."}
+plot_transects(
+  prepared,
+  transects,
+  color_by = "transect_id",
+  show_legend = FALSE,
+  contour_interval = 25,
+  title = "Terrain-Oriented Transects"
+)
+```
+
+```{r cross-section-plot, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Bathymetric cross-section profiles with bathy_m on the y-axis."}
+plot_cross_sections(
+  cross_sections,
+  value_col = "bathy_m",
+  show_legend = TRUE,
+  mean_profile = TRUE,
+  normalize_distance = TRUE,
+  title = "Bathymetric Cross-Sections"
+)
+```
+
+The y-axis is explicitly set to `bathy_m`. This prevents transect metadata such
+as width, angle, or offset from being mistaken for the raster value.
+
+## Isobath Corridors
+
+Isobath corridors summarize terrain along depth horizons. The source isobaths
+are shown in black so the reader can see which contour each corridor buffers.
+
+```{r isobaths}
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
-summarize_isobath_terrain(terrain, corridors)
+
+corridors[, c("contour_value", "depth_label", "corridor_id")]
+summarize_isobath_terrain(terrain, corridors)[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean")]
 ```
 
-```{r corridor-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobath corridors over hillshaded bathymetry."}
+```{r corridor-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobath corridors over hillshaded bathymetry with source isobaths in black."}
 plot_isobath_corridors(
   corridors,
   prepared,
   isobaths = isobaths,
-  background_contours = FALSE
+  background_contours = FALSE,
+  title = "Isobath Corridors and Source Isobaths"
 )
 ```
 
-## Model-Ready Tables
+## PCA and Model-Ready Tables
+
+Cell samples and extracted summaries can be sent directly into exploratory
+models. PCA is useful for checking whether terrain metrics form separable
+gradients across sites or sampling frames.
 
 ```{r model-ready}
-cells <- sample_terrain_cells(terrain, size = 40, method = "regular")
-terrain_correlation(cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
-pca <- terrain_pca(cells, vars = c("slope_deg", "tri", "bpi_3x3", "curvature"))
+hoyo_prepared <- prepare_bathy(hoyo, depth_range = c(-220, -25), smooth = TRUE)
+hoyo_metrics <- derive_terrain(hoyo_prepared, metrics = c("slope", "tri", "bpi", "curvature"))
+
+hitw_cells <- sample_terrain_cells(
+  terrain[[c("slope_deg", "tri", "bpi_3x3", "curvature")]],
+  size = 45,
+  method = "regular"
+)
+hitw_cells$site <- "Hole-in-the-Wall"
+
+hoyo_cells <- sample_terrain_cells(
+  hoyo_metrics[[c("slope_deg", "tri", "bpi_3x3", "curvature")]],
+  size = 45,
+  method = "regular"
+)
+hoyo_cells$site <- "El Hoyo"
+
+comparison <- rbind(hitw_cells, hoyo_cells)
+pca <- terrain_pca(
+  comparison,
+  vars = c("slope_deg", "tri", "bpi_3x3", "curvature")
+)
+
 pca$variance
 pca_axis_labels(pca)
+```
+
+```{r pca-plot, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Terrain PCA with site-colored points and loading labels in the axis text."}
+plot_process_pca(
+  pca,
+  color_col = "site",
+  title = "Terrain PCA"
+)
 ```

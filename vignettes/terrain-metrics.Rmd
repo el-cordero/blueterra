@@ -1,8 +1,8 @@
 ---
-title: "Terrain Metrics"
+title: "Terrain metrics"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Terrain Metrics}
+  %\VignetteIndexEntry{Terrain metrics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -66,6 +66,7 @@ structure_metrics <- derive_metric_stack(
 )
 names(structure_metrics)
 terra::global(structure_metrics[["tri"]], c("min", "mean", "max"), na.rm = TRUE)
+terra::global(structure_metrics[["surface_area_ratio"]], c("min", "mean", "max"), na.rm = TRUE)
 ```
 
 ```{r structure-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Rugosity over hillshaded bathymetry."}
@@ -82,6 +83,17 @@ plot_metric(
 Surface-area ratio is derived from slope and should be interpreted as a local
 raster-cell surface approximation, not as a measured benthic surface area.
 
+```{r surface-area-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Surface-area ratio over hillshaded bathymetry."}
+plot_metric(
+  structure_metrics,
+  "surface_area_ratio",
+  bathy = prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Surface-Area Ratio Over Hillshade"
+)
+```
+
 ## BPI, TPI, and Scale
 
 BPI and TPI compare a cell with its neighborhood. For elevation-like negative
@@ -92,11 +104,13 @@ interpretation reverses unless the sign convention is converted first.
 ```{r bpi}
 fine_bpi <- derive_bpi(prepared, window = 3)
 broad_bpi <- derive_bpi(prepared, window = 11)
+tpi <- derive_tpi(prepared)
 multi_bpi <- derive_multiscale_bpi(prepared, windows = c(3, 7, 11))
 
 names(multi_bpi)
 terra::global(fine_bpi, c("min", "mean", "max"), na.rm = TRUE)
 terra::global(broad_bpi, c("min", "mean", "max"), na.rm = TRUE)
+terra::global(tpi, c("min", "mean", "max"), na.rm = TRUE)
 ```
 
 ```{r bpi-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="BPI over hillshaded bathymetry."}

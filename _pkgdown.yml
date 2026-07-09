@@ -1,23 +1,78 @@
-url: https://github.com/el-cordero/blueterra
+url: https://el-cordero.github.io/blueterra/
+
 template:
   bootstrap: 5
+  bootswatch: flatly
   light-switch: true
+  bslib:
+    primary: "#005f73"
+    base_font:
+      google: "Source Sans 3"
+    heading_font:
+      google: "Source Sans 3"
+    code_font:
+      google: "Source Code Pro"
+
 home:
-  title: Process-oriented geomorphometry for submerged terrain
+  title: "blueterra"
+  description: "Process-oriented geomorphometry for submerged terrain."
   strip_header: false
+
 navbar:
   structure:
-    left: [intro, reference, articles, news]
-    right: [search]
+    left: [intro, reference, articles, visual-proof, news]
+    right: [search, github]
+  components:
+    intro:
+      text: "Get started"
+      href: articles/blueterra.html
+    reference:
+      text: "Reference"
+      href: reference/index.html
+    articles:
+      text: "Articles"
+      menu:
+      - text: "User-supplied rasters"
+        href: articles/user-supplied-rasters.html
+      - text: "Terrain metrics"
+        href: articles/terrain-metrics.html
+      - text: "Process groups"
+        href: articles/process-groups.html
+      - text: "Transects and cross-sections"
+        href: articles/transects-cross-sections.html
+      - text: "Isobath corridors"
+        href: articles/isobath-corridors.html
+      - text: "Custom metrics and process groups"
+        href: articles/custom-metrics-process-groups.html
+    visual-proof:
+      text: "Visual proof"
+      href: articles/visual-proof.html
+    news:
+      text: "News"
+      href: news/index.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/el-cordero/blueterra
+      aria-label: GitHub
+
 reference:
-- title: Input and preparation
+- title: "Input and validation"
+  desc: "Read, validate, and inspect bathymetric or elevation rasters."
   contents:
   - read_bathy
   - as_bathy
   - validate_bathy
-  - bathy_info
   - check_bathy_crs
   - check_bathy_units
+  - bathy_info
+  - blueterra_example
+  - blueterra_examples
+  - blueterra_extdata
+  - blueterra_options
+
+- title: "Raster preparation"
+  desc: "Prepare surfaces before terrain derivatives are calculated."
+  contents:
   - prepare_bathy
   - crop_bathy
   - mask_bathy
@@ -28,7 +83,9 @@ reference:
   - invert_depth
   - set_depth_positive
   - set_depth_negative
-- title: Terrain metrics
+
+- title: "Terrain metrics"
+  desc: "Derive terrain attributes from submerged surfaces."
   contents:
   - derive_terrain
   - derive_metric_stack
@@ -37,48 +94,56 @@ reference:
   - derive_northness
   - derive_eastness
   - derive_hillshade
-  - derive_rugosity
   - derive_roughness
   - derive_tri
   - derive_tpi
   - derive_bpi
   - derive_multiscale_bpi
+  - derive_rugosity
   - derive_curvature
   - derive_surface_area_ratio
-- title: Process groups
+
+- title: "Custom metrics and process groups"
+  desc: "Add user-defined raster layers, formulas, and process group catalogs."
   contents:
+  - add_metric_layers
+  - derive_custom_metric
+  - create_metric_catalog
+  - extend_metric_catalog
+  - validate_metric_catalog
   - metric_catalog
   - metric_catalog_data
   - process_groups
   - assign_process_groups
   - select_process_representatives
   - summarize_process_groups
-  - create_metric_catalog
-  - extend_metric_catalog
-  - validate_metric_catalog
-  - add_metric_layers
-  - derive_custom_metric
   - rename_metric_layers
   - standardize_metric_names
-- title: Summaries and geometry
+
+- title: "Transects and isobaths"
+  desc: "Extract cross-sections and depth-following terrain summaries."
+  contents:
+  - estimate_surface_orientation
+  - make_transects
+  - sample_transects
+  - extract_cross_sections
+  - summarize_cross_sections
+  - extract_isobaths
+  - make_isobath_corridors
+  - extract_isobath_corridors
+  - summarize_isobath_terrain
+
+- title: "Spatial summaries"
+  desc: "Summarize raster values by zones, depth bands, and points."
   contents:
   - summarize_terrain
   - summarize_terrain_by_zone
   - summarize_depth_bands
   - extract_terrain_points
   - sample_terrain_cells
-  - make_transects
-  - estimate_surface_orientation
-  - sample_transects
-  - extract_cross_sections
-  - summarize_cross_sections
-  - plot_cross_sections
-  - extract_isobaths
-  - make_isobath_corridors
-  - extract_isobath_corridors
-  - summarize_isobath_terrain
-  - plot_isobath_corridors
-- title: Modeling and plots
+
+- title: "Modeling helpers"
+  desc: "Prepare terrain tables for exploratory modeling."
   contents:
   - terrain_pca
   - terrain_pca_by_group
@@ -87,20 +152,42 @@ reference:
   - terrain_correlation
   - prepare_model_matrix
   - balance_samples
+
+- title: "Plotting"
+  desc: "Create hillshade-supported maps, profiles, and summary plots."
+  contents:
   - plot_bathy
   - plot_hillshade
   - plot_metric
+  - plot_metric_stack
   - plot_terrain_map
   - plot_sampling_rectangles
   - plot_transects
-  - plot_metric_stack
+  - plot_cross_sections
+  - plot_depth_profile
+  - plot_isobath_corridors
   - plot_process_density
   - plot_process_pca
-  - plot_depth_profile
   - plot_terrain_summary
-- title: Utilities
+
+articles:
+- title: "Workflows"
+  navbar: "Articles"
   contents:
-  - blueterra_example
-  - blueterra_examples
-  - blueterra_extdata
-  - blueterra_options
+  - blueterra
+  - user-supplied-rasters
+  - terrain-metrics
+  - process-groups
+  - transects-cross-sections
+  - isobath-corridors
+  - custom-metrics-process-groups
+  - visual-proof
+
+authors:
+  "Elvin Cordero":
+    href: https://github.com/el-cordero
+  "SeaMount Geospatial Labs":
+    href: https://github.com/el-cordero
+
+development:
+  mode: release

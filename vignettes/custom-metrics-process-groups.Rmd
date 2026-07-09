@@ -1,0 +1,150 @@
+---
+title: "Custom metrics and process groups"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Custom metrics and process groups}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
+```
+
+```{r setup, message = FALSE}
+library(blueterra)
+library(terra)
+```
+
+Many terrain analyses use project-specific variables. `blueterra` supports
+custom raster metrics when they share the same grid geometry as the metric stack
+they extend. Custom process groups then document how those layers should be
+organized and interpreted.
+
+## Base Metrics
+
+```{r base}
+bathy <- read_bathy(blueterra_example("hitw"))
+prepared <- prepare_bathy(bathy, depth_range = c(-220, -25), smooth = TRUE)
+
+metrics <- derive_terrain(
+  prepared,
+  metrics = c("slope", "tri", "bpi", "curvature")
+)
+
+names(metrics)
+```
+
+## Expression-Based Metrics
+
+Quoted expressions are evaluated with raster layers available by name. Character
+strings are not evaluated as code.
+
+```{r expression}
+slope_tri <- derive_custom_metric(
+  metrics,
+  name = "slope_tri_index",
+  expression = quote(slope_deg * tri)
+)
+
+slope_tri
+```
+
+## Function-Based Metrics
+
+Functions are useful when a metric requires several operations or parameters.
+The function must return a single-layer `terra::SpatRaster` on the same grid.
+
+```{r function}
+relief_position <- derive_custom_metric(
+  metrics,
+  name = "relief_position_index",
+  fun = function(r, bpi_weight = 2) {
+    out <- r[["tri"]] + bpi_weight * abs(r[["bpi_3x3"]])
+    names(out) <- "relief_position_index"
+    out
+  },
+  bpi_weight = 1.5
+)
+
+relief_position
+```
+
+## Add Layers to a Stack
+
+```{r add}
+extended <- add_metric_layers(metrics, slope_tri, relief_position)
+names(extended)
+```
+
+`add_metric_layers()` checks CRS, extent, resolution, dimensions, and origin by
+default. This protects later summaries and PCA tables from mixing non-aligned
+rasters.
+
+```{r custom-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Custom slope-TRI metric over hillshaded bathymetry."}
+plot_metric(
+  extended,
+  "slope_tri_index",
+  bathy = prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Custom Slope-TRI Index"
+)
+```
+
+## Custom Catalog Rows
+
+Catalog rows explain what a metric is, how it was produced, which group it
+belongs to, and how it should be interpreted.
+
+```{r catalog}
+custom_rows <- create_metric_catalog(
+  metric = c("slope_tri_index", "relief_position_index"),
+  label = c("Slope-TRI index", "Relief-position index"),
+  process_group = c("custom_relief", "custom_relief"),
+  description = c(
+    "Product of slope and terrain ruggedness index.",
+    "TRI plus weighted absolute fine-scale BPI."
+  ),
+  units = c("index", "index"),
+  source_function = c("derive_custom_metric", "derive_custom_metric"),
+  scale_sensitive = c(TRUE, TRUE),
+  interpretation_notes = c(
+    "Example composite terrain-form index; choose only when it follows the analysis design.",
+    "Example relief-position index; weights should be justified before inference."
+  )
+)
+
+custom_catalog <- extend_metric_catalog(metric_catalog(), custom_rows)
+validate_metric_catalog(custom_catalog)
+custom_rows
+```
+
+## Assign Custom Process Groups
+
+```{r assign}
+assign_process_groups(extended, catalog = custom_catalog)
+summarize_process_groups(extended, catalog = custom_catalog)
+select_process_representatives(
+  catalog = custom_catalog,
+  metrics_available = names(extended),
+  representatives = c(custom_relief = "relief_position_index")
+)
+```
+
+Custom group names should describe terrain form or analysis design. They should
+not imply a direct ecological or oceanographic process unless that link is
+validated independently.
+
+## Rename External Layers
+
+Imported rasters often arrive with names that are readable to the analyst but
+not stable enough for programmatic grouping.
+
+```{r rename}
+standardize_metric_names(c("Slope degrees", "Fine BPI", "Relief position index"))
+rename_metric_layers(
+  c("slope old", "bpi old"),
+  c("slope old" = "slope_deg", "bpi old" = "bpi_3x3")
+)
+```
