@@ -1,0 +1,16 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  blueterra: blueterra.html
+  custom-metrics-process-groups: custom-metrics-process-groups.html
+  isobath-corridors: isobath-corridors.html
+  process-groups: process-groups.html
+  terrain-metrics: terrain-metrics.html
+  transects-cross-sections: transects-cross-sections.html
+  user-supplied-rasters: user-supplied-rasters.html
+  visual-proof: visual-proof.html
+last_built: 2026-07-09T22:31Z
+urls:
+  reference: https://el-cordero.github.io/blueterra/reference
+  article: https://el-cordero.github.io/blueterra/articles
