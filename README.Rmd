@@ -43,7 +43,7 @@ The examples below use reduced bathymetry clips and sampling rectangles from
 the La Parguera shelf margin. The rasters are small enough for package examples
 but retain real depth gradients, local relief, and shelf-margin structure.
 
-```{r setup}
+```{r setup, message = FALSE}
 library(blueterra)
 library(terra)
 
@@ -91,7 +91,9 @@ terrain_summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
 ## Example Data
 
 ```{r example-data}
-blueterra_examples()
+examples <- blueterra_examples()
+examples$path <- basename(examples$path)
+examples
 ```
 
 `blueterra_example()` returns installed file paths. The short aliases
@@ -100,10 +102,10 @@ The explicitly named `"synthetic_bathy"` and `"synthetic_zones"` fixtures are
 kept for small numerical tests.
 
 ```{r example-paths}
-blueterra_example("hitw")
-blueterra_example("hoyo")
-blueterra_example("slope")
-blueterra_example("sampling_rectangles")
+basename(blueterra_example("hitw"))
+basename(blueterra_example("hoyo"))
+basename(blueterra_example("slope"))
+basename(blueterra_example("sampling_rectangles"))
 ```
 
 ## Raster Input and Validation

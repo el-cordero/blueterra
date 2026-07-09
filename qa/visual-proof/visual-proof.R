@@ -208,7 +208,12 @@ figures <- c(figures, save_plot(
 ))
 
 readme_result <- capture_command(
-  if (requireNamespace("devtools", quietly = TRUE)) devtools::build_readme(),
+  rmarkdown::render(
+    "README.Rmd",
+    output_format = rmarkdown::github_document(html_preview = FALSE),
+    clean = TRUE,
+    quiet = TRUE
+  ),
   file.path(log_dir, "build-readme.log")
 )
 pkgdown_result <- capture_command(
@@ -324,7 +329,7 @@ report <- c(
   "## Commands Run",
   "",
   "- Rscript qa/visual-proof/visual-proof.R",
-  "- devtools::build_readme()",
+  "- rmarkdown::render('README.Rmd', output_format = github_document)",
   "- pkgdown::build_site(examples = FALSE, new_process = FALSE)",
   "- devtools::test()",
   "- devtools::check(args = \"--as-cran\")",

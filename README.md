@@ -35,7 +35,6 @@ shelf-margin structure.
 ``` r
 library(blueterra)
 library(terra)
-#> terra 1.9.27
 
 hitw_path <- blueterra_example("hitw")
 hoyo_path <- blueterra_example("hoyo")
@@ -89,16 +88,18 @@ terrain_summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
 ## Example Data
 
 ``` r
-blueterra_examples()
+examples <- blueterra_examples()
+examples$path <- basename(examples$path)
+examples
 #> # A tibble: 6 × 8
 #>   name                path     type  description crs    nrow  ncol feature_count
 #>   <chr>               <chr>    <chr> <chr>       <chr> <dbl> <dbl>         <dbl>
-#> 1 hitw                /privat… rast… Reduced Ho… +pro…    75    75            NA
-#> 2 hoyo                /privat… rast… Reduced Ho… +pro…   123   124            NA
-#> 3 slope               /privat… rast… Aggregated… +pro…    90   190            NA
-#> 4 sampling_rectangles /privat… vect… Sampling r… +pro…    NA    NA             3
-#> 5 synthetic_bathy     /privat… rast… Synthetic … +pro…    60    60            NA
-#> 6 synthetic_zones     /privat… vect… Synthetic … +pro…    NA    NA             2
+#> 1 hitw                lapargu… rast… Reduced Ho… +pro…    75    75            NA
+#> 2 hoyo                lapargu… rast… Reduced Ho… +pro…   123   124            NA
+#> 3 slope               lapargu… rast… Aggregated… +pro…    90   190            NA
+#> 4 sampling_rectangles lapargu… vect… Sampling r… +pro…    NA    NA             3
+#> 5 synthetic_bathy     synthet… rast… Synthetic … +pro…    60    60            NA
+#> 6 synthetic_zones     synthet… vect… Synthetic … +pro…    NA    NA             2
 ```
 
 `blueterra_example()` returns installed file paths. The short aliases
@@ -107,14 +108,14 @@ rectangles. The explicitly named `"synthetic_bathy"` and
 `"synthetic_zones"` fixtures are kept for small numerical tests.
 
 ``` r
-blueterra_example("hitw")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpILxnn8/temp_libpath1e4068a1bd04/blueterra/extdata/laparguera_hitw_bathy.tif"
-blueterra_example("hoyo")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpILxnn8/temp_libpath1e4068a1bd04/blueterra/extdata/laparguera_hoyo_bathy.tif"
-blueterra_example("slope")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpILxnn8/temp_libpath1e4068a1bd04/blueterra/extdata/laparguera_slope_bathy.tif"
-blueterra_example("sampling_rectangles")
-#> [1] "/private/var/folders/7j/dr505g_j3zd9z6m9qdykzc4w0000gn/T/RtmpILxnn8/temp_libpath1e4068a1bd04/blueterra/extdata/laparguera_sampling_rectangles.gpkg"
+basename(blueterra_example("hitw"))
+#> [1] "laparguera_hitw_bathy.tif"
+basename(blueterra_example("hoyo"))
+#> [1] "laparguera_hoyo_bathy.tif"
+basename(blueterra_example("slope"))
+#> [1] "laparguera_slope_bathy.tif"
+basename(blueterra_example("sampling_rectangles"))
+#> [1] "laparguera_sampling_rectangles.gpkg"
 ```
 
 ## Raster Input and Validation
