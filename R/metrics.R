@@ -78,6 +78,12 @@ derive_terrain <- function(
 #' magnitude of local gradients, while BPI/TPI interpretation depends on whether
 #' the raster stores elevation-like values or positive depth.
 #'
+#' `derive_curvature()` computes a simple Laplacian-style local curvature index
+#' using a four-neighbor focal kernel. It is not profile curvature or plan
+#' curvature. `derive_surface_area_ratio()` uses `1 / cos(slope)` from the
+#' terrain slope layer and clamps near-zero cosine values to avoid pathological
+#' ratios at extreme slopes.
+#'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
 #' derive_slope(bathy)
@@ -346,7 +352,9 @@ derive_surface_area_ratio <- function(
     overwrite = FALSE
 ) {
   slope <- derive_slope(x, units = "radians", neighbors = neighbors)
-  out <- 1 / cos(slope)
+  cos_slope <- cos(slope)
+  cos_slope <- terra::clamp(cos_slope, lower = 1e-6, values = TRUE)
+  out <- 1 / cos_slope
   names(out) <- "surface_area_ratio"
   write_raster_if_requested(out, filename, overwrite)
 }

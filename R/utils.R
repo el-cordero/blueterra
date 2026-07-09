@@ -225,32 +225,119 @@ vector_plot_data <- function(x) {
 #' @description
 #' Returns the path to a small file installed with `blueterra`.
 #'
-#' @param name Example name. Use `"bathy"` for the synthetic raster or `"zones"`
-#'   for the synthetic polygon layer. `"sites"` is accepted as a compatibility
-#'   alias.
+#' @param name Example name. Use `"hitw"`, `"hoyo"`, or `"slope"` for
+#'   reduced La Parguera bathymetry rasters; `"sampling_rectangles"` for the
+#'   accompanying vector layer; `"bathy"` and `"zones"` as short aliases; or
+#'   `"synthetic_bathy"` and `"synthetic_zones"` for test fixtures.
 #'
 #' @return A normalized local file path.
 #'
 #' @details
-#' The example files are synthetic and are intended for tests, examples, and
-#' vignettes. The raster contains a depth gradient, ridge, basin, and slope
-#' break; the vector file contains two polygon zones.
+#' The primary examples are reduced analysis rasters and sampling rectangles
+#' from the La Parguera shelf margin. The synthetic files are retained for
+#' numerical tests where a simple known surface is useful.
 #'
 #' @examples
-#' blueterra_example("bathy")
-#' blueterra_extdata("example_bathy.tif")
+#' hitw <- blueterra_example("hitw")
+#' rectangles <- blueterra_example("sampling_rectangles")
+#' file.exists(c(hitw, rectangles))
+#' blueterra_examples()
 #'
 #' @seealso [read_bathy()]
 #' @export
-blueterra_example <- function(name = c("bathy", "zones", "sites")) {
+blueterra_example <- function(
+    name = c(
+      "hitw",
+      "hoyo",
+      "slope",
+      "sampling_rectangles",
+      "bathy",
+      "zones",
+      "sites",
+      "synthetic_bathy",
+      "synthetic_zones"
+    )
+) {
   name <- match.arg(name)
   file <- switch(
     name,
-    bathy = "example_bathy.tif",
-    zones = "example_zones.gpkg",
-    sites = "example_zones.gpkg"
+    hitw = "laparguera_hitw_bathy.tif",
+    hoyo = "laparguera_hoyo_bathy.tif",
+    slope = "laparguera_slope_bathy.tif",
+    sampling_rectangles = "laparguera_sampling_rectangles.gpkg",
+    bathy = "laparguera_slope_bathy.tif",
+    zones = "laparguera_sampling_rectangles.gpkg",
+    sites = "laparguera_sampling_rectangles.gpkg",
+    synthetic_bathy = "synthetic_test_bathy.tif",
+    synthetic_zones = "synthetic_test_zones.gpkg"
   )
   blueterra_extdata(file)
+}
+
+#' @rdname blueterra_example
+#'
+#' @return `blueterra_examples()` returns a tibble describing installed example
+#'   files.
+#' @export
+blueterra_examples <- function() {
+  examples <- data.frame(
+    name = c(
+      "hitw",
+      "hoyo",
+      "slope",
+      "sampling_rectangles",
+      "synthetic_bathy",
+      "synthetic_zones"
+    ),
+    file = c(
+      "laparguera_hitw_bathy.tif",
+      "laparguera_hoyo_bathy.tif",
+      "laparguera_slope_bathy.tif",
+      "laparguera_sampling_rectangles.gpkg",
+      "synthetic_test_bathy.tif",
+      "synthetic_test_zones.gpkg"
+    ),
+    type = c("raster", "raster", "raster", "vector", "raster", "vector"),
+    description = c(
+      "Reduced Hole-in-the-Wall bathymetry, La Parguera shelf margin.",
+      "Reduced Hoyo Terrace bathymetry, La Parguera shelf margin.",
+      "Aggregated slope-clip bathymetry spanning the local shelf margin.",
+      "Sampling rectangles and slope analysis extent used with the examples.",
+      "Synthetic bathymetry surface retained for numerical tests.",
+      "Synthetic polygon zones retained for numerical tests."
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  examples$path <- vapply(examples$file, blueterra_extdata, character(1))
+  examples$crs <- NA_character_
+  examples$nrow <- NA_integer_
+  examples$ncol <- NA_integer_
+  examples$feature_count <- NA_integer_
+
+  for (i in seq_len(nrow(examples))) {
+    if (examples$type[[i]] == "raster") {
+      r <- terra::rast(examples$path[[i]])
+      examples$crs[[i]] <- terra::crs(r, proj = TRUE)
+      examples$nrow[[i]] <- terra::nrow(r)
+      examples$ncol[[i]] <- terra::ncol(r)
+    } else {
+      v <- terra::vect(examples$path[[i]])
+      examples$crs[[i]] <- terra::crs(v, proj = TRUE)
+      examples$feature_count[[i]] <- terra::nrow(v)
+    }
+  }
+
+  tibble::as_tibble(examples[c(
+    "name",
+    "path",
+    "type",
+    "description",
+    "crs",
+    "nrow",
+    "ncol",
+    "feature_count"
+  )])
 }
 
 #' @rdname blueterra_example

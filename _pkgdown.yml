@@ -90,5 +90,6 @@ reference:
 - title: Utilities
   contents:
   - blueterra_example
+  - blueterra_examples
   - blueterra_extdata
   - blueterra_options

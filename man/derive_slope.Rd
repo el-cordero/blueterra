@@ -84,6 +84,12 @@ geomorphometry formulas.
 Functions preserve the input raster sign. For example, slope depends on the
 magnitude of local gradients, while BPI/TPI interpretation depends on whether
 the raster stores elevation-like values or positive depth.
+
+\code{derive_curvature()} computes a simple Laplacian-style local curvature index
+using a four-neighbor focal kernel. It is not profile curvature or plan
+curvature. \code{derive_surface_area_ratio()} uses \code{1 / cos(slope)} from the
+terrain slope layer and clamps near-zero cosine values to avoid pathological
+ratios at extreme slopes.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))

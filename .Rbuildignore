@@ -3,6 +3,7 @@
 ^\.Rbuildignore$
 ^\.github$
 ^\.lintr$
+^\.vscode$
 ^README\.Rmd$
 ^cran-comments\.md$
 ^LICENSE\.md$
@@ -20,6 +21,12 @@
 ^BlueTopo$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^.*_cache$
+^.*_files$
+^.*[.]Rcheck$
+^.*[.]tar[.]gz$
+^.*[.]tgz$
+^.*[.]zip$
 ^CRAN-SUBMISSION$
 ^doc$
 ^Meta$

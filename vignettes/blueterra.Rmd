@@ -13,39 +13,42 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ```{r setup}
 library(blueterra)
+library(terra)
 ```
 
-`blueterra` supports submerged-terrain geomorphometry from user-supplied
-bathymetric and elevation rasters. It uses `terra` objects for raster
-preparation, metric derivation, vector summaries, transects, and isobath
-corridors.
+`blueterra` supports submerged-terrain geomorphometry from bathymetric and
+elevation rasters. The package keeps raster and vector operations in `terra`,
+which helps keep CRS, extent, resolution, and geometry handling consistent
+throughout an analysis.
 
-## Start with a Raster
+## Start with Real Example Data
 
 ```{r read}
-bathy <- read_bathy(blueterra_example("bathy"))
-bathy_info(bathy)
-```
+hitw <- read_bathy(blueterra_example("hitw"))
+rectangles <- terra::vect(blueterra_example("sampling_rectangles"))
+hitw_rect <- rectangles[rectangles$site_id == "hitw", ]
 
-The example raster is synthetic and small enough for examples and tests.
+bathy_info(hitw)
+hitw_rect
+```
 
 ## Prepare the Surface
 
 ```{r prepare}
 prepared <- prepare_bathy(
-  bathy,
-  depth_range = c(-90, -20),
+  hitw,
+  depth_range = c(-220, -25),
   smooth = TRUE,
   smooth_window = 3
 )
+check_bathy_units(prepared, units = "m", positive_depth = FALSE)
 ```
 
 Depth signs are preserved unless a conversion is explicit:
 
 ```{r signs}
 positive_depth <- set_depth_positive(prepared)
-negative_depth <- set_depth_negative(positive_depth)
-check_bathy_units(negative_depth, units = "m", positive_depth = FALSE)
+range(terra::values(positive_depth), na.rm = TRUE)
 ```
 
 ## Derive Terrain Metrics
@@ -53,21 +56,26 @@ check_bathy_units(negative_depth, units = "m", positive_depth = FALSE)
 ```{r metrics}
 terrain <- derive_terrain(
   prepared,
-  metrics = c("slope", "aspect", "northness", "eastness", "bpi", "roughness")
+  metrics = c("slope", "aspect", "northness", "eastness", "tri", "bpi",
+              "curvature")
 )
 names(terrain)
 ```
 
-## Summarize Zones
+## Summarize Sampling Rectangles
 
 ```{r zones}
-zones <- terra::vect(blueterra_example("zones"))
-summarize_terrain(terrain, zones)
+summarize_terrain(
+  terrain,
+  hitw_rect,
+  fun = c("mean", "sd", "min", "max")
+)
 ```
 
 ## Model-Ready Tables
 
 ```{r model-ready}
-cells <- sample_terrain_cells(terrain, size = 25)
-terrain_correlation(cells)
+cells <- sample_terrain_cells(terrain, size = 40, method = "regular")
+terrain_correlation(cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
+terrain_pca(cells[, c("slope_deg", "tri", "bpi_3x3", "curvature")])$variance
 ```

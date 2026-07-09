@@ -2,34 +2,46 @@
 % Please edit documentation in R/utils.R
 \name{blueterra_example}
 \alias{blueterra_example}
+\alias{blueterra_examples}
 \alias{blueterra_extdata}
 \title{Locate package example files}
 \usage{
-blueterra_example(name = c("bathy", "zones", "sites"))
+blueterra_example(
+  name = c("hitw", "hoyo", "slope", "sampling_rectangles", "bathy", "zones", "sites",
+    "synthetic_bathy", "synthetic_zones")
+)
+
+blueterra_examples()
 
 blueterra_extdata(file = NULL)
 }
 \arguments{
-\item{name}{Example name. Use \code{"bathy"} for the synthetic raster or \code{"zones"}
-for the synthetic polygon layer. \code{"sites"} is accepted as a compatibility
-alias.}
+\item{name}{Example name. Use \code{"hitw"}, \code{"hoyo"}, or \code{"slope"} for
+reduced La Parguera bathymetry rasters; \code{"sampling_rectangles"} for the
+accompanying vector layer; \code{"bathy"} and \code{"zones"} as short aliases; or
+\code{"synthetic_bathy"} and \code{"synthetic_zones"} for test fixtures.}
 
 \item{file}{File name under \code{inst/extdata}.}
 }
 \value{
 A normalized local file path.
+
+\code{blueterra_examples()} returns a tibble describing installed example
+files.
 }
 \description{
 Returns the path to a small file installed with \code{blueterra}.
 }
 \details{
-The example files are synthetic and are intended for tests, examples, and
-vignettes. The raster contains a depth gradient, ridge, basin, and slope
-break; the vector file contains two polygon zones.
+The primary examples are reduced analysis rasters and sampling rectangles
+from the La Parguera shelf margin. The synthetic files are retained for
+numerical tests where a simple known surface is useful.
 }
 \examples{
-blueterra_example("bathy")
-blueterra_extdata("example_bathy.tif")
+hitw <- blueterra_example("hitw")
+rectangles <- blueterra_example("sampling_rectangles")
+file.exists(c(hitw, rectangles))
+blueterra_examples()
 
 }
 \seealso{

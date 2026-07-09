@@ -16,25 +16,30 @@ library(blueterra)
 ```
 
 Isobath corridors summarize terrain near depth contours. They are useful when
-observations or management zones follow depth horizons rather than rectangular
-or administrative boundaries.
+observations, surveys, or interpretations follow depth horizons rather than
+rectangular or administrative boundaries.
 
 ```{r data}
-bathy <- read_bathy(blueterra_example("bathy"))
-terrain <- derive_terrain(bathy, metrics = c("slope", "bpi", "roughness"))
+bathy <- read_bathy(blueterra_example("hitw"))
+prepared <- prepare_bathy(bathy, depth_range = c(-220, -25), smooth = TRUE)
+terrain <- derive_terrain(prepared, metrics = c("slope", "bpi", "curvature"))
 ```
 
-The example bathymetry stores depths as negative elevation, so depths are passed
-as negative contour values:
+The example bathymetry stores depth as negative elevation, so contour depths are
+passed as negative values:
 
 ```{r isobaths}
-isobaths <- extract_isobaths(bathy, depths = c(-40, -60))
+isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
 isobaths
 ```
 
-Buffers are measured in map units, so projected CRS are recommended:
+Buffers are measured in map units, so the raster should use a projected CRS:
 
 ```{r corridors}
-corridors <- make_isobath_corridors(bathy, depths = c(-40, -60), width = 20)
+corridors <- make_isobath_corridors(
+  prepared,
+  depths = c(-50, -80, -120),
+  width = 20
+)
 summarize_isobath_terrain(terrain, corridors)
 ```

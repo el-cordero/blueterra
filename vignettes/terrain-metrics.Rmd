@@ -16,41 +16,65 @@ library(blueterra)
 ```
 
 Terrain derivatives are scale-sensitive. Resolution, smoothing, CRS, and focal
-window size affect slope, aspect, BPI, TPI, curvature, rugosity, and surface
-area style metrics.
+window size affect slope, aspect, BPI, TPI, curvature, rugosity, and
+surface-area style metrics. The examples use reduced Hole-in-the-Wall
+bathymetry stored as negative elevation in metres.
 
-```{r metrics}
-bathy <- read_bathy(blueterra_example("bathy"))
-terrain <- derive_metric_stack(
-  bathy,
-  metrics = c("slope", "aspect", "northness", "eastness", "bpi", "roughness",
-              "tri", "tpi", "curvature", "surface_area_ratio")
-)
-names(terrain)
+```{r data}
+bathy <- read_bathy(blueterra_example("hitw"))
+prepared <- prepare_bathy(bathy, depth_range = c(-220, -25), smooth = TRUE)
 ```
 
-## Orientation
-
-Aspect is circular. Northness and eastness convert aspect into linear
-components:
+## Slope, Aspect, and Orientation
 
 ```{r orientation}
 orientation <- derive_metric_stack(
-  bathy,
-  metrics = c("aspect", "northness", "eastness")
+  prepared,
+  metrics = c("slope", "aspect", "northness", "eastness")
 )
 names(orientation)
 ```
 
-## BPI and Scale
+Aspect is circular. Northness and eastness convert aspect into linear
+components that can be summarized in tables or used as model predictors.
 
-Bathymetric position index is a focal metric. Window size changes the scale of
-terrain position being summarized:
+## Roughness, TRI, Rugosity, and Surface Area
 
-```{r bpi}
-derive_multiscale_bpi(bathy, windows = c(3, 7, 11))
+```{r structure}
+structure_metrics <- derive_metric_stack(
+  prepared,
+  metrics = c("roughness", "tri", "rugosity", "surface_area_ratio")
+)
+names(structure_metrics)
 ```
 
-For elevation-like negative bathymetry, positive BPI means higher stored values
-relative to the neighborhood. For positive-depth rasters, interpretation is
-reversed unless users convert the sign convention first.
+Rugosity is computed as vector ruggedness over a focal window. Surface-area
+ratio is derived from slope and should be interpreted as a local raster-cell
+surface approximation, not as a measured benthic surface area.
+
+## BPI, TPI, and Scale
+
+```{r bpi}
+fine_bpi <- derive_bpi(prepared, window = 3)
+broad_bpi <- derive_bpi(prepared, window = 11)
+multi_bpi <- derive_multiscale_bpi(prepared, windows = c(3, 7, 11))
+
+names(multi_bpi)
+terra::global(fine_bpi, c("min", "mean", "max"), na.rm = TRUE)
+terra::global(broad_bpi, c("min", "mean", "max"), na.rm = TRUE)
+```
+
+For elevation-like negative bathymetry, positive BPI means a cell has a higher
+stored value than its neighborhood. For positive-depth rasters, interpretation
+is reversed unless the sign convention is converted first.
+
+## Curvature
+
+```{r curvature}
+curvature <- derive_curvature(prepared)
+terra::global(curvature, c("min", "mean", "max"), na.rm = TRUE)
+```
+
+The curvature layer is a Laplacian-style local index based on a four-neighbor
+kernel. It is useful as a compact measure of local convexity or concavity, but
+it is not profile curvature or plan curvature.

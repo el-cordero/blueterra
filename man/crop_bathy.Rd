@@ -45,7 +45,8 @@ effects introduced by resampling or projection.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
-crop_bathy(bathy, terra::ext(50, 350, 50, 350))
+zones <- terra::vect(blueterra_example("zones"))
+crop_bathy(bathy, terra::ext(zones[zones$site_id == "slope", ]))
 
 }
 \seealso{

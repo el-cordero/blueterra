@@ -7,13 +7,13 @@ Authors@R: c(
            role = c("aut", "cre")),
     person("SeaMount Geospatial Labs", role = "cph")
   )
-Description: Derives and summarizes terrain metrics from bathymetric and
-    elevation rasters for submerged-landscape geomorphometry. Tools support
-    raster preparation, slope and aspect decomposition, terrain position,
-    rugosity, curvature, depth-band summaries, transect extraction, and
-    isobath-corridor analysis using terra-based workflows. Outputs are designed
-    for seafloor classification, habitat mapping, shelf-margin analysis, and
-    spatial modeling of submerged terrain.
+Description: Derives, organizes, summarizes, and visualizes terrain metrics
+    from bathymetric and elevation rasters for submerged-landscape
+    geomorphometry. Tools support terra-based raster preparation, slope and
+    aspect decomposition, terrain position, rugosity, curvature, depth-band
+    summaries, transect extraction, isobath-corridor analysis, and model-ready
+    summaries for seafloor classification, habitat mapping, shelf-margin
+    analysis, and spatial modeling.
 License: MIT + file LICENSE
 URL: https://github.com/el-cordero/blueterra
 BugReports: https://github.com/el-cordero/blueterra/issues

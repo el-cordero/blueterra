@@ -13,49 +13,67 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ```{r setup}
 library(blueterra)
+library(terra)
 ```
 
-`blueterra` works with user-supplied digital bathymetric models, digital
-elevation models, and other raster surfaces readable by `terra`.
+`blueterra` works with digital bathymetric models, digital elevation models, and
+other raster surfaces readable by `terra`. A raster can enter the workflow as a
+local file path or as an existing `terra::SpatRaster`.
 
-## Accepted Inputs
-
-Use a local raster path:
+## Raster Paths and SpatRasters
 
 ```{r path}
-path <- blueterra_example("bathy")
-bathy <- read_bathy(path)
+path <- blueterra_example("hoyo")
+hoyo <- read_bathy(path)
+same_hoyo <- as_bathy(hoyo)
+
+class(path)
+class(hoyo)
+class(same_hoyo)
 ```
 
-Or use an existing `terra::SpatRaster`:
+## Vector Inputs
 
-```{r spatraster}
-same_bathy <- as_bathy(bathy)
-```
-
-Vector workflows use `terra::SpatVector` objects or local vector files:
+Use `terra::vect()` for local vector files:
 
 ```{r vector}
-zones <- terra::vect(blueterra_example("zones"))
-zones
+rectangles <- terra::vect(blueterra_example("sampling_rectangles"))
+rectangles[, c("site_id", "site_name", "feature_type")]
+```
+
+Functions that take zones, masks, or transect boundaries also accept a local
+vector path:
+
+```{r vector-path}
+hoyo_rect <- rectangles[rectangles$site_id == "hoyo", ]
+masked <- mask_bathy(hoyo, hoyo_rect)
+class(masked)
 ```
 
 ## CRS
 
 ```{r crs}
-check_bathy_crs(bathy)
+check_bathy_crs(hoyo)
 ```
 
-Use projected CRS when slope, buffers, focal windows, or distances need linear
-map units. `blueterra` warns or errors only where the operation requires a CRS;
-it does not silently reproject.
+Slope, buffers, transects, focal windows in map units, and isobath corridors
+should be interpreted in a projected CRS. `blueterra` does not silently
+reproject; use `project_bathy()` or `terra::project()` when a CRS conversion is
+part of the analysis design.
 
 ## Depth Convention
 
-Some bathymetry stores depth as negative elevation, while other workflows use
-positive depth. `blueterra` preserves signs by default:
-
 ```{r sign}
-check_bathy_units(bathy, units = "m", positive_depth = FALSE)
-set_depth_positive(bathy)
+check_bathy_units(hoyo, units = "m", positive_depth = FALSE)
+positive_depth <- set_depth_positive(hoyo)
+range(terra::values(positive_depth), na.rm = TRUE)
+```
+
+Depth bands follow the stored values unless `positive_depth = TRUE` is used.
+
+```{r bands}
+summarize_depth_bands(
+  hoyo,
+  breaks = c(-260, -180, -120, -60, -20)
+)
 ```

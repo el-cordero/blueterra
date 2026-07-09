@@ -27,7 +27,7 @@ values <- shelf_gradient + channel + mound + ridge + slope_break + terrace
 
 terra::values(r) <- values
 names(r) <- "bathy"
-terra::writeRaster(r, "inst/extdata/example_bathy.tif", overwrite = TRUE)
+terra::writeRaster(r, "inst/extdata/synthetic_test_bathy.tif", overwrite = TRUE)
 
 zones <- terra::vect(
   c(
@@ -41,9 +41,13 @@ terra::values(zones) <- data.frame(
   setting = c("ridge_basin", "slope_break")
 )
 
-for (path in c("inst/extdata/example_zones.gpkg", "inst/extdata/example_sites.gpkg")) {
+for (path in c(
+  "inst/extdata/synthetic_test_zones.gpkg",
+  "inst/extdata/example_zones.gpkg",
+  "inst/extdata/example_sites.gpkg"
+)) {
   if (file.exists(path)) {
     unlink(path)
   }
 }
-terra::writeVector(zones, "inst/extdata/example_zones.gpkg", overwrite = TRUE)
+terra::writeVector(zones, "inst/extdata/synthetic_test_zones.gpkg", overwrite = TRUE)

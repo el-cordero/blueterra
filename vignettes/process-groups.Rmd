@@ -16,8 +16,9 @@ library(blueterra)
 ```
 
 `blueterra` groups terrain metrics into process-oriented terrain-form groups.
-These groups support interpretation, variable selection, and reporting. They do
-not directly measure currents, sediment flux, or ecological processes.
+The groups support interpretation, variable selection, and reporting. They are
+terrain-form proxies; they do not directly measure currents, sediment flux, or
+ecological processes.
 
 ```{r catalog}
 metric_catalog()
@@ -26,15 +27,21 @@ metric_catalog()
 ## Assigning Groups
 
 ```{r assign}
-bathy <- read_bathy(blueterra_example("bathy"))
-terrain <- derive_terrain(bathy, metrics = c("slope", "bpi", "roughness"))
+bathy <- read_bathy(blueterra_example("hitw"))
+terrain <- derive_terrain(
+  bathy,
+  metrics = c("slope", "aspect", "northness", "eastness", "tri", "bpi",
+              "curvature")
+)
 assign_process_groups(terrain)
 summarize_process_groups(terrain)
 ```
 
 ## Representatives
 
-Representative metrics are starting points, not fixed scientific rules:
+Representative metrics are starting points for compact reporting. The final
+choice should still follow the resolution, sampling design, and feature scale
+of the analysis.
 
 ```{r reps}
 select_process_representatives(metrics_available = names(terrain))

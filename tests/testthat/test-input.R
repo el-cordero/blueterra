@@ -1,13 +1,22 @@
 test_that("example data are available", {
+  expect_true(file.exists(blueterra_example("hitw")))
+  expect_true(file.exists(blueterra_example("hoyo")))
+  expect_true(file.exists(blueterra_example("slope")))
+  expect_true(file.exists(blueterra_example("sampling_rectangles")))
   expect_true(file.exists(blueterra_example("bathy")))
   expect_true(file.exists(blueterra_example("zones")))
   expect_true(file.exists(blueterra_example("sites")))
-  expect_match(blueterra_extdata("example_bathy.tif"), "example_bathy.tif")
-  expect_match(blueterra_example("zones"), "example_zones.gpkg")
+  expect_true(file.exists(blueterra_example("synthetic_bathy")))
+  expect_true(file.exists(blueterra_example("synthetic_zones")))
+  expect_match(blueterra_example("zones"), "laparguera_sampling_rectangles.gpkg")
+
+  catalog <- blueterra_examples()
+  expect_s3_class(catalog, "tbl_df")
+  expect_true(all(c("hitw", "hoyo", "slope", "sampling_rectangles") %in% catalog$name))
 })
 
 test_that("bathymetry input helpers read and validate rasters", {
-  path <- blueterra_example("bathy")
+  path <- blueterra_example("hitw")
   bathy <- read_bathy(path)
   expect_s4_class(bathy, "SpatRaster")
   expect_true(terra::compareGeom(as_bathy(path), bathy, stopOnError = FALSE))
@@ -27,6 +36,6 @@ test_that("input helpers fail clearly", {
 test_that("vector helpers accept SpatVector and local vector paths", {
   zones <- terra::vect(blueterra_example("zones"))
   expect_s4_class(zones, "SpatVector")
-  bathy <- example_bathy()
+  bathy <- read_bathy(blueterra_example("hitw"))
   expect_s4_class(mask_bathy(bathy, blueterra_example("zones")), "SpatRaster")
 })
