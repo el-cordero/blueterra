@@ -111,6 +111,9 @@ a vector object/path.}
 \item{bathy}{Optional bathymetry raster used to derive hillshade and contours
 when \code{x} is a metric raster.}
 
+\item{...}{Additional plotting options passed from convenience wrappers to
+\code{plot_bathy()} or \code{plot_metric()}.}
+
 \item{rectangles}{Sampling rectangles or polygon zones.}
 
 \item{transects}{Transect line geometry.}

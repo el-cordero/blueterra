@@ -27,6 +27,8 @@
 #' @param title,subtitle,caption Plot text passed to `ggplot2::labs()`.
 #' @param legend_title Optional raster legend title.
 #' @param max_cells Maximum raster cells used for plotting.
+#' @param ... Additional plotting options passed from convenience wrappers to
+#'   `plot_bathy()` or `plot_metric()`.
 #'
 #' @return A `ggplot` object.
 #'
