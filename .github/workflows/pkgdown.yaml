@@ -38,6 +38,11 @@ jobs:
             any::remotes
           needs: website
 
+      - name: Configure git
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Build site
         run: pkgdown::build_site(new_process = FALSE)
         shell: Rscript {0}
