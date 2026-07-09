@@ -567,6 +567,7 @@ summarize_cross_sections <- function(
 #' @param color_col Optional column used to color profiles. Defaults to
 #'   `group_col`.
 #' @param show_legend Logical. Show the line-color legend.
+#' @param points Logical. Draw sample points over profile lines.
 #' @param mean_profile Logical. Overlay a binned mean profile across transects.
 #' @param normalize_distance Logical. Plot distance as 0-1 normalized position
 #'   along each transect.
@@ -593,6 +594,7 @@ plot_cross_sections <- function(
     group_col = "transect_id",
     color_col = NULL,
     show_legend = TRUE,
+    points = FALSE,
     mean_profile = FALSE,
     normalize_distance = FALSE,
     depth_increases_down = TRUE,
@@ -610,7 +612,7 @@ plot_cross_sections <- function(
   if (!group_col %in% names(samples)) {
     bt_abort("`group_col` was not found in `samples`.")
   }
-  value_col <- terrain_value_column(samples, value_col, context = "value")
+  value_col <- infer_profile_value_col(samples, value_col = value_col)
   color_col <- color_col %||% group_col
   if (!is.null(color_col) && !color_col %in% names(samples)) {
     bt_abort("`color_col` was not found in `samples`.")
@@ -623,6 +625,7 @@ plot_cross_sections <- function(
     x_col <- "normalized_distance"
     x_lab <- "Normalized distance along transect"
   }
+  plot_data <- plot_data[order(plot_data[[group_col]], plot_data[[x_col]]), , drop = FALSE]
 
   if (is.null(color_col)) {
     mapping <- ggplot2::aes(
@@ -642,12 +645,15 @@ plot_cross_sections <- function(
     ggplot2::geom_line(alpha = 0.75, na.rm = TRUE) +
     ggplot2::labs(
       x = x_lab,
-      y = value_col,
+      y = profile_axis_label(value_col),
       color = if (identical(color_col, group_col)) "Transect" else color_col,
       title = title,
       subtitle = subtitle,
       caption = caption
     )
+  if (isTRUE(points)) {
+    p <- p + ggplot2::geom_point(na.rm = TRUE, size = 1.3, alpha = 0.75)
+  }
 
   if (isTRUE(mean_profile)) {
     mean_data <- mean_profile_data(plot_data, x_col = x_col, value_col = value_col, group_col = group_col)

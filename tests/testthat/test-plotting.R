@@ -45,6 +45,32 @@ test_that("optional plotting dependency failure is clear", {
   expect_true(is.function(plot_bathy))
 })
 
+test_that("profile value inference ignores transect metadata", {
+  samples <- data.frame(
+    transect_id = rep(c("a", "b"), each = 4),
+    distance = rep(1:4, 2),
+    width_m = 300,
+    height_m = 400,
+    angle_deg = 94.6,
+    offset = rep(c(-50, 50), each = 4),
+    bathy_m = c(-40, -45, -50, -55, -42, -47, -52, -57),
+    slope_deg = c(12, 15, 18, 21, 13, 16, 19, 22)
+  )
+  expect_equal(blueterra:::infer_profile_value_col(samples), "bathy_m")
+  expect_equal(blueterra:::infer_profile_value_col(samples, value_col = "slope_deg"), "slope_deg")
+
+  testthat::skip_if_not_installed("ggplot2")
+  cross_plot <- plot_cross_sections(samples)
+  expect_equal(cross_plot$labels$y, "Bathymetry / elevation (m)")
+  expect_equal(cross_plot$labels$colour, "Transect")
+
+  profile_plot <- plot_depth_profile(samples[samples$transect_id == "a", ])
+  expect_equal(profile_plot$labels$y, "Bathymetry / elevation (m)")
+
+  slope_plot <- plot_depth_profile(samples[samples$transect_id == "a", ], value_col = "slope_deg")
+  expect_equal(slope_plot$labels$y, "Slope (degrees)")
+})
+
 test_that("depth profile plots README-style transect subsets", {
   testthat::skip_if_not_installed("ggplot2")
   bathy <- read_bathy(blueterra_example("hitw"))
@@ -54,10 +80,15 @@ test_that("depth profile plots README-style transect subsets", {
   transects <- make_transects(hitw_rect, spacing = 75, bathy = hitw_prepared)
   transect_samples <- sample_transects(transects, hitw_prepared, n = 8)
   one <- transect_samples[transect_samples$transect_id == transect_samples$transect_id[1], ]
-  p <- plot_depth_profile(one)
+  p <- plot_depth_profile(one, value_col = "bathy_m")
   expect_s3_class(p, "ggplot")
   built <- ggplot2::ggplot_build(p)
   expect_true(any(vapply(built$data, nrow, integer(1)) > 0))
+
+  metric_samples <- sample_transects(transects, derive_slope(hitw_prepared), n = 8)
+  metric_one <- metric_samples[metric_samples$transect_id == metric_samples$transect_id[1], ]
+  metric_plot <- plot_depth_profile(metric_one, value_col = "slope_deg")
+  expect_s3_class(metric_plot, "ggplot")
 
   bad <- data.frame(distance = 1:3, transect_id = letters[1:3])
   expect_error(plot_depth_profile(bad), "Could not identify")

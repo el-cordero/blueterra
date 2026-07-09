@@ -535,12 +535,14 @@ plot_process_pca <- function(
 #' Plot a depth profile
 #'
 #' @description
-#' Plots depth or elevation values along a sampled profile.
+#' Plots a sampled raster value along a transect profile.
 #'
 #' @param data A data frame.
 #' @param distance_col Distance column name.
-#' @param depth_col Depth or elevation column name. If `NULL`, the first numeric
-#'   non-coordinate value column is used.
+#' @param depth_col Depth, elevation, or metric column name. If `NULL`, a raster
+#'   value column is inferred while ignoring transect metadata.
+#' @param value_col Alias for `depth_col`. Use this when plotting sampled
+#'   variables such as slope, rugosity, BPI, or curvature.
 #' @param group_col Optional grouping column.
 #' @param points Logical. Draw profile points.
 #' @param line Logical. Draw profile lines when at least two finite samples are
@@ -550,6 +552,12 @@ plot_process_pca <- function(
 #' @param title,subtitle,caption Plot text.
 #'
 #' @return A `ggplot` object.
+#'
+#' @details
+#' Despite the function name, the y-axis can be any sampled raster variable:
+#' elevation, depth, slope, rugosity, BPI, curvature, or a custom metric.
+#' Metadata columns such as transect angle, offset, width, and height are
+#' ignored during automatic value-column inference.
 #'
 #' @examples
 #' if (requireNamespace("ggplot2", quietly = TRUE)) {
@@ -563,6 +571,7 @@ plot_depth_profile <- function(
     data,
     distance_col = "distance",
     depth_col = NULL,
+    value_col = NULL,
     group_col = NULL,
     points = TRUE,
     line = TRUE,
@@ -575,7 +584,17 @@ plot_depth_profile <- function(
   if (!is.data.frame(data) || !distance_col %in% names(data)) {
     bt_abort("`data` must contain `distance_col`.")
   }
-  depth_col <- terrain_value_column(data, depth_col, exclude = distance_col, context = "depth")
+  if (!is.null(depth_col) && !is.null(value_col) && !identical(depth_col, value_col)) {
+    bt_abort("Use either `depth_col` or `value_col`, or supply the same column to both.")
+  }
+  value_col <- value_col %||% depth_col
+  depth_col <- infer_profile_value_col(
+    data,
+    value_col = value_col,
+    exclude = distance_col,
+    require_finite = TRUE,
+    require_variation = FALSE
+  )
   data <- data[order(data[[distance_col]]), , drop = FALSE]
   finite <- is.finite(data[[distance_col]]) & is.finite(data[[depth_col]])
   if (!any(finite)) {
@@ -612,12 +631,30 @@ plot_depth_profile <- function(
   p <- p +
     ggplot2::labs(
       x = "Distance along transect (map units)",
-      y = depth_col,
+      y = profile_axis_label(depth_col),
       title = title,
       subtitle = subtitle,
       caption = caption
     )
   orient_depth_axis(p, plot_data[[depth_col]], depth_increases_down)
+}
+
+profile_axis_label <- function(value_col) {
+  labels <- c(
+    bathy_m = "Bathymetry / elevation (m)",
+    bathy = "Bathymetry / elevation",
+    depth = "Depth",
+    elevation = "Elevation",
+    slope_deg = "Slope (degrees)",
+    slope_rad = "Slope (radians)",
+    aspect_deg = "Aspect (degrees)",
+    aspect_rad = "Aspect (radians)",
+    rugosity_vrm_3x3 = "Rugosity (VRM)",
+    bpi_3x3 = "BPI (3 x 3)",
+    bpi_11x11 = "BPI (11 x 11)",
+    surface_area_ratio = "Surface area ratio"
+  )
+  labels[[value_col]] %||% value_col
 }
 
 pca_variance_axis_labels <- function(pca, components = c("PC1", "PC2")) {

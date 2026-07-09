@@ -195,13 +195,15 @@ smooth_bathy <- function(
     bt_abort("`window` must be one odd integer greater than or equal to 3.")
   }
   w <- matrix(1, nrow = window, ncol = window)
+  r <- as_bathy(x, check = TRUE)
   out <- terra::focal(
-    as_bathy(x, check = TRUE),
+    r,
     w = w,
     fun = mean,
     na.rm = na.rm,
     na.policy = "omit"
   )
+  names(out) <- names(r)
   write_raster_if_requested(out, filename, overwrite)
 }
 

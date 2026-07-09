@@ -525,13 +525,13 @@ positive_bands <- summarize_depth_bands(
 )
 positive_bands
 #> # A tibble: 5 × 8
-#>   depth_band metric     n_cells  mean    sd   min   max median
-#>   <chr>      <chr>        <int> <dbl> <dbl> <dbl> <dbl>  <dbl>
-#> 1 [20,30)    focal_mean       4  28.9  1.23  27.2  30.0   29.2
-#> 2 [30,60)    focal_mean     521  45.5  8.29  30.2  59.9   45.8
-#> 3 [60,100)   focal_mean     791  77.8 10.3   60.1  99.9   77.6
-#> 4 [100,150)  focal_mean     180 123.  14.3  100.  150.   123. 
-#> 5 [150,220]  focal_mean     819 193.  17.9  150.  218.   196.
+#>   depth_band metric  n_cells  mean    sd   min   max median
+#>   <chr>      <chr>     <int> <dbl> <dbl> <dbl> <dbl>  <dbl>
+#> 1 [20,30)    bathy_m       4  28.9  1.23  27.2  30.0   29.2
+#> 2 [30,60)    bathy_m     521  45.5  8.29  30.2  59.9   45.8
+#> 3 [60,100)   bathy_m     791  77.8 10.3   60.1  99.9   77.6
+#> 4 [100,150)  bathy_m     180 123.  14.3  100.  150.   123. 
+#> 5 [150,220]  bathy_m     819 193.  17.9  150.  218.   196.
 ```
 
 ## Transects and Cross-Sections
@@ -581,17 +581,17 @@ head(transect_samples)
 #> 6 hitw    Hole-in-t… sampling_re… Hole In th…     300      300      94.6 1      
 #> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
 #> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
-#> #   distance <dbl>, x <dbl>, y <dbl>, focal_mean <dbl>
+#> #   distance <dbl>, x <dbl>, y <dbl>, bathy_m <dbl>
 
 cross_sections <- extract_cross_sections(hitw_transects, hitw_prepared, n = 12)
 summarize_cross_sections(cross_sections)
 #> # A tibble: 4 × 6
-#>   transect_id width_m_mean width_m_sd width_m_min width_m_max width_m_median
+#>   transect_id bathy_m_mean bathy_m_sd bathy_m_min bathy_m_max bathy_m_median
 #>   <chr>              <dbl>      <dbl>       <dbl>       <dbl>          <dbl>
-#> 1 1_1                  300          0         300         300            300
-#> 2 1_2                  300          0         300         300            300
-#> 3 1_3                  300          0         300         300            300
-#> 4 1_4                  300          0         300         300            300
+#> 1 1_1                -102.       66.1       -197.       -45.4          -83.3
+#> 2 1_2                -108.       61.2       -192.       -50.7          -95.1
+#> 3 1_3                -127.       71.9       -216.       -46.5         -107. 
+#> 4 1_4                -110.       71.7       -209.       -37.3          -83.7
 ```
 
 ``` r
@@ -610,11 +610,14 @@ plot_transects(
 ``` r
 plot_cross_sections(
   cross_sections,
+  value_col = "bathy_m",
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
   title = "Hole-in-the-Wall Cross-Sections"
 )
+#> Warning: Removed 7 rows containing missing values or values outside the scale range
+#> (`geom_line()`).
 ```
 
 <img src="man/figures/README-plot-cross-sections-1.png" alt="Bathymetric cross-section profiles with depth increasing downward." width="100%" />
@@ -929,11 +932,32 @@ plot_process_density(comparison, value = "slope_deg", group = "site")
 
 ``` r
 plot_depth_profile(
-  transect_samples[transect_samples$transect_id == transect_samples$transect_id[1], ]
+  transect_samples[
+    transect_samples$transect_id == transect_samples$transect_id[1],
+  ],
+  value_col = "bathy_m"
 )
 ```
 
 <img src="man/figures/README-plotting-depth-profile-1.png" alt="Depth profile along one transect." width="100%" />
+
+``` r
+metric_transect_samples <- sample_transects(
+  hitw_transects,
+  hitw_metrics[["slope_deg"]],
+  n = 25
+)
+
+plot_depth_profile(
+  metric_transect_samples[
+    metric_transect_samples$transect_id == metric_transect_samples$transect_id[1],
+  ],
+  value_col = "slope_deg",
+  title = "Slope Along One Transect"
+)
+```
+
+<img src="man/figures/README-plotting-slope-profile-1.png" alt="Slope profile along one transect." width="100%" />
 
 ## Custom Metrics and Process Groups
 
@@ -1161,7 +1185,7 @@ smooth_bathy(hitw, window = 3)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
 #> source(s)   : memory
 #> varname     : laparguera_hitw_bathy
-#> name        :  focal_mean
+#> name        :     bathy_m
 #> min value   : -267.476662
 #> max value   :  -16.719014
 depth_filter(hitw, c(-180, -30))
@@ -1586,7 +1610,7 @@ sample_transects(hitw_transects, hitw_prepared, n = 5)
 #> 20 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
 #> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
 #> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
-#> #   distance <dbl>, x <dbl>, y <dbl>, focal_mean <dbl>
+#> #   distance <dbl>, x <dbl>, y <dbl>, bathy_m <dbl>
 extract_cross_sections(hitw_transects, hitw_prepared, n = 5)
 #> # A tibble: 20 × 18
 #>    site_id site_name feature_type source_name width_m height_m angle_deg zone_id
@@ -1613,15 +1637,15 @@ extract_cross_sections(hitw_transects, hitw_prepared, n = 5)
 #> 20 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.6 1      
 #> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
 #> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
-#> #   distance <dbl>, x <dbl>, y <dbl>, focal_mean <dbl>
+#> #   distance <dbl>, x <dbl>, y <dbl>, bathy_m <dbl>
 summarize_cross_sections(cross_sections)
 #> # A tibble: 4 × 6
-#>   transect_id width_m_mean width_m_sd width_m_min width_m_max width_m_median
+#>   transect_id bathy_m_mean bathy_m_sd bathy_m_min bathy_m_max bathy_m_median
 #>   <chr>              <dbl>      <dbl>       <dbl>       <dbl>          <dbl>
-#> 1 1_1                  300          0         300         300            300
-#> 2 1_2                  300          0         300         300            300
-#> 3 1_3                  300          0         300         300            300
-#> 4 1_4                  300          0         300         300            300
+#> 1 1_1                -102.       66.1       -197.       -45.4          -83.3
+#> 2 1_2                -108.       61.2       -192.       -50.7          -95.1
+#> 3 1_3                -127.       71.9       -216.       -46.5         -107. 
+#> 4 1_4                -110.       71.7       -209.       -37.3          -83.7
 extract_isobaths(hitw_prepared, depths = c(-50, -80))
 #> class       : SpatVector
 #> geometry    : lines
@@ -1702,10 +1726,10 @@ summarize_terrain_by_zone(slope_metrics, rectangles)
 #> #   bpi_11x11_median <dbl>, curvature_mean <dbl>, curvature_sd <dbl>, …
 summarize_depth_bands(hitw_prepared, breaks = c(-220, -100, -20))
 #> # A tibble: 2 × 8
-#>   depth_band  metric     n_cells   mean    sd    min    max median
-#>   <chr>       <chr>        <int>  <dbl> <dbl>  <dbl>  <dbl>  <dbl>
-#> 1 [-220,-100) focal_mean     999 -180.   31.9 -218.  -100.  -190. 
-#> 2 [-100,-20]  focal_mean    1316  -64.9  18.6  -99.9  -27.2  -66.3
+#>   depth_band  metric  n_cells   mean    sd    min    max median
+#>   <chr>       <chr>     <int>  <dbl> <dbl>  <dbl>  <dbl>  <dbl>
+#> 1 [-220,-100) bathy_m     999 -180.   31.9 -218.  -100.  -190. 
+#> 2 [-100,-20]  bathy_m    1316  -64.9  18.6  -99.9  -27.2  -66.3
 ```
 
 Spacing, width, and contour depth are map-unit or vertical-unit
@@ -2162,8 +2186,8 @@ invisible(list(
   plot_sampling_rectangles(slope, rectangles),
   plot_transects(hitw_prepared, hitw_transects),
   plot_isobath_corridors(hitw_corridors, hitw_prepared, isobaths = hitw_isobaths),
-  plot_cross_sections(cross_sections),
-  plot_depth_profile(transect_samples),
+  plot_cross_sections(cross_sections, value_col = "bathy_m"),
+  plot_depth_profile(transect_samples, value_col = "bathy_m"),
   plot_metric_stack(hitw_metrics[[c("slope_deg", "tri")]]),
   plot_process_density(comparison, value = "slope_deg", group = "site"),
   plot_process_pca(pca_set$overall),

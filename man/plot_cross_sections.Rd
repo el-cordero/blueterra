@@ -10,6 +10,7 @@ plot_cross_sections(
   group_col = "transect_id",
   color_col = NULL,
   show_legend = TRUE,
+  points = FALSE,
   mean_profile = FALSE,
   normalize_distance = FALSE,
   depth_increases_down = TRUE,
@@ -29,6 +30,8 @@ plot_cross_sections(
 \code{group_col}.}
 
 \item{show_legend}{Logical. Show the line-color legend.}
+
+\item{points}{Logical. Draw sample points over profile lines.}
 
 \item{mean_profile}{Logical. Overlay a binned mean profile across transects.}
 

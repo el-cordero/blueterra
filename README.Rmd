@@ -434,6 +434,7 @@ plot_transects(
 ```{r plot-cross-sections, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Bathymetric cross-section profiles with depth increasing downward."}
 plot_cross_sections(
   cross_sections,
+  value_col = "bathy_m",
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
@@ -655,7 +656,26 @@ plot_process_density(comparison, value = "slope_deg", group = "site")
 
 ```{r plotting-depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Depth profile along one transect."}
 plot_depth_profile(
-  transect_samples[transect_samples$transect_id == transect_samples$transect_id[1], ]
+  transect_samples[
+    transect_samples$transect_id == transect_samples$transect_id[1],
+  ],
+  value_col = "bathy_m"
+)
+```
+
+```{r plotting-slope-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Slope profile along one transect."}
+metric_transect_samples <- sample_transects(
+  hitw_transects,
+  hitw_metrics[["slope_deg"]],
+  n = 25
+)
+
+plot_depth_profile(
+  metric_transect_samples[
+    metric_transect_samples$transect_id == metric_transect_samples$transect_id[1],
+  ],
+  value_col = "slope_deg",
+  title = "Slope Along One Transect"
 )
 ```
 
@@ -890,8 +910,8 @@ invisible(list(
   plot_sampling_rectangles(slope, rectangles),
   plot_transects(hitw_prepared, hitw_transects),
   plot_isobath_corridors(hitw_corridors, hitw_prepared, isobaths = hitw_isobaths),
-  plot_cross_sections(cross_sections),
-  plot_depth_profile(transect_samples),
+  plot_cross_sections(cross_sections, value_col = "bathy_m"),
+  plot_depth_profile(transect_samples, value_col = "bathy_m"),
   plot_metric_stack(hitw_metrics[[c("slope_deg", "tri")]]),
   plot_process_density(comparison, value = "slope_deg", group = "site"),
   plot_process_pca(pca_set$overall),

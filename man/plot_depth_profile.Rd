@@ -8,6 +8,7 @@ plot_depth_profile(
   data,
   distance_col = "distance",
   depth_col = NULL,
+  value_col = NULL,
   group_col = NULL,
   points = TRUE,
   line = TRUE,
@@ -22,8 +23,11 @@ plot_depth_profile(
 
 \item{distance_col}{Distance column name.}
 
-\item{depth_col}{Depth or elevation column name. If \code{NULL}, the first numeric
-non-coordinate value column is used.}
+\item{depth_col}{Depth, elevation, or metric column name. If \code{NULL}, a raster
+value column is inferred while ignoring transect metadata.}
+
+\item{value_col}{Alias for \code{depth_col}. Use this when plotting sampled
+variables such as slope, rugosity, BPI, or curvature.}
 
 \item{group_col}{Optional grouping column.}
 
@@ -41,7 +45,13 @@ plotted with a reversed y-axis so larger depths appear lower in the panel.}
 A \code{ggplot} object.
 }
 \description{
-Plots depth or elevation values along a sampled profile.
+Plots a sampled raster value along a transect profile.
+}
+\details{
+Despite the function name, the y-axis can be any sampled raster variable:
+elevation, depth, slope, rugosity, BPI, curvature, or a custom metric.
+Metadata columns such as transect angle, offset, width, and height are
+ignored during automatic value-column inference.
 }
 \examples{
 if (requireNamespace("ggplot2", quietly = TRUE)) {

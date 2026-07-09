@@ -7,6 +7,14 @@ if (is.na(script_path)) {
 root <- normalizePath(file.path(dirname(script_path), "../.."), mustWork = TRUE)
 setwd(root)
 
+cache_dir <- file.path(tempdir(), "blueterra-r-cache")
+dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+Sys.setenv(XDG_CACHE_HOME = cache_dir)
+tidy_bin <- "/opt/homebrew/opt/tidy-html5/bin"
+if (dir.exists(tidy_bin) && !grepl(tidy_bin, Sys.getenv("PATH"), fixed = TRUE)) {
+  Sys.setenv(PATH = paste(tidy_bin, Sys.getenv("PATH"), sep = .Platform$path.sep))
+}
+
 initial_status <- try(system2("git", c("status", "--short"), stdout = TRUE), silent = TRUE)
 if (inherits(initial_status, "try-error")) {
   initial_status <- character()
@@ -240,6 +248,7 @@ figures <- c(figures, save_plot(
 figures <- c(figures, save_plot(
   plot_cross_sections(
     samples_plot,
+    value_col = sample_value_col,
     show_legend = TRUE,
     mean_profile = TRUE,
     normalize_distance = TRUE,
@@ -250,6 +259,7 @@ figures <- c(figures, save_plot(
 figures <- c(figures, save_plot(
   plot_depth_profile(
     one_transect,
+    value_col = sample_value_col,
     title = "Single Transect Depth Profile"
   ),
   "19-depth-profile-single-transect.png"

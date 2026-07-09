@@ -227,43 +227,92 @@ vector_plot_data <- function(x) {
   tibble::as_tibble(geom)
 }
 
+infer_profile_value_col <- function(
+    data,
+    value_col = NULL,
+    preferred = NULL,
+    exclude = character(),
+    require_finite = TRUE,
+    require_variation = TRUE
+) {
+  if (!is.data.frame(data)) {
+    bt_abort("`data` must be a data frame.")
+  }
+  numeric_cols <- names(data)[vapply(data, is.numeric, logical(1))]
+  if (!is.null(value_col)) {
+    if (!is.character(value_col) || length(value_col) != 1 || !value_col %in% names(data)) {
+      bt_abort("`value_col` was not found in `data`.")
+    }
+    if (!is.numeric(data[[value_col]])) {
+      bt_abort("`value_col` must identify a numeric column.")
+    }
+    values <- data[[value_col]]
+    finite_values <- values[is.finite(values)]
+    if (isTRUE(require_finite) && length(finite_values) == 0) {
+      bt_abort(paste0("`", value_col, "` does not contain finite values."))
+    }
+    if (isTRUE(require_variation) && length(unique(finite_values)) < 2) {
+      bt_abort(paste0("`", value_col, "` does not contain enough variation for a profile."))
+    }
+    return(value_col)
+  }
+
+  preferred <- preferred %||% c(
+    "bathy_m", "bathy", "depth", "elevation", "z",
+    "slope_deg", "slope_rad", "aspect_deg", "aspect_rad",
+    "northness", "eastness", "tri", "roughness", "rugosity_vrm_3x3",
+    "bpi_3x3", "bpi_11x11", "curvature", "surface_area_ratio"
+  )
+  default_exclude <- c(
+    "distance", "normalized_distance", "x", "y", "ID", "id", "cell",
+    "row", "col", "zone_id", "corridor_id", "transect_id", "site_id",
+    "width_m", "height_m", "angle_deg", "angle_source", "mean_aspect_deg",
+    "n_orientation_cells", "orientation_weight", "offset", "feature_type",
+    "contour_value", "depth_label"
+  )
+  exclude <- unique(c(default_exclude, exclude))
+  candidates <- setdiff(numeric_cols, exclude)
+  if (length(candidates) > 0 && isTRUE(require_finite)) {
+    finite <- vapply(candidates, function(nm) any(is.finite(data[[nm]])), logical(1))
+    candidates <- candidates[finite]
+  }
+  if (length(candidates) > 0 && isTRUE(require_variation)) {
+    varied <- vapply(candidates, function(nm) {
+      values <- data[[nm]]
+      values <- values[is.finite(values)]
+      length(unique(values)) >= 2
+    }, logical(1))
+    if (any(varied)) {
+      candidates <- candidates[varied]
+    }
+  }
+  if (length(candidates) == 0) {
+    available <- if (length(numeric_cols) == 0) "none" else paste(numeric_cols, collapse = ", ")
+    bt_abort(paste0(
+      "Could not identify a numeric profile value column. ",
+      "Available numeric columns: ", available, "."
+    ))
+  }
+  preferred_matches <- intersect(preferred, candidates)
+  if (length(preferred_matches) > 0) {
+    return(preferred_matches[[1]])
+  }
+  candidates[[1]]
+}
+
 terrain_value_column <- function(
     data,
     value_col = NULL,
     exclude = character(),
     context = "value"
 ) {
-  if (!is.data.frame(data)) {
-    bt_abort("`data` must be a data frame.")
-  }
-  if (!is.null(value_col)) {
-    if (!is.character(value_col) || length(value_col) != 1 || !value_col %in% names(data)) {
-      bt_abort(paste0("`", context, "_col` was not found in `data`."))
-    }
-    if (!is.numeric(data[[value_col]])) {
-      bt_abort(paste0("`", context, "_col` must identify a numeric column."))
-    }
-    values <- data[[value_col]]
-    if (!any(is.finite(values))) {
-      bt_abort(paste0("`", value_col, "` does not contain finite values."))
-    }
-    return(value_col)
-  }
-
-  default_exclude <- c(
-    "distance", "normalized_distance", "x", "y", "ID", "id", "cell",
-    "transect_id", "zone_id", "corridor_id", "offset", "angle_deg",
-    "mean_aspect_deg", "n_orientation_cells"
+  infer_profile_value_col(
+    data = data,
+    value_col = value_col,
+    exclude = exclude,
+    require_finite = TRUE,
+    require_variation = FALSE
   )
-  exclude <- unique(c(default_exclude, exclude))
-  numeric_cols <- names(data)[vapply(data, is.numeric, logical(1))]
-  candidates <- setdiff(numeric_cols, exclude)
-  finite <- vapply(candidates, function(nm) any(is.finite(data[[nm]])), logical(1))
-  candidates <- candidates[finite]
-  if (length(candidates) == 0) {
-    bt_abort(paste0("Could not identify a numeric ", context, " column with finite values."))
-  }
-  candidates[[1]]
 }
 
 #' Locate package example files
