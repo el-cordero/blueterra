@@ -273,16 +273,17 @@ requiring the analyst to choose a fixed direction by hand.</p>
 <span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
 <span>  show_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  normalize_distance <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="st">"min_to_max"</span>,</span>
-<span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span></span>
+<span>  normalize_distance <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"top_to_bottom"</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="st">"Profiles read from shallow to deep terrain"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="blueterra_files/figure-html/cross-section-plot-1.png" class="r-plt" alt="Bathymetric cross-section profiles with bathy_m on the y-axis." width="672"></p>
 <p>The y-axis is explicitly set to <code>bathy_m</code>. This prevents
 transect metadata such as width, angle, or offset from being mistaken
-for the raster value. Distance is oriented from the lower numeric
-endpoint toward the higher numeric endpoint so cross-sections share a
-common value direction.</p>
+for the raster value. Distance is oriented from the top or shallow
+endpoint toward the bottom or deeper endpoint, and the plotted distance
+is reset to zero after trimming empty profile ends.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">one_transect</span> <span class="op">&lt;-</span> <span class="va">cross_sections</span><span class="op">[</span></span>
 <span>  <span class="va">cross_sections</span><span class="op">$</span><span class="va">transect_id</span> <span class="op">==</span> <span class="va">cross_sections</span><span class="op">$</span><span class="va">transect_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
@@ -291,11 +292,11 @@ common value direction.</p>
 <span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
 <span>  <span class="va">one_transect</span>,</span>
 <span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="st">"min_to_max"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"top_to_bottom"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetry Along One Transect"</span>,</span>
-<span>  subtitle <span class="op">=</span> <span class="st">"Distance is oriented from minimum to maximum bathymetric values"</span></span>
+<span>  subtitle <span class="op">=</span> <span class="st">"Distance is oriented from shallow to deep terrain"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="blueterra_files/figure-html/depth-profile-1.png" class="r-plt" alt="Single bathymetric profile oriented from minimum to maximum bathymetric values." width="672"></p>
+<p><img src="blueterra_files/figure-html/depth-profile-1.png" class="r-plt" alt="Single bathymetric profile oriented from shallow terrain toward deeper terrain." width="672"></p>
 <p>Metric profiles can use the same transect geometry. When the plotted
 value is a metric such as slope, the distance order is often best
 preserved from the bathymetric profile by using

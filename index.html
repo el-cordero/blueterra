@@ -68,7 +68,8 @@
 </h1>
 </div>
 <p><a href="https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a> <a href="LICENSE.html"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a></p>
-<p><code>blueterra</code> is an R package for geomorphometric analysis of submerged terrain. It works from user-supplied bathymetric or elevation rasters and provides <code>terra</code>-based workflows for deriving terrain metrics, organizing metrics into process-oriented groups, and summarizing seafloor structure across polygons, transects, depth bands, and isobath corridors. The package is intended for analyses where terrain form, raster resolution, vertical sign convention, and coordinate reference system affect interpretation.</p>
+<p><code>blueterra</code> is an R package for geomorphometric analysis of submerged terrain. It works from user-supplied bathymetric or elevation rasters and provides workflows for deriving terrain metrics, organizing metrics into process-oriented groups, and summarizing seafloor structure across polygons, transects, depth bands, and isobath corridors.</p>
+<p>For a complete worked example using the installed example rasters, see the <a href="https://el-cordero.github.io/blueterra/articles/blueterra.html">Get Started article</a>.</p>
 <p>Full documentation and articles are available at <a href="https://el-cordero.github.io/blueterra/" class="uri">https://el-cordero.github.io/blueterra/</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -84,8 +85,6 @@
 <div class="section level2">
 <h2 id="example-data">Example Data<a class="anchor" aria-label="anchor" href="#example-data"></a>
 </h2>
-<p><img src="reference/figures/study-area-pr-southwest-shelf-margin.png" width="100%" alt="Study-area context for the example data along the southwest Puerto Rico shelf margin."></p>
-<p><em>Study-area context for the example data. The package examples use reduced bathymetry and sampling rectangles from Hole-in-the-Wall, El Hoyo, and a broader slope clip along the southwest Puerto Rico shelf margin near La Parguera, Puerto Rico.</em></p>
 <p>The installed examples are reduced from analysis rasters and sampling rectangles used to test terrain workflows on real shelf-margin morphology. They are compact enough for package examples, but they retain depth gradients, slope breaks, local relief, and sampling-rectangle geometry.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://el-cordero.github.io/blueterra/">blueterra</a></span><span class="op">)</span></span>
@@ -188,12 +187,12 @@
 <span>  <span class="va">cross_sections</span>,</span>
 <span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  normalize_distance <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="st">"min_to_max"</span>,</span>
+<span>  normalize_distance <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"top_to_bottom"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span>,</span>
-<span>  subtitle <span class="op">=</span> <span class="st">"Profiles read from minimum to maximum bathymetric values"</span></span>
+<span>  subtitle <span class="op">=</span> <span class="st">"Profiles read from shallow to deep terrain"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-profile-and-corridors-1.png" alt="Bathymetric cross-sections oriented from minimum to maximum bathymetric values." width="100%"></p>
+<p><img src="reference/figures/README-profile-and-corridors-1.png" alt="Bathymetric cross-sections oriented from shallow terrain toward deeper terrain." width="100%"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">isobaths</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_isobaths.html">extract_isobaths</a></span><span class="op">(</span><span class="va">hitw_prepared</span>, depths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">50</span>, <span class="op">-</span><span class="fl">80</span>, <span class="op">-</span><span class="fl">120</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">corridors</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/make_isobath_corridors.html">make_isobath_corridors</a></span><span class="op">(</span></span>

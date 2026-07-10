@@ -58,8 +58,8 @@
 <span>  points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  normalize_distance <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_to_max"</span>, <span class="st">"max_to_min"</span>, <span class="st">"as_sampled"</span>, <span class="st">"low_to_high"</span>,</span>
-<span>    <span class="st">"high_to_low"</span><span class="op">)</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"top_to_bottom"</span>, <span class="st">"bottom_to_top"</span>, <span class="st">"as_sampled"</span>, <span class="st">"max_to_min"</span>,</span>
+<span>    <span class="st">"min_to_max"</span>, <span class="st">"high_to_low"</span>, <span class="st">"low_to_high"</span><span class="op">)</span>,</span>
 <span>  positive_depth <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  depth_increases_down <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -108,18 +108,22 @@ along each transect.</p></dd>
 
 <dt id="arg-profile-direction">profile_direction<a class="anchor" aria-label="anchor" href="#arg-profile-direction"></a></dt>
 <dd><p>Direction used to orient distance before plotting.
-<code>"min_to_max"</code> (the default) orients each profile so the selected value
-column begins with its lower numeric endpoint and ends with its higher
-numeric endpoint. <code>"max_to_min"</code> reverses that convention.
-<code>"as_sampled"</code> preserves the sampled line order. Legacy values
-<code>"low_to_high"</code> and <code>"high_to_low"</code> are accepted as aliases for
-<code>"min_to_max"</code> and <code>"max_to_min"</code>.</p></dd>
+<code>"top_to_bottom"</code> (the default) orients bathymetric or elevation profiles
+from the shallow or top endpoint toward the deeper or bottom endpoint.
+With negative-elevation bathymetry this means higher numeric values to
+lower numeric values. With positive-depth bathymetry, set
+<code>positive_depth = TRUE</code> so the profile runs from lower depth values to
+higher depth values. <code>"bottom_to_top"</code> reverses that convention.
+<code>"max_to_min"</code> and <code>"min_to_max"</code> provide explicit numeric endpoint
+controls for metrics, and <code>"as_sampled"</code> preserves the sampled line order.
+Legacy values <code>"high_to_low"</code> and <code>"low_to_high"</code> are accepted as aliases
+for <code>"top_to_bottom"</code> and <code>"bottom_to_top"</code>.</p></dd>
 
 
 <dt id="arg-positive-depth">positive_depth<a class="anchor" aria-label="anchor" href="#arg-positive-depth"></a></dt>
 <dd><p>Logical depth convention for <code>value_col</code>. This affects
-y-axis display for depth-like variables; profile direction is based on
-numeric endpoint order.</p></dd>
+top-to-bottom profile orientation for depth-like variables and y-axis
+display for positive-depth values.</p></dd>
 
 
 <dt id="arg-depth-increases-down">depth_increases_down<a class="anchor" aria-label="anchor" href="#arg-depth-increases-down"></a></dt>

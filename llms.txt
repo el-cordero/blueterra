@@ -7,12 +7,13 @@ MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://el-cordero.gith
 
 `blueterra` is an R package for geomorphometric analysis of submerged
 terrain. It works from user-supplied bathymetric or elevation rasters
-and provides `terra`-based workflows for deriving terrain metrics,
-organizing metrics into process-oriented groups, and summarizing
-seafloor structure across polygons, transects, depth bands, and isobath
-corridors. The package is intended for analyses where terrain form,
-raster resolution, vertical sign convention, and coordinate reference
-system affect interpretation.
+and provides workflows for deriving terrain metrics, organizing metrics
+into process-oriented groups, and summarizing seafloor structure across
+polygons, transects, depth bands, and isobath corridors.
+
+For a complete worked example using the installed example rasters, see
+the [Get Started
+article](https://el-cordero.github.io/blueterra/articles/blueterra.html).
 
 Full documentation and articles are available at
 <https://el-cordero.github.io/blueterra/>.
@@ -35,15 +36,6 @@ install.packages("path/to/blueterra", repos = NULL, type = "source")
 ```
 
 ## Example Data
-
-![Study-area context for the example data along the southwest Puerto
-Rico shelf
-margin.](reference/figures/study-area-pr-southwest-shelf-margin.png)
-
-*Study-area context for the example data. The package examples use
-reduced bathymetry and sampling rectangles from Hole-in-the-Wall, El
-Hoyo, and a broader slope clip along the southwest Puerto Rico shelf
-margin near La Parguera, Puerto Rico.*
 
 The installed examples are reduced from analysis rasters and sampling
 rectangles used to test terrain workflows on real shelf-margin
@@ -177,16 +169,15 @@ plot_cross_sections(
   cross_sections,
   value_col = "bathy_m",
   mean_profile = TRUE,
-  normalize_distance = TRUE,
-  profile_direction = "min_to_max",
+  normalize_distance = FALSE,
+  profile_direction = "top_to_bottom",
   title = "Bathymetric Cross-Sections",
-  subtitle = "Profiles read from minimum to maximum bathymetric values"
+  subtitle = "Profiles read from shallow to deep terrain"
 )
 ```
 
-![Bathymetric cross-sections oriented from minimum to maximum
-bathymetric
-values.](reference/figures/README-profile-and-corridors-1.png)
+![Bathymetric cross-sections oriented from shallow terrain toward deeper
+terrain.](reference/figures/README-profile-and-corridors-1.png)
 
 ``` r
 

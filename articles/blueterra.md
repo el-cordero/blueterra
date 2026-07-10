@@ -237,9 +237,10 @@ plot_cross_sections(
   value_col = "bathy_m",
   show_legend = TRUE,
   mean_profile = TRUE,
-  normalize_distance = TRUE,
-  profile_direction = "min_to_max",
-  title = "Bathymetric Cross-Sections"
+  normalize_distance = FALSE,
+  profile_direction = "top_to_bottom",
+  title = "Bathymetric Cross-Sections",
+  subtitle = "Profiles read from shallow to deep terrain"
 )
 ```
 
@@ -248,9 +249,9 @@ y-axis.](blueterra_files/figure-html/cross-section-plot-1.png)
 
 The y-axis is explicitly set to `bathy_m`. This prevents transect
 metadata such as width, angle, or offset from being mistaken for the
-raster value. Distance is oriented from the lower numeric endpoint
-toward the higher numeric endpoint so cross-sections share a common
-value direction.
+raster value. Distance is oriented from the top or shallow endpoint
+toward the bottom or deeper endpoint, and the plotted distance is reset
+to zero after trimming empty profile ends.
 
 ``` r
 
@@ -261,14 +262,14 @@ one_transect <- cross_sections[
 plot_depth_profile(
   one_transect,
   value_col = "bathy_m",
-  profile_direction = "min_to_max",
+  profile_direction = "top_to_bottom",
   title = "Bathymetry Along One Transect",
-  subtitle = "Distance is oriented from minimum to maximum bathymetric values"
+  subtitle = "Distance is oriented from shallow to deep terrain"
 )
 ```
 
-![Single bathymetric profile oriented from minimum to maximum
-bathymetric values.](blueterra_files/figure-html/depth-profile-1.png)
+![Single bathymetric profile oriented from shallow terrain toward deeper
+terrain.](blueterra_files/figure-html/depth-profile-1.png)
 
 Metric profiles can use the same transect geometry. When the plotted
 value is a metric such as slope, the distance order is often best
