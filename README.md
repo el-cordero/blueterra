@@ -4,7 +4,7 @@
 [![R-CMD-check](https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml)
 [![License:
-MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/el-cordero/blueterra/blob/main/LICENSE.md)
 
 `blueterra` is an R package for geomorphometric analysis of submerged
 terrain. It works from user-supplied bathymetric or elevation rasters
