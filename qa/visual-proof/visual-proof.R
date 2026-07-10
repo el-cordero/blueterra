@@ -254,7 +254,9 @@ figures <- c(figures, save_plot(
     show_legend = TRUE,
     mean_profile = TRUE,
     normalize_distance = TRUE,
-    title = "Cross-Sections With Transect Legend"
+    profile_direction = "high_to_low",
+    title = "Cross-Sections With Transect Legend",
+    subtitle = "Distance is oriented from higher elevation toward lower elevation"
   ),
   "18-cross-sections-with-legend.png"
 ))
@@ -262,7 +264,9 @@ figures <- c(figures, save_plot(
   plot_depth_profile(
     one_transect,
     value_col = sample_value_col,
-    title = "Single Transect Depth Profile"
+    profile_direction = "high_to_low",
+    title = "Single Transect Depth Profile",
+    subtitle = "High elevation to low elevation"
   ),
   "19-depth-profile-single-transect.png"
 ))

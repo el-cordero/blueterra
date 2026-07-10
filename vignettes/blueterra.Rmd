@@ -159,12 +159,51 @@ plot_cross_sections(
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
+  profile_direction = "high_to_low",
   title = "Bathymetric Cross-Sections"
 )
 ```
 
 The y-axis is explicitly set to `bathy_m`. This prevents transect metadata such
-as width, angle, or offset from being mistaken for the raster value.
+as width, angle, or offset from being mistaken for the raster value. Distance
+is oriented from higher elevation toward lower elevation so the profile reads
+from the shallow side of the transect toward deeper terrain.
+
+```{r depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Single bathymetric profile oriented from high elevation to low elevation."}
+one_transect <- cross_sections[
+  cross_sections$transect_id == cross_sections$transect_id[1],
+]
+
+plot_depth_profile(
+  one_transect,
+  value_col = "bathy_m",
+  profile_direction = "high_to_low",
+  title = "Bathymetry Along One Transect",
+  subtitle = "Distance is oriented from higher elevation toward lower elevation"
+)
+```
+
+Metric profiles can use the same transect geometry. When the plotted value is a
+metric such as slope, the distance order is often best preserved from the
+bathymetric profile by using `profile_direction = "as_sampled"`.
+
+```{r metric-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Slope profile along one transect."}
+metric_samples <- sample_transects(
+  transects,
+  terrain[["slope_deg"]],
+  n = 25
+)
+metric_one <- metric_samples[
+  metric_samples$transect_id == metric_samples$transect_id[1],
+]
+
+plot_depth_profile(
+  metric_one,
+  value_col = "slope_deg",
+  profile_direction = "as_sampled",
+  title = "Slope Along One Transect"
+)
+```
 
 ## Isobath Corridors
 
@@ -228,5 +267,47 @@ plot_process_pca(
   pca,
   color_col = "site",
   title = "Terrain PCA"
+)
+```
+
+The same sampled table can be converted to a model matrix after selecting the
+terrain variables that belong in the analysis design.
+
+```{r model-matrix}
+model_matrix <- prepare_model_matrix(
+  comparison,
+  response = "site",
+  vars = c("slope_deg", "tri", "bpi_3x3", "curvature")
+)
+
+head(model_matrix)
+terrain_correlation(comparison[, c("slope_deg", "tri", "bpi_3x3", "curvature")])
+```
+
+## Custom Metrics
+
+Project-specific metrics can be added when they share the same grid geometry
+as the terrain stack. The expression below combines local gradient and relief
+variability into a compact demonstration index.
+
+```{r custom-metric}
+slope_tri <- derive_custom_metric(
+  terrain,
+  name = "slope_tri_index",
+  expression = quote(slope_deg * tri)
+)
+
+extended_terrain <- add_metric_layers(terrain, slope_tri)
+names(extended_terrain)
+```
+
+```{r custom-metric-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Custom slope-TRI metric over hillshaded bathymetry."}
+plot_metric(
+  extended_terrain,
+  metric = "slope_tri_index",
+  bathy = prepared,
+  contours = TRUE,
+  contour_interval = 25,
+  title = "Custom Slope-TRI Index"
 )
 ```

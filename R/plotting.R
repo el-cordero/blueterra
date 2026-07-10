@@ -547,6 +547,13 @@ plot_process_pca <- function(
 #' @param points Logical. Draw profile points.
 #' @param line Logical. Draw profile lines when at least two finite samples are
 #'   available.
+#' @param profile_direction Direction used to orient distance before plotting.
+#'   `"high_to_low"` (the default) puts the shallow or higher-elevation end of
+#'   each profile on the left. `"as_sampled"` preserves the sampled line order.
+#'   `"low_to_high"` reverses the default.
+#' @param positive_depth Logical depth convention for `value_col`. Use `TRUE`
+#'   when larger positive values are deeper, `FALSE` when larger values are
+#'   higher elevation, or `NULL` to infer from the value column.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
 #' @param title,subtitle,caption Plot text.
@@ -575,6 +582,8 @@ plot_depth_profile <- function(
     group_col = NULL,
     points = TRUE,
     line = TRUE,
+    profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+    positive_depth = NULL,
     depth_increases_down = TRUE,
     title = NULL,
     subtitle = NULL,
@@ -601,11 +610,20 @@ plot_depth_profile <- function(
     bt_abort("No finite distance/value pairs were available for the depth profile.")
   }
   plot_data <- data[finite, , drop = FALSE]
-  p <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[distance_col]], y = .data[[depth_col]]))
   if (!is.null(group_col)) {
     if (!group_col %in% names(data)) {
       bt_abort("`group_col` was not found in `data`.")
     }
+  }
+  plot_data <- orient_profile_distance(
+    plot_data,
+    value_col = depth_col,
+    distance_col = distance_col,
+    group_col = group_col,
+    profile_direction = profile_direction,
+    positive_depth = positive_depth
+  )
+  if (!is.null(group_col)) {
     p <- ggplot2::ggplot(
       plot_data,
       ggplot2::aes(

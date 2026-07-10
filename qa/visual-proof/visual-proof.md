@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 18:45:25 AST
-- Git commit: 3a7596fb440d4def8b10d9273c62b7e7a292c85f
-- Working tree dirty at proof start: FALSE
-- Dirty paths at proof start: none
+- Date/time: 2026-07-09 21:19:14 AST
+- Git commit: 1e614d3a4a0b76bbfd401bc6df55efc992ff3639
+- Working tree dirty at proof start: TRUE
+- Dirty paths at proof start:  M DESCRIPTION;  M R/plotting.R;  M R/transects.R;  M R/utils.R;  M README.Rmd;  M README.md;  M man/blueterra-package.Rd;  D man/figures/README-custom-metric-plot-1.png;  D man/figures/README-map-hitw-1.png;  D man/figures/README-map-hoyo-1.png;  D man/figures/README-map-metrics-1.png;  D man/figures/README-map-slope-clip-1.png;  D man/figures/README-plot-cross-sections-1.png;  D man/figures/README-plot-isobath-corridors-1.png;  D man/figures/README-plot-isobaths-1.png;  D man/figures/README-plot-pca-1.png;  D man/figures/README-plot-pca-hitw-1.png;  D man/figures/README-plot-pca-hoyo-1.png;  D man/figures/README-plot-polygon-summary-1.png;  D man/figures/README-plot-transects-1.png;  D man/figures/README-plotting-bpi-1.png;  D man/figures/README-plotting-curvature-1.png;  D man/figures/README-plotting-density-1.png;  D man/figures/README-plotting-depth-profile-1.png;  D man/figures/README-plotting-rugosity-1.png;  D man/figures/README-plotting-slope-profile-1.png;  D man/figures/README-plotting-stack-1.png;  D man/figures/README-plotting-surface-ratio-1.png;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M qa/visual-proof/figures/18-cross-sections-with-legend.png;  M qa/visual-proof/figures/19-depth-profile-single-transect.png;  M qa/visual-proof/visual-proof.R;  M qa/visual-proof/visual-proof.md;  M tests/testthat/test-plotting.R;  M vignettes/blueterra.Rmd;  M vignettes/transects-cross-sections.Rmd; ?? man/figures/README-isobath-map-1.png; ?? man/figures/README-metric-map-1.png; ?? man/figures/README-profile-and-corridors-1.png; ?? man/figures/README-slope-map-1.png; ?? tests/testthat/test-website-metadata.R
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 5060469 bytes
-- Package tarball size: 5.06 MB
+- Package tarball size: 4431848 bytes
+- Package tarball size: 4.432 MB
 - Local pkgdown site: /Users/ec/Documents/Data/MCE Geomorphometry HW v HY/Geomorphic_Analysis_Project/blueterra/docs/index.html
 - Expected GitHub Pages URL: https://el-cordero.github.io/blueterra/
 - Deployment workflow: .github/workflows/pkgdown.yaml

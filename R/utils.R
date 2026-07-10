@@ -315,6 +315,99 @@ terrain_value_column <- function(
   )
 }
 
+orient_profile_distance <- function(
+    data,
+    value_col,
+    distance_col = "distance",
+    group_col = NULL,
+    profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+    positive_depth = NULL
+) {
+  profile_direction <- match.arg(profile_direction)
+  if (!is.data.frame(data)) {
+    bt_abort("`data` must be a data frame.")
+  }
+  if (!value_col %in% names(data) || !is.numeric(data[[value_col]])) {
+    bt_abort("`value_col` must identify a numeric column in `data`.")
+  }
+  if (!distance_col %in% names(data) || !is.numeric(data[[distance_col]])) {
+    bt_abort("`distance_col` must identify a numeric column in `data`.")
+  }
+  if (!is.null(group_col) && !group_col %in% names(data)) {
+    bt_abort("`group_col` was not found in `data`.")
+  }
+  if (!is.null(positive_depth) && (!is.logical(positive_depth) || length(positive_depth) != 1)) {
+    bt_abort("`positive_depth` must be `TRUE`, `FALSE`, or `NULL`.")
+  }
+
+  if (!"distance_original" %in% names(data)) {
+    data$distance_original <- data[[distance_col]]
+  }
+  data$profile_reversed <- FALSE
+
+  groups <- if (is.null(group_col)) {
+    rep("profile", nrow(data))
+  } else {
+    data[[group_col]]
+  }
+  pieces <- split(data, groups, drop = TRUE)
+  pieces <- lapply(pieces, function(piece) {
+    piece <- piece[order(piece[[distance_col]]), , drop = FALSE]
+    if (profile_direction == "as_sampled") {
+      return(piece)
+    }
+
+    finite <- is.finite(piece[[distance_col]]) & is.finite(piece[[value_col]])
+    if (sum(finite) < 2) {
+      return(piece)
+    }
+    finite_piece <- piece[finite, , drop = FALSE]
+    first_value <- finite_piece[[value_col]][1]
+    last_value <- finite_piece[[value_col]][nrow(finite_piece)]
+    depth_positive <- infer_positive_depth_values(
+      finite_piece[[value_col]],
+      value_col = value_col,
+      positive_depth = positive_depth
+    )
+
+    high_to_low_now <- if (isTRUE(depth_positive)) {
+      first_value <= last_value
+    } else {
+      first_value >= last_value
+    }
+    should_reverse <- switch(
+      profile_direction,
+      high_to_low = !high_to_low_now,
+      low_to_high = high_to_low_now
+    )
+    if (isTRUE(should_reverse)) {
+      max_distance <- max(piece[[distance_col]], na.rm = TRUE)
+      piece[[distance_col]] <- max_distance - piece[[distance_col]]
+      piece$profile_reversed <- TRUE
+      piece <- piece[order(piece[[distance_col]]), , drop = FALSE]
+    }
+    piece
+  })
+  dplyr::bind_rows(pieces)
+}
+
+infer_positive_depth_values <- function(values, value_col, positive_depth = NULL) {
+  if (!is.null(positive_depth)) {
+    return(isTRUE(positive_depth))
+  }
+  finite <- values[is.finite(values)]
+  if (!length(finite)) {
+    return(FALSE)
+  }
+  if (mean(finite < 0) > 0.5) {
+    return(FALSE)
+  }
+  if (all(finite >= 0) && grepl("depth", value_col, ignore.case = TRUE)) {
+    return(TRUE)
+  }
+  FALSE
+}
+
 #' Locate package example files
 #'
 #' @description

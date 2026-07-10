@@ -571,6 +571,13 @@ summarize_cross_sections <- function(
 #' @param mean_profile Logical. Overlay a binned mean profile across transects.
 #' @param normalize_distance Logical. Plot distance as 0-1 normalized position
 #'   along each transect.
+#' @param profile_direction Direction used to orient distance before plotting.
+#'   `"high_to_low"` (the default) puts the shallow or higher-elevation end of
+#'   each profile on the left. `"as_sampled"` preserves the sampled line order.
+#'   `"low_to_high"` reverses the default.
+#' @param positive_depth Logical depth convention for `value_col`. Use `TRUE`
+#'   when larger positive values are deeper, `FALSE` when larger values are
+#'   higher elevation, or `NULL` to infer from the value column.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
 #' @param title,subtitle,caption Plot text.
@@ -597,6 +604,8 @@ plot_cross_sections <- function(
     points = FALSE,
     mean_profile = FALSE,
     normalize_distance = FALSE,
+    profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+    positive_depth = NULL,
     depth_increases_down = TRUE,
     title = NULL,
     subtitle = NULL,
@@ -617,7 +626,14 @@ plot_cross_sections <- function(
   if (!is.null(color_col) && !color_col %in% names(samples)) {
     bt_abort("`color_col` was not found in `samples`.")
   }
-  plot_data <- samples
+  plot_data <- orient_profile_distance(
+    samples,
+    value_col = value_col,
+    distance_col = "distance",
+    group_col = group_col,
+    profile_direction = profile_direction,
+    positive_depth = positive_depth
+  )
   x_col <- "distance"
   x_lab <- "Distance along transect (map units)"
   if (isTRUE(normalize_distance)) {
@@ -664,7 +680,8 @@ plot_cross_sections <- function(
         inherit.aes = FALSE,
         linewidth = 1.1,
         color = "black",
-        alpha = 0.9
+        alpha = 0.9,
+        na.rm = TRUE
       )
   }
   if (!isTRUE(show_legend)) {

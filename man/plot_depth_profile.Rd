@@ -12,6 +12,8 @@ plot_depth_profile(
   group_col = NULL,
   points = TRUE,
   line = TRUE,
+  profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+  positive_depth = NULL,
   depth_increases_down = TRUE,
   title = NULL,
   subtitle = NULL,
@@ -35,6 +37,15 @@ variables such as slope, rugosity, BPI, or curvature.}
 
 \item{line}{Logical. Draw profile lines when at least two finite samples are
 available.}
+
+\item{profile_direction}{Direction used to orient distance before plotting.
+\code{"high_to_low"} (the default) puts the shallow or higher-elevation end of
+each profile on the left. \code{"as_sampled"} preserves the sampled line order.
+\code{"low_to_high"} reverses the default.}
+
+\item{positive_depth}{Logical depth convention for \code{value_col}. Use \code{TRUE}
+when larger positive values are deeper, \code{FALSE} when larger values are
+higher elevation, or \code{NULL} to infer from the value column.}
 
 \item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
 plotted with a reversed y-axis so larger depths appear lower in the panel.}
