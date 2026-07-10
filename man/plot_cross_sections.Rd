@@ -13,8 +13,8 @@ plot_cross_sections(
   points = FALSE,
   mean_profile = FALSE,
   normalize_distance = FALSE,
-  profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high",
-    "high_to_low"),
+  profile_direction = c("top_to_bottom", "bottom_to_top", "as_sampled", "max_to_min",
+    "min_to_max", "high_to_low", "low_to_high"),
   positive_depth = NULL,
   depth_increases_down = TRUE,
   title = NULL,
@@ -42,16 +42,20 @@ plot_cross_sections(
 along each transect.}
 
 \item{profile_direction}{Direction used to orient distance before plotting.
-\code{"min_to_max"} (the default) orients each profile so the selected value
-column begins with its lower numeric endpoint and ends with its higher
-numeric endpoint. \code{"max_to_min"} reverses that convention.
-\code{"as_sampled"} preserves the sampled line order. Legacy values
-\code{"low_to_high"} and \code{"high_to_low"} are accepted as aliases for
-\code{"min_to_max"} and \code{"max_to_min"}.}
+\code{"top_to_bottom"} (the default) orients bathymetric or elevation profiles
+from the shallow or top endpoint toward the deeper or bottom endpoint.
+With negative-elevation bathymetry this means higher numeric values to
+lower numeric values. With positive-depth bathymetry, set
+\code{positive_depth = TRUE} so the profile runs from lower depth values to
+higher depth values. \code{"bottom_to_top"} reverses that convention.
+\code{"max_to_min"} and \code{"min_to_max"} provide explicit numeric endpoint
+controls for metrics, and \code{"as_sampled"} preserves the sampled line order.
+Legacy values \code{"high_to_low"} and \code{"low_to_high"} are accepted as aliases
+for \code{"top_to_bottom"} and \code{"bottom_to_top"}.}
 
 \item{positive_depth}{Logical depth convention for \code{value_col}. This affects
-y-axis display for depth-like variables; profile direction is based on
-numeric endpoint order.}
+top-to-bottom profile orientation for depth-like variables and y-axis
+display for positive-depth values.}
 
 \item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
 plotted with a reversed y-axis so larger depths appear lower in the panel.}

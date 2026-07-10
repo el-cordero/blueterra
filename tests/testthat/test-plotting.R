@@ -71,36 +71,53 @@ test_that("profile value inference ignores transect metadata", {
   expect_equal(slope_plot$labels$y, "Slope (degrees)")
 })
 
-test_that("profile distance orientation uses numeric minimum-to-maximum direction", {
-  elevation <- data.frame(distance = 0:2, bathy_m = c(-50, -70, -90))
-  oriented <- blueterra:::orient_profile_distance(elevation, "bathy_m")
-  expect_equal(oriented$bathy_m, c(-90, -70, -50))
-  expect_equal(oriented$distance_original, c(2, 1, 0))
+test_that("profile distance orientation uses top-to-bottom bathymetric direction", {
+  deep_to_shallow <- data.frame(distance = 0:3, bathy_m = c(-200, -150, -100, -50))
+  oriented <- blueterra:::orient_profile_distance(deep_to_shallow, "bathy_m")
+  expect_equal(oriented$bathy_m, c(-50, -100, -150, -200))
+  expect_equal(oriented$distance_original, c(3, 2, 1, 0))
+  expect_equal(oriented$distance_profile, 0:3)
   expect_true(all(oriented$profile_reversed))
 
-  correct_elevation <- data.frame(distance = 0:2, bathy_m = c(-90, -70, -50))
-  already_oriented <- blueterra:::orient_profile_distance(correct_elevation, "bathy_m")
-  expect_equal(already_oriented$bathy_m, c(-90, -70, -50))
-  expect_equal(already_oriented$distance_original, 0:2)
+  shallow_to_deep <- data.frame(distance = 0:3, bathy_m = c(-50, -100, -150, -200))
+  already_oriented <- blueterra:::orient_profile_distance(shallow_to_deep, "bathy_m")
+  expect_equal(already_oriented$bathy_m, c(-50, -100, -150, -200))
+  expect_equal(already_oriented$distance_original, 0:3)
+  expect_equal(already_oriented$distance_profile, 0:3)
   expect_false(any(already_oriented$profile_reversed))
 
-  positive_metric <- data.frame(distance = 0:2, slope_deg = c(10, 20, 30))
-  metric_oriented <- blueterra:::orient_profile_distance(positive_metric, "slope_deg")
-  expect_equal(metric_oriented$slope_deg, c(10, 20, 30))
-  expect_false(any(metric_oriented$profile_reversed))
-
-  reversed_metric <- data.frame(distance = 0:2, slope_deg = c(30, 20, 10))
-  metric_reversed <- blueterra:::orient_profile_distance(reversed_metric, "slope_deg")
-  expect_equal(metric_reversed$slope_deg, c(10, 20, 30))
-  expect_true(all(metric_reversed$profile_reversed))
+  positive_depth <- data.frame(distance = 0:3, depth_m = c(200, 150, 100, 50))
+  depth_oriented <- blueterra:::orient_profile_distance(
+    positive_depth,
+    "depth_m",
+    profile_direction = "top_to_bottom",
+    positive_depth = TRUE
+  )
+  expect_equal(depth_oriented$depth_m, c(50, 100, 150, 200))
+  expect_equal(depth_oriented$distance_profile, 0:3)
+  expect_true(all(depth_oriented$profile_reversed))
 
   as_sampled <- blueterra:::orient_profile_distance(
-    elevation,
+    deep_to_shallow,
     "bathy_m",
     profile_direction = "as_sampled"
   )
-  expect_equal(as_sampled$bathy_m, elevation$bathy_m)
+  expect_equal(as_sampled$bathy_m, deep_to_shallow$bathy_m)
   expect_false(any(as_sampled$profile_reversed))
+
+  buffered <- data.frame(distance = 10:13, bathy_m = c(NA, -50, -100, NA))
+  trimmed <- blueterra:::orient_profile_distance(buffered, "bathy_m")
+  expect_equal(trimmed$bathy_m, c(-50, -100))
+  expect_equal(trimmed$distance_original, 11:12)
+  expect_equal(trimmed$distance_profile, c(0, 1))
+
+  min_to_max <- blueterra:::orient_profile_distance(
+    data.frame(distance = 0:2, slope_deg = c(30, 20, 10)),
+    "slope_deg",
+    profile_direction = "min_to_max"
+  )
+  expect_equal(min_to_max$slope_deg, c(10, 20, 30))
+  expect_true(all(min_to_max$profile_reversed))
 
   max_to_min <- blueterra:::orient_profile_distance(
     data.frame(distance = 0:2, bathy_m = c(-90, -70, -50)),
@@ -131,39 +148,44 @@ test_that("profile distance orientation is applied per transect group", {
   )
   a <- oriented[oriented$transect_id == "a", ]
   b <- oriented[oriented$transect_id == "b", ]
-  expect_equal(a$bathy_m, c(-110, -90, -70, -50))
-  expect_equal(b$bathy_m, c(-120, -100, -80, -60))
-  expect_true(all(a$profile_reversed))
-  expect_false(any(b$profile_reversed))
+  expect_equal(a$bathy_m, c(-50, -70, -90, -110))
+  expect_equal(b$bathy_m, c(-60, -80, -100, -120))
+  expect_false(any(a$profile_reversed))
+  expect_true(all(b$profile_reversed))
+  expect_equal(a$distance_profile, 0:3)
+  expect_equal(b$distance_profile, 0:3)
 })
 
-test_that("profile plots use minimum-to-maximum direction and preserve overrides", {
+test_that("profile plots use top-to-bottom direction and preserve overrides", {
   testthat::skip_if_not_installed("ggplot2")
   samples <- data.frame(
     transect_id = rep(c("a", "b"), each = 4),
-    distance = rep(0:3, 2),
+    distance = rep(10:13, 2),
     width_m = 300,
     height_m = 400,
     angle_deg = 94.6,
     offset = rep(c(-50, 50), each = 4),
-    bathy_m = c(-60, -50, -40, -30, -20, -30, -40, -50),
+    bathy_m = c(-200, -150, -100, -50, -50, -100, -150, -200),
     slope_deg = c(12, 15, 18, 21, 13, 16, 19, 22)
   )
-  cross_plot <- plot_cross_sections(samples, value_col = "bathy_m", profile_direction = "min_to_max")
+  cross_plot <- plot_cross_sections(samples, value_col = "bathy_m", profile_direction = "top_to_bottom")
   expect_s3_class(cross_plot, "ggplot")
   cross_data <- ggplot2::ggplot_build(cross_plot)$data[[1]]
   expect_true(nrow(cross_data) > 0)
-  expect_true(min(cross_data$x[cross_data$group == 1]) == 0)
+  expect_equal(min(cross_data$x[cross_data$group == 1]), 0)
+  expect_equal(max(cross_data$x[cross_data$group == 1]), 3)
   expect_equal(cross_plot$labels$y, "Bathymetry / elevation (m)")
+  expect_equal(cross_plot$labels$x, "Distance along profile (m)")
 
   depth_plot <- plot_depth_profile(
     samples[samples$transect_id == "a", ],
     value_col = "bathy_m",
-    profile_direction = "min_to_max"
+    profile_direction = "top_to_bottom"
   )
   expect_s3_class(depth_plot, "ggplot")
   depth_data <- ggplot2::ggplot_build(depth_plot)$data[[1]]
-  expect_equal(depth_data$y[order(depth_data$x)], c(-60, -50, -40, -30))
+  expect_equal(depth_data$y[order(depth_data$x)], c(-50, -100, -150, -200))
+  expect_equal(range(depth_data$x), c(0, 3))
 
   sampled_plot <- plot_depth_profile(
     samples[samples$transect_id == "a", ],
@@ -171,7 +193,16 @@ test_that("profile plots use minimum-to-maximum direction and preserve overrides
     profile_direction = "as_sampled"
   )
   sampled_data <- ggplot2::ggplot_build(sampled_plot)$data[[1]]
-  expect_equal(sampled_data$y[order(sampled_data$x)], c(-60, -50, -40, -30))
+  expect_equal(sampled_data$y[order(sampled_data$x)], c(-200, -150, -100, -50))
+
+  buffered_samples <- data.frame(
+    transect_id = "a",
+    distance = 10:13,
+    bathy_m = c(NA, -50, -100, NA)
+  )
+  buffered_plot <- plot_cross_sections(buffered_samples, value_col = "bathy_m")
+  buffered_data <- ggplot2::ggplot_build(buffered_plot)$data[[1]]
+  expect_equal(range(buffered_data$x), c(0, 1))
 
   metric_plot <- plot_depth_profile(
     samples[samples$transect_id == "a", ],

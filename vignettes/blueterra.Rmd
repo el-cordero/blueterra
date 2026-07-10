@@ -158,18 +158,20 @@ plot_cross_sections(
   value_col = "bathy_m",
   show_legend = TRUE,
   mean_profile = TRUE,
-  normalize_distance = TRUE,
-  profile_direction = "min_to_max",
-  title = "Bathymetric Cross-Sections"
+  normalize_distance = FALSE,
+  profile_direction = "top_to_bottom",
+  title = "Bathymetric Cross-Sections",
+  subtitle = "Profiles read from shallow to deep terrain"
 )
 ```
 
 The y-axis is explicitly set to `bathy_m`. This prevents transect metadata such
 as width, angle, or offset from being mistaken for the raster value. Distance
-is oriented from the lower numeric endpoint toward the higher numeric endpoint
-so cross-sections share a common value direction.
+is oriented from the top or shallow endpoint toward the bottom or deeper
+endpoint, and the plotted distance is reset to zero after trimming empty
+profile ends.
 
-```{r depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Single bathymetric profile oriented from minimum to maximum bathymetric values."}
+```{r depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Single bathymetric profile oriented from shallow terrain toward deeper terrain."}
 one_transect <- cross_sections[
   cross_sections$transect_id == cross_sections$transect_id[1],
 ]
@@ -177,9 +179,9 @@ one_transect <- cross_sections[
 plot_depth_profile(
   one_transect,
   value_col = "bathy_m",
-  profile_direction = "min_to_max",
+  profile_direction = "top_to_bottom",
   title = "Bathymetry Along One Transect",
-  subtitle = "Distance is oriented from minimum to maximum bathymetric values"
+  subtitle = "Distance is oriented from shallow to deep terrain"
 )
 ```
 

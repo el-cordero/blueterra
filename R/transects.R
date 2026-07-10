@@ -572,15 +572,19 @@ summarize_cross_sections <- function(
 #' @param normalize_distance Logical. Plot distance as 0-1 normalized position
 #'   along each transect.
 #' @param profile_direction Direction used to orient distance before plotting.
-#'   `"min_to_max"` (the default) orients each profile so the selected value
-#'   column begins with its lower numeric endpoint and ends with its higher
-#'   numeric endpoint. `"max_to_min"` reverses that convention.
-#'   `"as_sampled"` preserves the sampled line order. Legacy values
-#'   `"low_to_high"` and `"high_to_low"` are accepted as aliases for
-#'   `"min_to_max"` and `"max_to_min"`.
+#'   `"top_to_bottom"` (the default) orients bathymetric or elevation profiles
+#'   from the shallow or top endpoint toward the deeper or bottom endpoint.
+#'   With negative-elevation bathymetry this means higher numeric values to
+#'   lower numeric values. With positive-depth bathymetry, set
+#'   `positive_depth = TRUE` so the profile runs from lower depth values to
+#'   higher depth values. `"bottom_to_top"` reverses that convention.
+#'   `"max_to_min"` and `"min_to_max"` provide explicit numeric endpoint
+#'   controls for metrics, and `"as_sampled"` preserves the sampled line order.
+#'   Legacy values `"high_to_low"` and `"low_to_high"` are accepted as aliases
+#'   for `"top_to_bottom"` and `"bottom_to_top"`.
 #' @param positive_depth Logical depth convention for `value_col`. This affects
-#'   y-axis display for depth-like variables; profile direction is based on
-#'   numeric endpoint order.
+#'   top-to-bottom profile orientation for depth-like variables and y-axis
+#'   display for positive-depth values.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
 #' @param title,subtitle,caption Plot text.
@@ -607,7 +611,10 @@ plot_cross_sections <- function(
     points = FALSE,
     mean_profile = FALSE,
     normalize_distance = FALSE,
-    profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low"),
+    profile_direction = c(
+      "top_to_bottom", "bottom_to_top", "as_sampled",
+      "max_to_min", "min_to_max", "high_to_low", "low_to_high"
+    ),
     positive_depth = NULL,
     depth_increases_down = TRUE,
     title = NULL,
@@ -637,10 +644,10 @@ plot_cross_sections <- function(
     profile_direction = profile_direction,
     positive_depth = positive_depth
   )
-  x_col <- "distance"
-  x_lab <- "Distance along transect (map units)"
+  x_col <- "distance_profile"
+  x_lab <- "Distance along profile (m)"
   if (isTRUE(normalize_distance)) {
-    plot_data <- add_normalized_distance(plot_data, group_col = group_col)
+    plot_data <- add_normalized_distance(plot_data, group_col = group_col, distance_col = x_col)
     x_col <- "normalized_distance"
     x_lab <- "Normalized distance along transect"
   }
@@ -693,14 +700,14 @@ plot_cross_sections <- function(
   orient_depth_axis(p, plot_data[[value_col]], depth_increases_down)
 }
 
-add_normalized_distance <- function(samples, group_col = "transect_id") {
+add_normalized_distance <- function(samples, group_col = "transect_id", distance_col = "distance") {
   pieces <- split(samples, samples[[group_col]])
   pieces <- lapply(pieces, function(piece) {
-    rng <- range(piece$distance, na.rm = TRUE)
+    rng <- range(piece[[distance_col]], na.rm = TRUE)
     if (!all(is.finite(rng)) || diff(rng) == 0) {
       piece$normalized_distance <- 0
     } else {
-      piece$normalized_distance <- (piece$distance - rng[1]) / diff(rng)
+      piece$normalized_distance <- (piece[[distance_col]] - rng[1]) / diff(rng)
     }
     piece
   })
@@ -710,7 +717,7 @@ add_normalized_distance <- function(samples, group_col = "transect_id") {
 mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50) {
   data <- samples
   if (!"normalized_distance" %in% names(data)) {
-    data <- add_normalized_distance(data, group_col = group_col)
+    data <- add_normalized_distance(data, group_col = group_col, distance_col = x_col)
   }
   data$profile_bin <- cut(
     data$normalized_distance,
@@ -722,11 +729,12 @@ mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50)
     if (nrow(piece) == 0) {
       return(NULL)
     }
-    tibble::tibble(
+    out <- tibble::tibble(
       normalized_distance = mean(piece$normalized_distance, na.rm = TRUE),
-      distance = mean(piece$distance, na.rm = TRUE),
       mean_value = mean(piece[[value_col]], na.rm = TRUE)
     )
+    out[[x_col]] <- mean(piece[[x_col]], na.rm = TRUE)
+    out
   })
   dplyr::bind_rows(Filter(Negate(is.null), rows))
 }

@@ -253,10 +253,10 @@ figures <- c(figures, save_plot(
     value_col = sample_value_col,
     show_legend = TRUE,
     mean_profile = TRUE,
-    normalize_distance = TRUE,
-    profile_direction = "min_to_max",
+    normalize_distance = FALSE,
+    profile_direction = "top_to_bottom",
     title = "Cross-Sections With Transect Legend",
-    subtitle = "Distance is oriented from minimum to maximum sampled values"
+    subtitle = "Profiles read from shallow to deep terrain"
   ),
   "18-cross-sections-with-legend.png"
 ))
@@ -264,9 +264,9 @@ figures <- c(figures, save_plot(
   plot_depth_profile(
     one_transect,
     value_col = sample_value_col,
-    profile_direction = "min_to_max",
+    profile_direction = "top_to_bottom",
     title = "Single Transect Depth Profile",
-    subtitle = "Minimum to maximum sampled values"
+    subtitle = "Distance is oriented from shallow to deep terrain"
   ),
   "19-depth-profile-single-transect.png"
 ))

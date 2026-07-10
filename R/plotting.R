@@ -548,15 +548,19 @@ plot_process_pca <- function(
 #' @param line Logical. Draw profile lines when at least two finite samples are
 #'   available.
 #' @param profile_direction Direction used to orient distance before plotting.
-#'   `"min_to_max"` (the default) orients each profile so the selected value
-#'   column begins with its lower numeric endpoint and ends with its higher
-#'   numeric endpoint. `"max_to_min"` reverses that convention.
-#'   `"as_sampled"` preserves the sampled line order. Legacy values
-#'   `"low_to_high"` and `"high_to_low"` are accepted as aliases for
-#'   `"min_to_max"` and `"max_to_min"`.
+#'   `"top_to_bottom"` (the default) orients bathymetric or elevation profiles
+#'   from the shallow or top endpoint toward the deeper or bottom endpoint.
+#'   With negative-elevation bathymetry this means higher numeric values to
+#'   lower numeric values. With positive-depth bathymetry, set
+#'   `positive_depth = TRUE` so the profile runs from lower depth values to
+#'   higher depth values. `"bottom_to_top"` reverses that convention.
+#'   `"max_to_min"` and `"min_to_max"` provide explicit numeric endpoint
+#'   controls for metrics, and `"as_sampled"` preserves the sampled line order.
+#'   Legacy values `"high_to_low"` and `"low_to_high"` are accepted as aliases
+#'   for `"top_to_bottom"` and `"bottom_to_top"`.
 #' @param positive_depth Logical depth convention for `value_col`. This affects
-#'   y-axis display for depth-like variables; profile direction is based on
-#'   numeric endpoint order.
+#'   top-to-bottom profile orientation for depth-like variables and y-axis
+#'   display for positive-depth values.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
 #' @param title,subtitle,caption Plot text.
@@ -585,7 +589,10 @@ plot_depth_profile <- function(
     group_col = NULL,
     points = TRUE,
     line = TRUE,
-    profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low"),
+    profile_direction = c(
+      "top_to_bottom", "bottom_to_top", "as_sampled",
+      "max_to_min", "min_to_max", "high_to_low", "low_to_high"
+    ),
     positive_depth = NULL,
     depth_increases_down = TRUE,
     title = NULL,
@@ -612,7 +619,7 @@ plot_depth_profile <- function(
   if (!any(finite)) {
     bt_abort("No finite distance/value pairs were available for the depth profile.")
   }
-  plot_data <- data[finite, , drop = FALSE]
+  plot_data <- data
   if (!is.null(group_col)) {
     if (!group_col %in% names(data)) {
       bt_abort("`group_col` was not found in `data`.")
@@ -626,11 +633,12 @@ plot_depth_profile <- function(
     profile_direction = profile_direction,
     positive_depth = positive_depth
   )
+  x_col <- "distance_profile"
   if (!is.null(group_col)) {
     p <- ggplot2::ggplot(
       plot_data,
       ggplot2::aes(
-        x = .data[[distance_col]],
+        x = .data[[x_col]],
         y = .data[[depth_col]],
         group = .data[[group_col]]
       )
@@ -638,7 +646,7 @@ plot_depth_profile <- function(
   } else {
     p <- ggplot2::ggplot(
       plot_data,
-      ggplot2::aes(x = .data[[distance_col]], y = .data[[depth_col]])
+      ggplot2::aes(x = .data[[x_col]], y = .data[[depth_col]])
     )
   }
   if (isTRUE(line) && nrow(plot_data) >= 2) {
@@ -651,7 +659,7 @@ plot_depth_profile <- function(
   }
   p <- p +
     ggplot2::labs(
-      x = "Distance along transect (map units)",
+      x = "Distance along profile (m)",
       y = profile_axis_label(depth_col),
       title = title,
       subtitle = subtitle,

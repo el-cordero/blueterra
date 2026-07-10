@@ -18,6 +18,12 @@ test_that("development scripts use current corridor and animation settings", {
   testthat::skip_if(is.na(root))
   root <- normalizePath(root, mustWork = TRUE)
 
+  readme_rmd <- file.path(root, "README.Rmd")
+  testthat::skip_if_not(file.exists(readme_rmd))
+  readme_text <- readLines(readme_rmd, warn = FALSE)
+  expect_false(any(grepl("study-area-pr-southwest-shelf-margin.png", readme_text, fixed = TRUE)))
+  expect_false(any(grepl("Study-area context for the example data", readme_text, fixed = TRUE)))
+
   visual_script <- file.path(root, "qa", "visual-proof", "visual-proof.R")
   testthat::skip_if_not(file.exists(visual_script))
   visual_text <- readLines(visual_script, warn = FALSE)
@@ -33,6 +39,8 @@ test_that("development scripts use current corridor and animation settings", {
   expect_true(any(grepl("width = 5", animation_text, fixed = TRUE)))
   expect_false(any(grepl("terra-based", animation_text, fixed = TRUE)))
   expect_false(any(grepl('profile_direction = "high_to_low"', animation_text, fixed = TRUE)))
+  expect_false(any(grepl('profile_direction = "min_to_max"', animation_text, fixed = TRUE)))
+  expect_true(any(grepl('profile_direction = "top_to_bottom"', animation_text, fixed = TRUE)))
   expect_true(any(grepl("max_gif_bytes <- 4900000", animation_text, fixed = TRUE)))
   expect_true(any(grepl("fontsize = 12", animation_text, fixed = TRUE)))
 })

@@ -320,7 +320,10 @@ orient_profile_distance <- function(
     value_col,
     distance_col = "distance",
     group_col = NULL,
-    profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low"),
+    profile_direction = c(
+      "top_to_bottom", "bottom_to_top", "as_sampled",
+      "max_to_min", "min_to_max", "high_to_low", "low_to_high"
+    ),
     positive_depth = NULL
 ) {
   profile_direction <- normalize_profile_direction(profile_direction)
@@ -353,28 +356,55 @@ orient_profile_distance <- function(
   pieces <- split(data, groups, drop = TRUE)
   pieces <- lapply(pieces, function(piece) {
     piece <- piece[order(piece[[distance_col]]), , drop = FALSE]
-    if (profile_direction == "as_sampled") {
+    finite <- is.finite(piece[[distance_col]]) & is.finite(piece[[value_col]])
+    if (!any(finite)) {
+      piece$distance_profile <- NA_real_
       return(piece)
+    }
+    finite_index <- which(finite)
+    first_value <- piece[[value_col]][finite_index[1]]
+    last_value <- piece[[value_col]][finite_index[length(finite_index)]]
+
+    if (profile_direction != "as_sampled" && length(finite_index) >= 2) {
+      direction <- profile_direction
+      if (identical(direction, "top_to_bottom") || identical(direction, "bottom_to_top")) {
+        is_positive_depth <- infer_positive_depth_values(
+          piece[[value_col]],
+          value_col = value_col,
+          positive_depth = positive_depth
+        )
+        direction <- if (identical(direction, "top_to_bottom")) {
+          if (is_positive_depth) "min_to_max" else "max_to_min"
+        } else {
+          if (is_positive_depth) "max_to_min" else "min_to_max"
+        }
+      }
+      min_to_max_now <- first_value <= last_value
+      should_reverse <- if (identical(first_value, last_value)) {
+        FALSE
+      } else {
+        switch(
+          direction,
+          min_to_max = !min_to_max_now,
+          max_to_min = min_to_max_now
+        )
+      }
+      if (isTRUE(should_reverse)) {
+        max_distance <- max(piece[[distance_col]], na.rm = TRUE)
+        piece[[distance_col]] <- max_distance - piece[[distance_col]]
+        piece$profile_reversed <- TRUE
+        piece <- piece[order(piece[[distance_col]]), , drop = FALSE]
+      }
     }
 
     finite <- is.finite(piece[[distance_col]]) & is.finite(piece[[value_col]])
-    if (sum(finite) < 2) {
-      return(piece)
-    }
-    finite_piece <- piece[finite, , drop = FALSE]
-    first_value <- finite_piece[[value_col]][1]
-    last_value <- finite_piece[[value_col]][nrow(finite_piece)]
-    min_to_max_now <- first_value <= last_value
-    should_reverse <- switch(
-      profile_direction,
-      min_to_max = !min_to_max_now,
-      max_to_min = min_to_max_now
-    )
-    if (isTRUE(should_reverse)) {
-      max_distance <- max(piece[[distance_col]], na.rm = TRUE)
-      piece[[distance_col]] <- max_distance - piece[[distance_col]]
-      piece$profile_reversed <- TRUE
-      piece <- piece[order(piece[[distance_col]]), , drop = FALSE]
+    finite_index <- which(finite)
+    piece <- piece[seq(finite_index[1], finite_index[length(finite_index)]), , drop = FALSE]
+    finite_distance <- piece[[distance_col]][is.finite(piece[[distance_col]])]
+    if (length(finite_distance)) {
+      piece$distance_profile <- piece[[distance_col]] - min(finite_distance, na.rm = TRUE)
+    } else {
+      piece$distance_profile <- NA_real_
     }
     piece
   })
@@ -384,12 +414,15 @@ orient_profile_distance <- function(
 normalize_profile_direction <- function(profile_direction) {
   direction <- match.arg(
     profile_direction,
-    choices = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low")
+    choices = c(
+      "top_to_bottom", "bottom_to_top", "as_sampled",
+      "max_to_min", "min_to_max", "high_to_low", "low_to_high"
+    )
   )
   switch(
     direction,
-    low_to_high = "min_to_max",
-    high_to_low = "max_to_min",
+    low_to_high = "bottom_to_top",
+    high_to_low = "top_to_bottom",
     direction
   )
 }
