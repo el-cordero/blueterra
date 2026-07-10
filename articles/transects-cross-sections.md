@@ -144,7 +144,7 @@ plot_cross_sections(
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetric Cross-Sections"
 )
 ```
@@ -154,8 +154,11 @@ y-axis.](transects-cross-sections_files/figure-html/cross-section-plot-1.png)
 
 The value column is explicit. This matters because transect tables
 include numeric metadata such as `width_m`, `height_m`, `angle_deg`, and
-`offset`. The default profile direction places the higher-elevation or
-shallower end of each bathymetric profile on the left.
+`offset`. The default profile direction places the lower numeric
+endpoint of the selected value column on the left and the higher numeric
+endpoint on the right. For negative-elevation bathymetry, that means
+profiles read from the most negative sampled endpoint toward the least
+negative endpoint.
 
 ## Single-Transect Profile
 
@@ -166,7 +169,7 @@ one <- samples[samples$transect_id == samples$transect_id[1], ]
 plot_depth_profile(
   one,
   value_col = "bathy_m",
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetry Along One Transect"
 )
 ```

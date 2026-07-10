@@ -72,11 +72,11 @@ before buffering because distance interpretation may be misleading.
 
 ``` r
 bathy <- read_bathy(blueterra_example("bathy"))
-make_isobath_corridors(bathy, depths = c(-40, -60), width = 20)
+make_isobath_corridors(bathy, depths = c(-40, -60), width = 5)
 #> class       : SpatVector
 #> geometry    : polygons
 #> dimensions  : 2, 4  (geometries, attributes)
-#> extent      : 134950.3, 138747.2, 204550.3, 205805  (xmin, xmax, ymin, ymax)
+#> extent      : 134965.3, 138732.2, 204565.3, 205790.1  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
 #> names       : level contour_value depth_label corridor_id
 #> type        : <num>         <num>       <num>       <int>

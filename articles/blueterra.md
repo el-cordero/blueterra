@@ -239,7 +239,7 @@ plot_cross_sections(
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetric Cross-Sections"
 )
 ```
@@ -249,9 +249,9 @@ y-axis.](blueterra_files/figure-html/cross-section-plot-1.png)
 
 The y-axis is explicitly set to `bathy_m`. This prevents transect
 metadata such as width, angle, or offset from being mistaken for the
-raster value. Distance is oriented from higher elevation toward lower
-elevation so the profile reads from the shallow side of the transect
-toward deeper terrain.
+raster value. Distance is oriented from the lower numeric endpoint
+toward the higher numeric endpoint so cross-sections share a common
+value direction.
 
 ``` r
 
@@ -262,14 +262,14 @@ one_transect <- cross_sections[
 plot_depth_profile(
   one_transect,
   value_col = "bathy_m",
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetry Along One Transect",
-  subtitle = "Distance is oriented from higher elevation toward lower elevation"
+  subtitle = "Distance is oriented from minimum to maximum bathymetric values"
 )
 ```
 
-![Single bathymetric profile oriented from high elevation to low
-elevation.](blueterra_files/figure-html/depth-profile-1.png)
+![Single bathymetric profile oriented from minimum to maximum
+bathymetric values.](blueterra_files/figure-html/depth-profile-1.png)
 
 Metric profiles can use the same transect geometry. When the plotted
 value is a metric such as slope, the distance order is often best
@@ -302,18 +302,18 @@ transect.](blueterra_files/figure-html/metric-profile-1.png)
 
 Isobath corridors summarize terrain along depth horizons. The source
 isobaths are shown in black so the reader can see which contour each
-corridor buffers.
+corridor buffers. Corridors use a 5 m buffer around each source isobath.
 
 ``` r
 
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
-corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
+corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 5)
 
 corridors[, c("contour_value", "depth_label", "corridor_id")]
 #> class       : SpatVector
 #> geometry    : polygons
 #> dimensions  : 3, 3  (geometries, attributes)
-#> extent      : 137456.2, 137792, 205649.4, 205776.5  (xmin, xmax, ymin, ymax)
+#> extent      : 137471.2, 137777, 205664.4, 205761.6  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
 #> names       : contour_value depth_label corridor_id
 #> type        :         <num>       <num>       <int>
@@ -324,9 +324,9 @@ summarize_isobath_terrain(terrain, corridors)[, c("contour_value", "slope_deg_me
 #> # A tibble: 3 × 3
 #>   contour_value slope_deg_mean bpi_3x3_mean
 #>           <dbl>          <dbl>        <dbl>
-#> 1           -50           45.0       0.150 
-#> 2           -80           45.6       0.418 
-#> 3          -120           61.6       0.0736
+#> 1           -50           46.2     -0.01000
+#> 2           -80           40.0     -0.0209 
+#> 3          -120           77.7      1.25
 ```
 
 ``` r
@@ -336,7 +336,8 @@ plot_isobath_corridors(
   prepared,
   isobaths = isobaths,
   background_contours = FALSE,
-  title = "Isobath Corridors and Source Isobaths"
+  title = "Isobath Corridors and Source Isobaths",
+  subtitle = "Corridors use a 5 m buffer around each source isobath"
 )
 ```
 

@@ -39,20 +39,20 @@ A tibble with corridor identifiers and extracted raster values.
 ``` r
 bathy <- read_bathy(blueterra_example("bathy"))
 terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
-corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 extract_isobath_corridors(terrain, corridors)
-#> # A tibble: 418 × 8
+#> # A tibble: 84 × 8
 #>       ID level contour_value depth_label corridor_id slope_deg bpi_3x3 bpi_11x11
 #>    <int> <dbl>         <dbl>       <dbl>       <int>     <dbl>   <dbl>     <dbl>
-#>  1     1   -50           -50         -50           1      41.0  2.98        29.7
-#>  2     1   -50           -50         -50           1      45.2 -1.51        20.7
-#>  3     1   -50           -50         -50           1      47.5 -3.02        17.2
-#>  4     1   -50           -50         -50           1      48.0 -1.54        19.5
-#>  5     1   -50           -50         -50           1      46.5 -0.0849      23.5
-#>  6     1   -50           -50         -50           1      45.3  1.59        27.5
-#>  7     1   -50           -50         -50           1      45.3  0.568       26.4
-#>  8     1   -50           -50         -50           1      45.6 -0.421       24.4
-#>  9     1   -50           -50         -50           1      45.4  0.855       24.8
-#> 10     1   -50           -50         -50           1      45.1  4.15        27.7
-#> # ℹ 408 more rows
+#>  1     1   -50           -50         -50           1      47.5  -3.02       17.2
+#>  2     1   -50           -50         -50           1      48.0  -1.54       19.5
+#>  3     1   -50           -50         -50           1      48.0  -2.90       25.0
+#>  4     1   -50           -50         -50           1      45.9  -1.01       25.7
+#>  5     1   -50           -50         -50           1      46.0  -0.596      25.8
+#>  6     1   -50           -50         -50           1      48.0  -0.940      26.1
+#>  7     1   -50           -50         -50           1      46.2   1.64       31.1
+#>  8     1   -50           -50         -50           1      43.9  -0.331      29.8
+#>  9     1   -50           -50         -50           1      44.3  -0.943      27.5
+#> 10     1   -50           -50         -50           1      44.2  -0.577      26.7
+#> # ℹ 74 more rows
 ```

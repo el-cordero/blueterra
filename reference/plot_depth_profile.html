@@ -57,7 +57,8 @@
 <span>  group_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  points <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_to_low"</span>, <span class="st">"as_sampled"</span>, <span class="st">"low_to_high"</span><span class="op">)</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min_to_max"</span>, <span class="st">"max_to_min"</span>, <span class="st">"as_sampled"</span>, <span class="st">"low_to_high"</span>,</span>
+<span>    <span class="st">"high_to_low"</span><span class="op">)</span>,</span>
 <span>  positive_depth <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  depth_increases_down <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -103,15 +104,18 @@ available.</p></dd>
 
 <dt id="arg-profile-direction">profile_direction<a class="anchor" aria-label="anchor" href="#arg-profile-direction"></a></dt>
 <dd><p>Direction used to orient distance before plotting.
-<code>"high_to_low"</code> (the default) puts the shallow or higher-elevation end of
-each profile on the left. <code>"as_sampled"</code> preserves the sampled line order.
-<code>"low_to_high"</code> reverses the default.</p></dd>
+<code>"min_to_max"</code> (the default) orients each profile so the selected value
+column begins with its lower numeric endpoint and ends with its higher
+numeric endpoint. <code>"max_to_min"</code> reverses that convention.
+<code>"as_sampled"</code> preserves the sampled line order. Legacy values
+<code>"low_to_high"</code> and <code>"high_to_low"</code> are accepted as aliases for
+<code>"min_to_max"</code> and <code>"max_to_min"</code>.</p></dd>
 
 
 <dt id="arg-positive-depth">positive_depth<a class="anchor" aria-label="anchor" href="#arg-positive-depth"></a></dt>
-<dd><p>Logical depth convention for <code>value_col</code>. Use <code>TRUE</code>
-when larger positive values are deeper, <code>FALSE</code> when larger values are
-higher elevation, or <code>NULL</code> to infer from the value column.</p></dd>
+<dd><p>Logical depth convention for <code>value_col</code>. This affects
+y-axis display for depth-like variables; profile direction is based on
+numeric endpoint order.</p></dd>
 
 
 <dt id="arg-depth-increases-down">depth_increases_down<a class="anchor" aria-label="anchor" href="#arg-depth-increases-down"></a></dt>

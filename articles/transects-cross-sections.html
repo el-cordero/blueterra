@@ -197,15 +197,18 @@ table.</p>
 <span>  show_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  normalize_distance <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="st">"high_to_low"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"min_to_max"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/cross-section-plot-1.png" class="r-plt" alt="Bathymetric cross-sections with bathy_m on the y-axis." width="672"></p>
 <p>The value column is explicit. This matters because transect tables
 include numeric metadata such as <code>width_m</code>,
 <code>height_m</code>, <code>angle_deg</code>, and <code>offset</code>.
-The default profile direction places the higher-elevation or shallower
-end of each bathymetric profile on the left.</p>
+The default profile direction places the lower numeric endpoint of the
+selected value column on the left and the higher numeric endpoint on the
+right. For negative-elevation bathymetry, that means profiles read from
+the most negative sampled endpoint toward the least negative
+endpoint.</p>
 </div>
 <div class="section level2">
 <h2 id="single-transect-profile">Single-Transect Profile<a class="anchor" aria-label="anchor" href="#single-transect-profile"></a>
@@ -216,7 +219,7 @@ end of each bathymetric profile on the left.</p>
 <span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
 <span>  <span class="va">one</span>,</span>
 <span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="st">"high_to_low"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"min_to_max"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetry Along One Transect"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/profile-1.png" class="r-plt" alt="Bathymetric profile along a single transect." width="672"></p>
