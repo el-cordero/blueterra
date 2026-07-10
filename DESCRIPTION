@@ -3,7 +3,7 @@ Title: Process-Oriented Geomorphometry for Submerged Terrain
 Version: 0.1.0
 Authors@R: c(
     person("Elvin", "Cordero",
-           email = "cordero.elvin@gmail.com",
+           email = "elvin.cordero@seamountgeo.com",
            role = c("aut", "cre")),
     person("SeaMount Geospatial Labs", role = "cph")
   )

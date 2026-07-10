@@ -34,7 +34,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Elvin Cordero \email{cordero.elvin@gmail.com}
+\strong{Maintainer}: Elvin Cordero \email{elvin.cordero@seamountgeo.com}
 
 Other contributors:
 \itemize{
