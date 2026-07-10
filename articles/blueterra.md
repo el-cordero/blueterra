@@ -129,27 +129,26 @@ assign_process_groups(terrain)
 #> # A tibble: 10 × 7
 #>    metric        metric_standard label process_group description source_function
 #>    <chr>         <chr>           <chr> <chr>         <chr>       <chr>          
-#>  1 slope_deg     slope_deg       Slope slope_gradie… Local slop… derive_slope   
-#>  2 aspect_deg    aspect_deg      Aspe… orientation   Local down… derive_aspect  
-#>  3 northness     northness       Nort… orientation   Cosine tra… derive_northne…
-#>  4 eastness      eastness        East… orientation   Sine trans… derive_eastness
+#>  1 slope_deg     slope_deg       Slope slope_gradie… Local stee… derive_slope   
+#>  2 aspect_deg    aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect  
+#>  3 northness     northness       Nort… seafloor_asp… Cosine tra… derive_northne…
+#>  4 eastness      eastness        East… seafloor_asp… Sine trans… derive_eastness
 #>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
 #>  6 rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… Vector rug… derive_rugosity
 #>  7 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
 #>  8 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
 #>  9 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
-#> 10 surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…
+#> 10 surface_area… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface…
 #> # ℹ 1 more variable: matched <lgl>
 summarize_process_groups(terrain)
-#> # A tibble: 6 × 3
-#>   process_group     n_metrics metrics                        
-#>   <chr>                 <int> <chr>                          
-#> 1 curvature                 1 curvature                      
-#> 2 orientation               3 aspect_deg, northness, eastness
-#> 3 seafloor_position         2 bpi_3x3, bpi_11x11             
-#> 4 seafloor_rugosity         2 tri, rugosity_vrm_3x3          
-#> 5 slope_gradient            1 slope_deg                      
-#> 6 surface_structure         1 surface_area_ratio
+#> # A tibble: 5 × 3
+#>   process_group     n_metrics metrics                                  
+#>   <chr>                 <int> <chr>                                    
+#> 1 curvature                 1 curvature                                
+#> 2 seafloor_aspect           3 aspect_deg, northness, eastness          
+#> 3 seafloor_position         2 bpi_3x3, bpi_11x11                       
+#> 4 seafloor_rugosity         3 tri, rugosity_vrm_3x3, surface_area_ratio
+#> 5 slope_gradient            1 slope_deg
 ```
 
 ``` r

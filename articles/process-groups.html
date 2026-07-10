@@ -80,31 +80,34 @@ interpretation does not rest on a single high-ranking variable. The
 labels are terrain-form categories. They organize surface form for
 summaries and models; they are not direct measurements of currents,
 sediment flux, habitat condition, or ecological processes.</p>
+<p>The catalog follows the process names used in the manuscript:
+seafloor aspect, slope gradient, accumulation potential, transport
+potential, seafloor position, seafloor rugosity, downslope pathway
+proximity, and curvature. Accumulation potential replaces the older
+terrain-convergence wording. External layers named
+<code>wetness_index_wbt</code>, <code>convergence_slope_index</code>, or
+<code>convergence_slope_index_wbt</code> are assigned to
+<code>accumulation_potential</code>.</p>
 <div class="section level2">
 <h2 id="metric-catalog">Metric Catalog<a class="anchor" aria-label="anchor" href="#metric-catalog"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">catalog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/metric_catalog.html">metric_catalog</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">catalog</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"metric"</span>, <span class="st">"label"</span>, <span class="st">"process_group"</span>, <span class="st">"scale_sensitive"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 16 × 4</span></span></span>
-<span><span class="co">#&gt;    metric             label                      process_group   scale_sensitive</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> bathy              Bathymetry                 base_bathymetry TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> slope_deg          Slope                      slope_gradient  TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> slope_rad          Slope                      slope_gradient  TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> aspect_deg         Aspect                     orientation     TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> aspect_rad         Aspect                     orientation     TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> northness          Northness                  orientation     TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> eastness           Eastness                   orientation     TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> hillshade          Hillshade                  surface_struct… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> roughness          Roughness                  seafloor_rugos… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> tri                Terrain Ruggedness Index   seafloor_rugos… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> tpi                Topographic Position Index seafloor_posit… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> bpi_3x3            Fine BPI                   seafloor_posit… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> bpi_11x11          Broad BPI                  seafloor_posit… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> curvature          Curvature                  curvature       TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> surface_area_ratio Surface Area Ratio         surface_struct… TRUE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> rugosity_vrm_3x3   Vector Ruggedness          seafloor_rugos… TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 4</span></span></span>
+<span><span class="co">#&gt;    metric     label      process_group   scale_sensitive</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> bathy      Bathymetry base_bathymetry TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> hillshade  Hillshade  base_bathymetry TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> aspect_deg Aspect     seafloor_aspect TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> aspect_rad Aspect     seafloor_aspect TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> northness  Northness  seafloor_aspect TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> eastness   Eastness   seafloor_aspect TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> aspect_cos Northness  seafloor_aspect TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> aspect_sin Eastness   seafloor_aspect TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> slope_deg  Slope      slope_gradient  TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> slope_rad  Slope      slope_gradient  TRUE           </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more rows</span></span></span></code></pre></div>
 <p>The catalog records the source function, units, and interpretation
 notes for the exported terrain metrics.</p>
 </div>
@@ -124,25 +127,24 @@ notes for the exported terrain metrics.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 × 7</span></span></span>
 <span><span class="co">#&gt;   metric metric_standard label process_group description source_function matched</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> slope… slope_deg       Slope slope_gradie… Local slop… derive_slope    TRUE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> aspec… aspect_deg      Aspe… orientation   Local down… derive_aspect   TRUE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> north… northness       Nort… orientation   Cosine tra… derive_northne… TRUE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> eastn… eastness        East… orientation   Sine trans… derive_eastness TRUE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> slope… slope_deg       Slope slope_gradie… Local stee… derive_slope    TRUE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> aspec… aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect   TRUE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> north… northness       Nort… seafloor_asp… Cosine tra… derive_northne… TRUE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> eastn… eastness        East… seafloor_asp… Sine trans… derive_eastness TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> tri    tri             Terr… seafloor_rug… Local terr… derive_tri      TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bpi_3… bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi      TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> bpi_1… bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi      TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> curva… curvature       Curv… curvature     Laplacian-… derive_curvatu… TRUE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> surfa… surface_area_r… Surf… surface_stru… Approximat… derive_surface… TRUE</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> surfa… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface… TRUE</span></span>
 <span><span class="fu"><a href="../reference/summarize_process_groups.html">summarize_process_groups</a></span><span class="op">(</span><span class="va">terrain</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
 <span><span class="co">#&gt;   process_group     n_metrics metrics                        </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                          </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> curvature                 1 curvature                      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> orientation               3 aspect_deg, northness, eastness</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> seafloor_aspect           3 aspect_deg, northness, eastness</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> seafloor_position         2 bpi_3x3, bpi_11x11             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> seafloor_rugosity         1 tri                            </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> slope_gradient            1 slope_deg                      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> surface_structure         1 surface_area_ratio</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> seafloor_rugosity         2 tri, surface_area_ratio        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> slope_gradient            1 slope_deg</span></span></code></pre></div>
 <p>The assignment is based on layer names.
 <code><a href="../reference/standardize_metric_names.html">standardize_metric_names()</a></code> is useful when metric names come
 from external rasters or older project files.</p>
@@ -160,30 +162,31 @@ final choice should still follow raster resolution, sampling design,
 collinearity, and the feature scale of the analysis.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/select_process_representatives.html">select_process_representatives</a></span><span class="op">(</span>metrics_available <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">terrain</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 9</span></span></span>
-<span><span class="co">#&gt;   metric             label       process_group description units source_function</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> curvature          Curvature   curvature     Laplacian-… inpu… derive_curvatu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> aspect_deg         Aspect      orientation   Local down… degr… derive_aspect  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bpi_11x11          Broad BPI   seafloor_pos… Broad-scal… inpu… derive_bpi     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> tri                Terrain Ru… seafloor_rug… Local terr… inpu… derive_tri     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> slope_deg          Slope       slope_gradie… Local slop… degr… derive_slope   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> surface_area_ratio Surface Ar… surface_stru… Approximat… unit… derive_surface…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 9</span></span></span>
+<span><span class="co">#&gt;   metric     label               process_group description units source_function</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> curvature  Curvature           curvature     Laplacian-… inpu… derive_curvatu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> aspect_deg Aspect              seafloor_asp… Local down… degr… derive_aspect  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bpi_3x3    Fine-scale BPI      seafloor_pos… Fine-scale… inpu… derive_bpi     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> tri        Terrain Ruggedness… seafloor_rug… Local terr… inpu… derive_tri     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> slope_deg  Slope               slope_gradie… Local stee… degr… derive_slope   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: requires_optional_dependency &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   scale_sensitive &lt;lgl&gt;, interpretation_notes &lt;chr&gt;</span></span></span>
 <span><span class="fu"><a href="../reference/select_process_representatives.html">select_process_representatives</a></span><span class="op">(</span></span>
-<span>  representatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orientation <span class="op">=</span> <span class="st">"northness"</span>, slope_gradient <span class="op">=</span> <span class="st">"slope_deg"</span><span class="op">)</span></span>
+<span>  representatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>seafloor_aspect <span class="op">=</span> <span class="st">"northness"</span>, slope_gradient <span class="op">=</span> <span class="st">"slope_deg"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 9</span></span></span>
-<span><span class="co">#&gt;   metric    label      process_group     description       units source_function</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bathy     Bathymetry base_bathymetry   Input bathymetri… inpu… as_bathy       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> curvature Curvature  curvature         Laplacian-style … inpu… derive_curvatu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bpi_11x11 Broad BPI  seafloor_position Broad-scale bath… inpu… derive_bpi     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> roughness Roughness  seafloor_rugosity Local range-base… inpu… derive_roughne…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> hillshade Hillshade  surface_structure Illumination mod… rela… derive_hillsha…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> northness Northness  orientation       Cosine transform… unit… derive_northne…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> slope_deg Slope      slope_gradient    Local slope grad… degr… derive_slope   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 × 9</span></span></span>
+<span><span class="co">#&gt;   metric                   label process_group description units source_function</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> flowacc                  Conv… accumulation… Terrain-de… index external       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bathy                    Bath… base_bathyme… Input bath… inpu… as_bathy       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> curvature                Curv… curvature     Laplacian-… inpu… derive_curvatu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> downslope_distance_to_s… Down… downslope_pa… Modeled do… map … external       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> tpi                      Topo… seafloor_pos… Cell posit… inpu… derive_tpi     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> roughness                Roug… seafloor_rug… Local rang… inpu… derive_roughne…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> stream_power_index_wbt   Terr… transport_po… Compound t… index external       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> northness                Nort… seafloor_asp… Cosine tra… unit… derive_northne…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> slope_deg                Slope slope_gradie… Local stee… degr… derive_slope   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: requires_optional_dependency &lt;lgl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   scale_sensitive &lt;lgl&gt;, interpretation_notes &lt;chr&gt;</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -231,28 +234,27 @@ groups for summaries and model-ready tables.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 7</span></span></span>
 <span><span class="co">#&gt;    metric        metric_standard label process_group description source_function</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> slope_deg     slope_deg       Slope slope_gradie… Local slop… derive_slope   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> aspect_deg    aspect_deg      Aspe… orientation   Local down… derive_aspect  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> northness     northness       Nort… orientation   Cosine tra… derive_northne…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> eastness      eastness        East… orientation   Sine trans… derive_eastness</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> slope_deg     slope_deg       Slope slope_gradie… Local stee… derive_slope   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> aspect_deg    aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> northness     northness       Nort… seafloor_asp… Cosine tra… derive_northne…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> eastness      eastness        East… seafloor_asp… Sine trans… derive_eastness</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> tri           tri             Terr… seafloor_rug… Local terr… derive_tri     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> surface_area… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> slope_tri_in… slope_tri_index Slop… custom_relief Product of… derive_custom_…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: matched &lt;lgl&gt;</span></span></span>
 <span><span class="fu"><a href="../reference/summarize_process_groups.html">summarize_process_groups</a></span><span class="op">(</span><span class="va">extended</span>, catalog <span class="op">=</span> <span class="va">custom_catalog</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   process_group     n_metrics metrics                        </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                          </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> curvature                 1 curvature                      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> custom_relief             1 slope_tri_index                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> orientation               3 aspect_deg, northness, eastness</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> seafloor_aspect           3 aspect_deg, northness, eastness</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> seafloor_position         2 bpi_3x3, bpi_11x11             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> seafloor_rugosity         1 tri                            </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> slope_gradient            1 slope_deg                      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> surface_structure         1 surface_area_ratio</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> seafloor_rugosity         2 tri, surface_area_ratio        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> slope_gradient            1 slope_deg</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

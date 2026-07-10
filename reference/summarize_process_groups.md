@@ -47,14 +47,13 @@ for spatial summaries.
 ``` r
 terrain <- derive_terrain(read_bathy(blueterra_example("bathy")))
 summarize_process_groups(terrain)
-#> # A tibble: 7 × 3
-#>   process_group     n_metrics metrics                        
-#>   <chr>                 <int> <chr>                          
-#> 1 base_bathymetry           1 bathy                          
-#> 2 curvature                 1 curvature                      
-#> 3 orientation               3 aspect_deg, northness, eastness
-#> 4 seafloor_position         3 tpi, bpi_3x3, bpi_11x11        
-#> 5 seafloor_rugosity         2 roughness, tri                 
-#> 6 slope_gradient            1 slope_deg                      
-#> 7 surface_structure         2 hillshade, surface_area_ratio  
+#> # A tibble: 6 × 3
+#>   process_group     n_metrics metrics                           
+#>   <chr>                 <int> <chr>                             
+#> 1 base_bathymetry           2 bathy, hillshade                  
+#> 2 curvature                 1 curvature                         
+#> 3 seafloor_aspect           3 aspect_deg, northness, eastness   
+#> 4 seafloor_position         3 tpi, bpi_3x3, bpi_11x11           
+#> 5 seafloor_rugosity         3 roughness, tri, surface_area_ratio
+#> 6 slope_gradient            1 slope_deg                         
 ```

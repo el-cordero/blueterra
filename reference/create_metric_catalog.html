@@ -149,26 +149,20 @@ raster values.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: requires_optional_dependency &lt;lgl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   scale_sensitive &lt;lgl&gt;, interpretation_notes &lt;chr&gt;</span></span>
 <span class="r-in"><span><span class="fu">extend_metric_catalog</span><span class="op">(</span><span class="fu"><a href="metric_catalog.html">metric_catalog</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">row</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 17 × 9</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    metric             label      process_group description units source_function</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> bathy              Bathymetry base_bathyme… Input bath… inpu… as_bathy       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> slope_deg          Slope      slope_gradie… Local slop… degr… derive_slope   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> slope_rad          Slope      slope_gradie… Local slop… radi… derive_slope   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> aspect_deg         Aspect     orientation   Local down… degr… derive_aspect  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> aspect_rad         Aspect     orientation   Local down… radi… derive_aspect  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> northness          Northness  orientation   Cosine tra… unit… derive_northne…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> eastness           Eastness   orientation   Sine trans… unit… derive_eastness</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> hillshade          Hillshade  surface_stru… Illuminati… rela… derive_hillsha…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> roughness          Roughness  seafloor_rug… Local rang… inpu… derive_roughne…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tri                Terrain R… seafloor_rug… Local terr… inpu… derive_tri     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tpi                Topograph… seafloor_pos… Cell posit… inpu… derive_tpi     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> bpi_3x3            Fine BPI   seafloor_pos… Fine-scale… inpu… derive_bpi     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> bpi_11x11          Broad BPI  seafloor_pos… Broad-scal… inpu… derive_bpi     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> curvature          Curvature  curvature     Laplacian-… inpu… derive_curvatu…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> surface_area_ratio Surface A… surface_stru… Approximat… unit… derive_surface…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> rugosity_vrm_3x3   Vector Ru… seafloor_rug… Vector rug… unit… derive_rugosity</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> slope_tri_index    slope_tri… custom_relief Product of… <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 51 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    metric     label      process_group   description       units source_function</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> bathy      Bathymetry base_bathymetry Input bathymetri… inpu… as_bathy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> hillshade  Hillshade  base_bathymetry Shaded-relief vi… rela… derive_hillsha…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> aspect_deg Aspect     seafloor_aspect Local downslope-… degr… derive_aspect  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> aspect_rad Aspect     seafloor_aspect Local downslope-… radi… derive_aspect  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> northness  Northness  seafloor_aspect Cosine transform… unit… derive_northne…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> eastness   Eastness   seafloor_aspect Sine transform o… unit… derive_eastness</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> aspect_cos Northness  seafloor_aspect Project-derived … unit… external       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> aspect_sin Eastness   seafloor_aspect Project-derived … unit… external       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> slope_deg  Slope      slope_gradient  Local steepness … degr… derive_slope   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> slope_rad  Slope      slope_gradient  Local steepness … radi… derive_slope   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 41 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: requires_optional_dependency &lt;lgl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   scale_sensitive &lt;lgl&gt;, interpretation_notes &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>

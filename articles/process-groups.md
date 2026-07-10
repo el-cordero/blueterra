@@ -11,31 +11,34 @@ labels are terrain-form categories. They organize surface form for
 summaries and models; they are not direct measurements of currents,
 sediment flux, habitat condition, or ecological processes.
 
+The catalog follows the process names used in the manuscript: seafloor
+aspect, slope gradient, accumulation potential, transport potential,
+seafloor position, seafloor rugosity, downslope pathway proximity, and
+curvature. Accumulation potential replaces the older terrain-convergence
+wording. External layers named `wetness_index_wbt`,
+`convergence_slope_index`, or `convergence_slope_index_wbt` are assigned
+to `accumulation_potential`.
+
 ## Metric Catalog
 
 ``` r
 
 catalog <- metric_catalog()
 catalog[, c("metric", "label", "process_group", "scale_sensitive")]
-#> # A tibble: 16 × 4
-#>    metric             label                      process_group   scale_sensitive
-#>    <chr>              <chr>                      <chr>           <lgl>          
-#>  1 bathy              Bathymetry                 base_bathymetry TRUE           
-#>  2 slope_deg          Slope                      slope_gradient  TRUE           
-#>  3 slope_rad          Slope                      slope_gradient  TRUE           
-#>  4 aspect_deg         Aspect                     orientation     TRUE           
-#>  5 aspect_rad         Aspect                     orientation     TRUE           
-#>  6 northness          Northness                  orientation     TRUE           
-#>  7 eastness           Eastness                   orientation     TRUE           
-#>  8 hillshade          Hillshade                  surface_struct… TRUE           
-#>  9 roughness          Roughness                  seafloor_rugos… TRUE           
-#> 10 tri                Terrain Ruggedness Index   seafloor_rugos… TRUE           
-#> 11 tpi                Topographic Position Index seafloor_posit… TRUE           
-#> 12 bpi_3x3            Fine BPI                   seafloor_posit… TRUE           
-#> 13 bpi_11x11          Broad BPI                  seafloor_posit… TRUE           
-#> 14 curvature          Curvature                  curvature       TRUE           
-#> 15 surface_area_ratio Surface Area Ratio         surface_struct… TRUE           
-#> 16 rugosity_vrm_3x3   Vector Ruggedness          seafloor_rugos… TRUE
+#> # A tibble: 50 × 4
+#>    metric     label      process_group   scale_sensitive
+#>    <chr>      <chr>      <chr>           <lgl>          
+#>  1 bathy      Bathymetry base_bathymetry TRUE           
+#>  2 hillshade  Hillshade  base_bathymetry TRUE           
+#>  3 aspect_deg Aspect     seafloor_aspect TRUE           
+#>  4 aspect_rad Aspect     seafloor_aspect TRUE           
+#>  5 northness  Northness  seafloor_aspect TRUE           
+#>  6 eastness   Eastness   seafloor_aspect TRUE           
+#>  7 aspect_cos Northness  seafloor_aspect TRUE           
+#>  8 aspect_sin Eastness   seafloor_aspect TRUE           
+#>  9 slope_deg  Slope      slope_gradient  TRUE           
+#> 10 slope_rad  Slope      slope_gradient  TRUE           
+#> # ℹ 40 more rows
 ```
 
 The catalog records the source function, units, and interpretation notes
@@ -57,25 +60,24 @@ assign_process_groups(terrain)
 #> # A tibble: 9 × 7
 #>   metric metric_standard label process_group description source_function matched
 #>   <chr>  <chr>           <chr> <chr>         <chr>       <chr>           <lgl>  
-#> 1 slope… slope_deg       Slope slope_gradie… Local slop… derive_slope    TRUE   
-#> 2 aspec… aspect_deg      Aspe… orientation   Local down… derive_aspect   TRUE   
-#> 3 north… northness       Nort… orientation   Cosine tra… derive_northne… TRUE   
-#> 4 eastn… eastness        East… orientation   Sine trans… derive_eastness TRUE   
+#> 1 slope… slope_deg       Slope slope_gradie… Local stee… derive_slope    TRUE   
+#> 2 aspec… aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect   TRUE   
+#> 3 north… northness       Nort… seafloor_asp… Cosine tra… derive_northne… TRUE   
+#> 4 eastn… eastness        East… seafloor_asp… Sine trans… derive_eastness TRUE   
 #> 5 tri    tri             Terr… seafloor_rug… Local terr… derive_tri      TRUE   
 #> 6 bpi_3… bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi      TRUE   
 #> 7 bpi_1… bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi      TRUE   
 #> 8 curva… curvature       Curv… curvature     Laplacian-… derive_curvatu… TRUE   
-#> 9 surfa… surface_area_r… Surf… surface_stru… Approximat… derive_surface… TRUE
+#> 9 surfa… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface… TRUE
 summarize_process_groups(terrain)
-#> # A tibble: 6 × 3
+#> # A tibble: 5 × 3
 #>   process_group     n_metrics metrics                        
 #>   <chr>                 <int> <chr>                          
 #> 1 curvature                 1 curvature                      
-#> 2 orientation               3 aspect_deg, northness, eastness
+#> 2 seafloor_aspect           3 aspect_deg, northness, eastness
 #> 3 seafloor_position         2 bpi_3x3, bpi_11x11             
-#> 4 seafloor_rugosity         1 tri                            
-#> 5 slope_gradient            1 slope_deg                      
-#> 6 surface_structure         1 surface_area_ratio
+#> 4 seafloor_rugosity         2 tri, surface_area_ratio        
+#> 5 slope_gradient            1 slope_deg
 ```
 
 The assignment is based on layer names.
@@ -100,30 +102,31 @@ collinearity, and the feature scale of the analysis.
 ``` r
 
 select_process_representatives(metrics_available = names(terrain))
-#> # A tibble: 6 × 9
-#>   metric             label       process_group description units source_function
-#>   <chr>              <chr>       <chr>         <chr>       <chr> <chr>          
-#> 1 curvature          Curvature   curvature     Laplacian-… inpu… derive_curvatu…
-#> 2 aspect_deg         Aspect      orientation   Local down… degr… derive_aspect  
-#> 3 bpi_11x11          Broad BPI   seafloor_pos… Broad-scal… inpu… derive_bpi     
-#> 4 tri                Terrain Ru… seafloor_rug… Local terr… inpu… derive_tri     
-#> 5 slope_deg          Slope       slope_gradie… Local slop… degr… derive_slope   
-#> 6 surface_area_ratio Surface Ar… surface_stru… Approximat… unit… derive_surface…
+#> # A tibble: 5 × 9
+#>   metric     label               process_group description units source_function
+#>   <chr>      <chr>               <chr>         <chr>       <chr> <chr>          
+#> 1 curvature  Curvature           curvature     Laplacian-… inpu… derive_curvatu…
+#> 2 aspect_deg Aspect              seafloor_asp… Local down… degr… derive_aspect  
+#> 3 bpi_3x3    Fine-scale BPI      seafloor_pos… Fine-scale… inpu… derive_bpi     
+#> 4 tri        Terrain Ruggedness… seafloor_rug… Local terr… inpu… derive_tri     
+#> 5 slope_deg  Slope               slope_gradie… Local stee… degr… derive_slope   
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>
 select_process_representatives(
-  representatives = c(orientation = "northness", slope_gradient = "slope_deg")
+  representatives = c(seafloor_aspect = "northness", slope_gradient = "slope_deg")
 )
-#> # A tibble: 7 × 9
-#>   metric    label      process_group     description       units source_function
-#>   <chr>     <chr>      <chr>             <chr>             <chr> <chr>          
-#> 1 bathy     Bathymetry base_bathymetry   Input bathymetri… inpu… as_bathy       
-#> 2 curvature Curvature  curvature         Laplacian-style … inpu… derive_curvatu…
-#> 3 bpi_11x11 Broad BPI  seafloor_position Broad-scale bath… inpu… derive_bpi     
-#> 4 roughness Roughness  seafloor_rugosity Local range-base… inpu… derive_roughne…
-#> 5 hillshade Hillshade  surface_structure Illumination mod… rela… derive_hillsha…
-#> 6 northness Northness  orientation       Cosine transform… unit… derive_northne…
-#> 7 slope_deg Slope      slope_gradient    Local slope grad… degr… derive_slope   
+#> # A tibble: 9 × 9
+#>   metric                   label process_group description units source_function
+#>   <chr>                    <chr> <chr>         <chr>       <chr> <chr>          
+#> 1 flowacc                  Conv… accumulation… Terrain-de… index external       
+#> 2 bathy                    Bath… base_bathyme… Input bath… inpu… as_bathy       
+#> 3 curvature                Curv… curvature     Laplacian-… inpu… derive_curvatu…
+#> 4 downslope_distance_to_s… Down… downslope_pa… Modeled do… map … external       
+#> 5 tpi                      Topo… seafloor_pos… Cell posit… inpu… derive_tpi     
+#> 6 roughness                Roug… seafloor_rug… Local rang… inpu… derive_roughne…
+#> 7 stream_power_index_wbt   Terr… transport_po… Compound t… index external       
+#> 8 northness                Nort… seafloor_asp… Cosine tra… unit… derive_northne…
+#> 9 slope_deg                Slope slope_gradie… Local stee… degr… derive_slope   
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>
 ```
@@ -178,26 +181,25 @@ assign_process_groups(extended, catalog = custom_catalog)
 #> # A tibble: 10 × 7
 #>    metric        metric_standard label process_group description source_function
 #>    <chr>         <chr>           <chr> <chr>         <chr>       <chr>          
-#>  1 slope_deg     slope_deg       Slope slope_gradie… Local slop… derive_slope   
-#>  2 aspect_deg    aspect_deg      Aspe… orientation   Local down… derive_aspect  
-#>  3 northness     northness       Nort… orientation   Cosine tra… derive_northne…
-#>  4 eastness      eastness        East… orientation   Sine trans… derive_eastness
+#>  1 slope_deg     slope_deg       Slope slope_gradie… Local stee… derive_slope   
+#>  2 aspect_deg    aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect  
+#>  3 northness     northness       Nort… seafloor_asp… Cosine tra… derive_northne…
+#>  4 eastness      eastness        East… seafloor_asp… Sine trans… derive_eastness
 #>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
 #>  6 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
 #>  7 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
 #>  8 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
-#>  9 surface_area… surface_area_r… Surf… surface_stru… Approximat… derive_surface…
+#>  9 surface_area… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface…
 #> 10 slope_tri_in… slope_tri_index Slop… custom_relief Product of… derive_custom_…
 #> # ℹ 1 more variable: matched <lgl>
 summarize_process_groups(extended, catalog = custom_catalog)
-#> # A tibble: 7 × 3
+#> # A tibble: 6 × 3
 #>   process_group     n_metrics metrics                        
 #>   <chr>                 <int> <chr>                          
 #> 1 curvature                 1 curvature                      
 #> 2 custom_relief             1 slope_tri_index                
-#> 3 orientation               3 aspect_deg, northness, eastness
+#> 3 seafloor_aspect           3 aspect_deg, northness, eastness
 #> 4 seafloor_position         2 bpi_3x3, bpi_11x11             
-#> 5 seafloor_rugosity         1 tri                            
-#> 6 slope_gradient            1 slope_deg                      
-#> 7 surface_structure         1 surface_area_ratio
+#> 5 seafloor_rugosity         2 tri, surface_area_ratio        
+#> 6 slope_gradient            1 slope_deg
 ```

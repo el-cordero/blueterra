@@ -53,16 +53,18 @@ scientific question.
 
 ``` r
 select_process_representatives()
-#> # A tibble: 7 × 9
-#>   metric     label      process_group     description      units source_function
-#>   <chr>      <chr>      <chr>             <chr>            <chr> <chr>          
-#> 1 bathy      Bathymetry base_bathymetry   Input bathymetr… inpu… as_bathy       
-#> 2 curvature  Curvature  curvature         Laplacian-style… inpu… derive_curvatu…
-#> 3 aspect_deg Aspect     orientation       Local downslope… degr… derive_aspect  
-#> 4 bpi_11x11  Broad BPI  seafloor_position Broad-scale bat… inpu… derive_bpi     
-#> 5 roughness  Roughness  seafloor_rugosity Local range-bas… inpu… derive_roughne…
-#> 6 slope_deg  Slope      slope_gradient    Local slope gra… degr… derive_slope   
-#> 7 hillshade  Hillshade  surface_structure Illumination mo… rela… derive_hillsha…
+#> # A tibble: 9 × 9
+#>   metric                   label process_group description units source_function
+#>   <chr>                    <chr> <chr>         <chr>       <chr> <chr>          
+#> 1 flowacc                  Conv… accumulation… Terrain-de… index external       
+#> 2 bathy                    Bath… base_bathyme… Input bath… inpu… as_bathy       
+#> 3 curvature                Curv… curvature     Laplacian-… inpu… derive_curvatu…
+#> 4 downslope_distance_to_s… Down… downslope_pa… Modeled do… map … external       
+#> 5 aspect_deg               Aspe… seafloor_asp… Local down… degr… derive_aspect  
+#> 6 tpi                      Topo… seafloor_pos… Cell posit… inpu… derive_tpi     
+#> 7 roughness                Roug… seafloor_rug… Local rang… inpu… derive_roughne…
+#> 8 slope_deg                Slope slope_gradie… Local stee… degr… derive_slope   
+#> 9 stream_power_index_wbt   Terr… transport_po… Compound t… index external       
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>
 ```

@@ -142,27 +142,20 @@ custom_rows <- create_metric_catalog(
 
 custom_catalog <- extend_metric_catalog(metric_catalog(), custom_rows)
 validate_metric_catalog(custom_catalog)
-#> # A tibble: 18 × 9
-#>    metric                label   process_group description units source_function
-#>    <chr>                 <chr>   <chr>         <chr>       <chr> <chr>          
-#>  1 bathy                 Bathym… base_bathyme… Input bath… inpu… as_bathy       
-#>  2 slope_deg             Slope   slope_gradie… Local slop… degr… derive_slope   
-#>  3 slope_rad             Slope   slope_gradie… Local slop… radi… derive_slope   
-#>  4 aspect_deg            Aspect  orientation   Local down… degr… derive_aspect  
-#>  5 aspect_rad            Aspect  orientation   Local down… radi… derive_aspect  
-#>  6 northness             Northn… orientation   Cosine tra… unit… derive_northne…
-#>  7 eastness              Eastne… orientation   Sine trans… unit… derive_eastness
-#>  8 hillshade             Hillsh… surface_stru… Illuminati… rela… derive_hillsha…
-#>  9 roughness             Roughn… seafloor_rug… Local rang… inpu… derive_roughne…
-#> 10 tri                   Terrai… seafloor_rug… Local terr… inpu… derive_tri     
-#> 11 tpi                   Topogr… seafloor_pos… Cell posit… inpu… derive_tpi     
-#> 12 bpi_3x3               Fine B… seafloor_pos… Fine-scale… inpu… derive_bpi     
-#> 13 bpi_11x11             Broad … seafloor_pos… Broad-scal… inpu… derive_bpi     
-#> 14 curvature             Curvat… curvature     Laplacian-… inpu… derive_curvatu…
-#> 15 surface_area_ratio    Surfac… surface_stru… Approximat… unit… derive_surface…
-#> 16 rugosity_vrm_3x3      Vector… seafloor_rug… Vector rug… unit… derive_rugosity
-#> 17 slope_tri_index       Slope-… custom_relief Product of… index derive_custom_…
-#> 18 relief_position_index Relief… custom_relief TRI plus w… index derive_custom_…
+#> # A tibble: 52 × 9
+#>    metric     label      process_group   description       units source_function
+#>    <chr>      <chr>      <chr>           <chr>             <chr> <chr>          
+#>  1 bathy      Bathymetry base_bathymetry Input bathymetri… inpu… as_bathy       
+#>  2 hillshade  Hillshade  base_bathymetry Shaded-relief vi… rela… derive_hillsha…
+#>  3 aspect_deg Aspect     seafloor_aspect Local downslope-… degr… derive_aspect  
+#>  4 aspect_rad Aspect     seafloor_aspect Local downslope-… radi… derive_aspect  
+#>  5 northness  Northness  seafloor_aspect Cosine transform… unit… derive_northne…
+#>  6 eastness   Eastness   seafloor_aspect Sine transform o… unit… derive_eastness
+#>  7 aspect_cos Northness  seafloor_aspect Project-derived … unit… external       
+#>  8 aspect_sin Eastness   seafloor_aspect Project-derived … unit… external       
+#>  9 slope_deg  Slope      slope_gradient  Local steepness … degr… derive_slope   
+#> 10 slope_rad  Slope      slope_gradient  Local steepness … radi… derive_slope   
+#> # ℹ 42 more rows
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>
 custom_rows
@@ -183,7 +176,7 @@ assign_process_groups(extended, catalog = custom_catalog)
 #> # A tibble: 7 × 7
 #>   metric metric_standard label process_group description source_function matched
 #>   <chr>  <chr>           <chr> <chr>         <chr>       <chr>           <lgl>  
-#> 1 slope… slope_deg       Slope slope_gradie… Local slop… derive_slope    TRUE   
+#> 1 slope… slope_deg       Slope slope_gradie… Local stee… derive_slope    TRUE   
 #> 2 tri    tri             Terr… seafloor_rug… Local terr… derive_tri      TRUE   
 #> 3 bpi_3… bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi      TRUE   
 #> 4 bpi_1… bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi      TRUE   
@@ -208,9 +201,9 @@ select_process_representatives(
 #>   metric                label    process_group description units source_function
 #>   <chr>                 <chr>    <chr>         <chr>       <chr> <chr>          
 #> 1 curvature             Curvatu… curvature     Laplacian-… inpu… derive_curvatu…
-#> 2 bpi_11x11             Broad B… seafloor_pos… Broad-scal… inpu… derive_bpi     
+#> 2 bpi_3x3               Fine-sc… seafloor_pos… Fine-scale… inpu… derive_bpi     
 #> 3 tri                   Terrain… seafloor_rug… Local terr… inpu… derive_tri     
-#> 4 slope_deg             Slope    slope_gradie… Local slop… degr… derive_slope   
+#> 4 slope_deg             Slope    slope_gradie… Local stee… degr… derive_slope   
 #> 5 relief_position_index Relief-… custom_relief TRI plus w… index derive_custom_…
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>

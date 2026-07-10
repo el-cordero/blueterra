@@ -21,10 +21,12 @@ A tibble with columns `metric`, `label`, `process_group`, `description`,
 
 The catalog is an interpretation aid, not a claim that terrain metrics
 directly measure ecological or oceanographic processes. Groups such as
-orientation, slope gradient, seafloor position, rugosity, surface
-structure, and curvature describe terrain form. Transport or convergence
-interpretations require separate validation and are not direct current
-or sediment-flux measurements.
+seafloor aspect, slope gradient, accumulation potential, seafloor
+position, seafloor rugosity, downslope pathway proximity, transport
+potential, and curvature describe terrain form and terrain-routing
+proxies. Accumulation, pathway, and transport interpretations require
+separate validation and are not direct current or sediment-flux
+measurements.
 
 ## See also
 
@@ -35,29 +37,26 @@ or sediment-flux measurements.
 
 ``` r
 metric_catalog()
-#> # A tibble: 16 × 9
-#>    metric             label      process_group description units source_function
-#>    <chr>              <chr>      <chr>         <chr>       <chr> <chr>          
-#>  1 bathy              Bathymetry base_bathyme… Input bath… inpu… as_bathy       
-#>  2 slope_deg          Slope      slope_gradie… Local slop… degr… derive_slope   
-#>  3 slope_rad          Slope      slope_gradie… Local slop… radi… derive_slope   
-#>  4 aspect_deg         Aspect     orientation   Local down… degr… derive_aspect  
-#>  5 aspect_rad         Aspect     orientation   Local down… radi… derive_aspect  
-#>  6 northness          Northness  orientation   Cosine tra… unit… derive_northne…
-#>  7 eastness           Eastness   orientation   Sine trans… unit… derive_eastness
-#>  8 hillshade          Hillshade  surface_stru… Illuminati… rela… derive_hillsha…
-#>  9 roughness          Roughness  seafloor_rug… Local rang… inpu… derive_roughne…
-#> 10 tri                Terrain R… seafloor_rug… Local terr… inpu… derive_tri     
-#> 11 tpi                Topograph… seafloor_pos… Cell posit… inpu… derive_tpi     
-#> 12 bpi_3x3            Fine BPI   seafloor_pos… Fine-scale… inpu… derive_bpi     
-#> 13 bpi_11x11          Broad BPI  seafloor_pos… Broad-scal… inpu… derive_bpi     
-#> 14 curvature          Curvature  curvature     Laplacian-… inpu… derive_curvatu…
-#> 15 surface_area_ratio Surface A… surface_stru… Approximat… unit… derive_surface…
-#> 16 rugosity_vrm_3x3   Vector Ru… seafloor_rug… Vector rug… unit… derive_rugosity
+#> # A tibble: 50 × 9
+#>    metric     label      process_group   description       units source_function
+#>    <chr>      <chr>      <chr>           <chr>             <chr> <chr>          
+#>  1 bathy      Bathymetry base_bathymetry Input bathymetri… inpu… as_bathy       
+#>  2 hillshade  Hillshade  base_bathymetry Shaded-relief vi… rela… derive_hillsha…
+#>  3 aspect_deg Aspect     seafloor_aspect Local downslope-… degr… derive_aspect  
+#>  4 aspect_rad Aspect     seafloor_aspect Local downslope-… radi… derive_aspect  
+#>  5 northness  Northness  seafloor_aspect Cosine transform… unit… derive_northne…
+#>  6 eastness   Eastness   seafloor_aspect Sine transform o… unit… derive_eastness
+#>  7 aspect_cos Northness  seafloor_aspect Project-derived … unit… external       
+#>  8 aspect_sin Eastness   seafloor_aspect Project-derived … unit… external       
+#>  9 slope_deg  Slope      slope_gradient  Local steepness … degr… derive_slope   
+#> 10 slope_rad  Slope      slope_gradient  Local steepness … radi… derive_slope   
+#> # ℹ 40 more rows
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>
 process_groups()
-#> [1] "base_bathymetry"   "slope_gradient"    "orientation"      
-#> [4] "surface_structure" "seafloor_rugosity" "seafloor_position"
-#> [7] "curvature"        
+#> [1] "base_bathymetry"             "seafloor_aspect"            
+#> [3] "slope_gradient"              "seafloor_position"          
+#> [5] "seafloor_rugosity"           "curvature"                  
+#> [7] "accumulation_potential"      "transport_potential"        
+#> [9] "downslope_pathway_proximity"
 ```
