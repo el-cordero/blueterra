@@ -22,10 +22,11 @@ and source functions used by \code{blueterra}.
 \details{
 The catalog is an interpretation aid, not a claim that terrain metrics
 directly measure ecological or oceanographic processes. Groups such as
-orientation, slope gradient, seafloor position, rugosity, surface structure,
-and curvature describe terrain form. Transport or convergence interpretations
-require separate validation and are not direct current or sediment-flux
-measurements.
+seafloor aspect, slope gradient, accumulation potential, seafloor position,
+seafloor rugosity, downslope pathway proximity, transport potential, and
+curvature describe terrain form and terrain-routing proxies. Accumulation,
+pathway, and transport interpretations require separate validation and are
+not direct current or sediment-flux measurements.
 }
 \examples{
 metric_catalog()

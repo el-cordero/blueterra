@@ -12,10 +12,11 @@
 #' @details
 #' The catalog is an interpretation aid, not a claim that terrain metrics
 #' directly measure ecological or oceanographic processes. Groups such as
-#' orientation, slope gradient, seafloor position, rugosity, surface structure,
-#' and curvature describe terrain form. Transport or convergence interpretations
-#' require separate validation and are not direct current or sediment-flux
-#' measurements.
+#' seafloor aspect, slope gradient, accumulation potential, seafloor position,
+#' seafloor rugosity, downslope pathway proximity, transport potential, and
+#' curvature describe terrain form and terrain-routing proxies. Accumulation,
+#' pathway, and transport interpretations require separate validation and are
+#' not direct current or sediment-flux measurements.
 #'
 #' @examples
 #' metric_catalog()
@@ -146,8 +147,10 @@ select_process_representatives <- function(
   if (!is.null(metrics_available)) {
     out <- out[clean_layer_name(out$metric) %in% clean_layer_name(metrics_available), , drop = FALSE]
   }
-  out <- out[order(out$process_group, out$metric), , drop = FALSE]
+  out$catalog_order <- seq_len(nrow(out))
+  out <- out[order(out$process_group, out$catalog_order), , drop = FALSE]
   keep <- !duplicated(out$process_group)
+  out$catalog_order <- NULL
   out <- tibble::as_tibble(out[keep, , drop = FALSE])
   if (!is.null(representatives)) {
     if (!is.character(representatives) || is.null(names(representatives))) {

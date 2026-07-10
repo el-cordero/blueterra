@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 21:50:49 AST
-- Git commit: 3490a1ee77423a28da51a479baf31e406c452ae8
+- Date/time: 2026-07-09 22:09:10 AST
+- Git commit: 3517ed10a1d187c38e772be96ef24f4b9798afcd
 - Working tree dirty at proof start: TRUE
-- Dirty paths at proof start:  M R/isobath-corridors.R;  M R/plotting.R;  M R/transects.R;  M R/utils.R;  M README.Rmd;  M README.md;  M man/extract_isobath_corridors.Rd;  M man/figures/README-isobath-map-1.png;  M man/figures/README-profile-and-corridors-1.png;  M man/make_isobath_corridors.Rd;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M man/plot_isobath_corridors.Rd;  M man/summarize_isobath_terrain.Rd;  M qa/visual-proof/visual-proof.R;  M tests/testthat/test-crs-depth-conventions.R;  M tests/testthat/test-isobath-corridors.R;  M tests/testthat/test-plotting.R;  M tests/testthat/test-real-examples.R;  M tests/testthat/test-website-metadata.R;  M vignettes/blueterra.Rmd;  M vignettes/isobath-corridors.Rmd;  M vignettes/transects-cross-sections.Rmd
+- Dirty paths at proof start:  M R/process-groups.R;  M data-raw/metric-catalog.R;  M data/metric_catalog.rda;  M man/metric_catalog.Rd;  M tests/testthat/test-process-groups.R;  M vignettes/process-groups.Rmd
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 4438443 bytes
-- Package tarball size: 4.438 MB
+- Package tarball size: 4440804 bytes
+- Package tarball size: 4.441 MB
 - Local pkgdown site: /Users/ec/Documents/Data/MCE Geomorphometry HW v HY/Geomorphic_Analysis_Project/blueterra/docs/index.html
 - Expected GitHub Pages URL: https://el-cordero.github.io/blueterra/
 - Deployment workflow: .github/workflows/pkgdown.yaml

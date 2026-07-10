@@ -21,6 +21,13 @@ categories. They organize surface form for summaries and models; they are not
 direct measurements of currents, sediment flux, habitat condition, or ecological
 processes.
 
+The catalog follows the process names used in the manuscript: seafloor aspect,
+slope gradient, accumulation potential, transport potential, seafloor position,
+seafloor rugosity, downslope pathway proximity, and curvature. Accumulation
+potential replaces the older terrain-convergence wording. External layers named
+`wetness_index_wbt`, `convergence_slope_index`, or
+`convergence_slope_index_wbt` are assigned to `accumulation_potential`.
+
 ## Metric Catalog
 
 ```{r catalog}
@@ -63,7 +70,7 @@ and the feature scale of the analysis.
 ```{r reps}
 select_process_representatives(metrics_available = names(terrain))
 select_process_representatives(
-  representatives = c(orientation = "northness", slope_gradient = "slope_deg")
+  representatives = c(seafloor_aspect = "northness", slope_gradient = "slope_deg")
 )
 ```
 
