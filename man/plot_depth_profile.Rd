@@ -12,7 +12,8 @@ plot_depth_profile(
   group_col = NULL,
   points = TRUE,
   line = TRUE,
-  profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+  profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high",
+    "high_to_low"),
   positive_depth = NULL,
   depth_increases_down = TRUE,
   title = NULL,
@@ -39,13 +40,16 @@ variables such as slope, rugosity, BPI, or curvature.}
 available.}
 
 \item{profile_direction}{Direction used to orient distance before plotting.
-\code{"high_to_low"} (the default) puts the shallow or higher-elevation end of
-each profile on the left. \code{"as_sampled"} preserves the sampled line order.
-\code{"low_to_high"} reverses the default.}
+\code{"min_to_max"} (the default) orients each profile so the selected value
+column begins with its lower numeric endpoint and ends with its higher
+numeric endpoint. \code{"max_to_min"} reverses that convention.
+\code{"as_sampled"} preserves the sampled line order. Legacy values
+\code{"low_to_high"} and \code{"high_to_low"} are accepted as aliases for
+\code{"min_to_max"} and \code{"max_to_min"}.}
 
-\item{positive_depth}{Logical depth convention for \code{value_col}. Use \code{TRUE}
-when larger positive values are deeper, \code{FALSE} when larger values are
-higher elevation, or \code{NULL} to infer from the value column.}
+\item{positive_depth}{Logical depth convention for \code{value_col}. This affects
+y-axis display for depth-like variables; profile direction is based on
+numeric endpoint order.}
 
 \item{depth_increases_down}{Logical. If \code{TRUE}, positive-depth profiles are
 plotted with a reversed y-axis so larger depths appear lower in the panel.}

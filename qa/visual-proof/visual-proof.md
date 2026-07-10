@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 21:19:14 AST
-- Git commit: 1e614d3a4a0b76bbfd401bc6df55efc992ff3639
+- Date/time: 2026-07-09 21:50:49 AST
+- Git commit: 3490a1ee77423a28da51a479baf31e406c452ae8
 - Working tree dirty at proof start: TRUE
-- Dirty paths at proof start:  M DESCRIPTION;  M R/plotting.R;  M R/transects.R;  M R/utils.R;  M README.Rmd;  M README.md;  M man/blueterra-package.Rd;  D man/figures/README-custom-metric-plot-1.png;  D man/figures/README-map-hitw-1.png;  D man/figures/README-map-hoyo-1.png;  D man/figures/README-map-metrics-1.png;  D man/figures/README-map-slope-clip-1.png;  D man/figures/README-plot-cross-sections-1.png;  D man/figures/README-plot-isobath-corridors-1.png;  D man/figures/README-plot-isobaths-1.png;  D man/figures/README-plot-pca-1.png;  D man/figures/README-plot-pca-hitw-1.png;  D man/figures/README-plot-pca-hoyo-1.png;  D man/figures/README-plot-polygon-summary-1.png;  D man/figures/README-plot-transects-1.png;  D man/figures/README-plotting-bpi-1.png;  D man/figures/README-plotting-curvature-1.png;  D man/figures/README-plotting-density-1.png;  D man/figures/README-plotting-depth-profile-1.png;  D man/figures/README-plotting-rugosity-1.png;  D man/figures/README-plotting-slope-profile-1.png;  D man/figures/README-plotting-stack-1.png;  D man/figures/README-plotting-surface-ratio-1.png;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M qa/visual-proof/figures/18-cross-sections-with-legend.png;  M qa/visual-proof/figures/19-depth-profile-single-transect.png;  M qa/visual-proof/visual-proof.R;  M qa/visual-proof/visual-proof.md;  M tests/testthat/test-plotting.R;  M vignettes/blueterra.Rmd;  M vignettes/transects-cross-sections.Rmd; ?? man/figures/README-isobath-map-1.png; ?? man/figures/README-metric-map-1.png; ?? man/figures/README-profile-and-corridors-1.png; ?? man/figures/README-slope-map-1.png; ?? tests/testthat/test-website-metadata.R
+- Dirty paths at proof start:  M R/isobath-corridors.R;  M R/plotting.R;  M R/transects.R;  M R/utils.R;  M README.Rmd;  M README.md;  M man/extract_isobath_corridors.Rd;  M man/figures/README-isobath-map-1.png;  M man/figures/README-profile-and-corridors-1.png;  M man/make_isobath_corridors.Rd;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M man/plot_isobath_corridors.Rd;  M man/summarize_isobath_terrain.Rd;  M qa/visual-proof/visual-proof.R;  M tests/testthat/test-crs-depth-conventions.R;  M tests/testthat/test-isobath-corridors.R;  M tests/testthat/test-plotting.R;  M tests/testthat/test-real-examples.R;  M tests/testthat/test-website-metadata.R;  M vignettes/blueterra.Rmd;  M vignettes/isobath-corridors.Rmd;  M vignettes/transects-cross-sections.Rmd
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 4431848 bytes
-- Package tarball size: 4.432 MB
+- Package tarball size: 4438443 bytes
+- Package tarball size: 4.438 MB
 - Local pkgdown site: /Users/ec/Documents/Data/MCE Geomorphometry HW v HY/Geomorphic_Analysis_Project/blueterra/docs/index.html
 - Expected GitHub Pages URL: https://el-cordero.github.io/blueterra/
 - Deployment workflow: .github/workflows/pkgdown.yaml
@@ -124,9 +124,9 @@ values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300 
 # A tibble: 3 × 3
   contour_value slope_deg_mean bpi_3x3_mean
           <dbl>          <dbl>        <dbl>
-1           -50           45.0       0.150 
-2           -80           45.6       0.418 
-3          -120           61.6       0.0736
+1           -50           46.2     -0.01000
+2           -80           40.0     -0.0209 
+3          -120           77.7      1.25   
 # A tibble: 4 × 3
   component proportion cumulative
   <chr>          <dbl>      <dbl>

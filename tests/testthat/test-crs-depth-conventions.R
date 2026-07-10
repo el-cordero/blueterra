@@ -55,6 +55,6 @@ test_that("depth bands work with positive and negative depth conventions", {
 test_that("projected CRS is required for distance-based corridors", {
   bathy <- example_bathy()
   expect_true(check_bathy_crs(bathy)$is_projected)
-  corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+  corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
   expect_equal(terra::geomtype(corridors), "polygons")
 })

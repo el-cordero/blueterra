@@ -50,12 +50,13 @@ plot_bathy(
 Buffers are measured in map units, so the raster should use a projected CRS.
 The example raster is projected; other rasters should be reprojected explicitly
 when needed.
+Corridors use a 5 m buffer around each source isobath.
 
 ```{r corridors}
 corridors <- make_isobath_corridors(
   prepared,
   depths = c(-50, -80, -120),
-  width = 20
+  width = 5
 )
 corridors[, c("contour_value", "depth_label", "corridor_id")]
 ```
@@ -66,12 +67,14 @@ plot_isobath_corridors(
   prepared,
   isobaths = isobaths,
   background_contours = FALSE,
-  title = "Isobath Corridors and Source Isobaths"
+  title = "Isobath Corridors and Source Isobaths",
+  subtitle = "Corridors use a 5 m buffer around each source isobath"
 )
 ```
 
 The black lines are the source isobaths. The corridor polygons buffer those
-depth horizons and define the terrain extraction zones used in the summary.
+depth horizons by 5 m and define the terrain extraction zones used in the
+summary.
 
 ## Extract and Summarize Terrain
 

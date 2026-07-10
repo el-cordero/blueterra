@@ -66,7 +66,7 @@ contour lines. The hillshade layer is visual context only.
 \examples{
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   bathy <- read_bathy(blueterra_example("bathy"))
-  corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+  corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
   isobaths <- extract_isobaths(bathy, depths = -50)
   plot_isobath_corridors(corridors, bathy, isobaths = isobaths)
 }

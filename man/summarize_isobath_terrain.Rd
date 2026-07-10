@@ -35,7 +35,7 @@ Computes summary statistics for metric rasters inside corridor polygons.
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
 terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
-corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 summarize_isobath_terrain(terrain, corridors)
 
 }

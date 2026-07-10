@@ -99,7 +99,7 @@ sample_value_col <- names(prepared)[1]
 samples_plot <- samples[is.finite(samples[[sample_value_col]]), , drop = FALSE]
 one_transect <- samples[samples$transect_id == samples$transect_id[1], , drop = FALSE]
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
-corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
+corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 5)
 corridor_summary <- summarize_isobath_terrain(metrics, corridors)
 
 hoyo_prepared <- prepare_bathy(hoyo, depth_range = c(-220, -25), smooth = TRUE)
@@ -254,9 +254,9 @@ figures <- c(figures, save_plot(
     show_legend = TRUE,
     mean_profile = TRUE,
     normalize_distance = TRUE,
-    profile_direction = "high_to_low",
+    profile_direction = "min_to_max",
     title = "Cross-Sections With Transect Legend",
-    subtitle = "Distance is oriented from higher elevation toward lower elevation"
+    subtitle = "Distance is oriented from minimum to maximum sampled values"
   ),
   "18-cross-sections-with-legend.png"
 ))
@@ -264,9 +264,9 @@ figures <- c(figures, save_plot(
   plot_depth_profile(
     one_transect,
     value_col = sample_value_col,
-    profile_direction = "high_to_low",
+    profile_direction = "min_to_max",
     title = "Single Transect Depth Profile",
-    subtitle = "High elevation to low elevation"
+    subtitle = "Minimum to maximum sampled values"
   ),
   "19-depth-profile-single-transect.png"
 ))

@@ -159,17 +159,17 @@ plot_cross_sections(
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetric Cross-Sections"
 )
 ```
 
 The y-axis is explicitly set to `bathy_m`. This prevents transect metadata such
 as width, angle, or offset from being mistaken for the raster value. Distance
-is oriented from higher elevation toward lower elevation so the profile reads
-from the shallow side of the transect toward deeper terrain.
+is oriented from the lower numeric endpoint toward the higher numeric endpoint
+so cross-sections share a common value direction.
 
-```{r depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Single bathymetric profile oriented from high elevation to low elevation."}
+```{r depth-profile, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Single bathymetric profile oriented from minimum to maximum bathymetric values."}
 one_transect <- cross_sections[
   cross_sections$transect_id == cross_sections$transect_id[1],
 ]
@@ -177,9 +177,9 @@ one_transect <- cross_sections[
 plot_depth_profile(
   one_transect,
   value_col = "bathy_m",
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetry Along One Transect",
-  subtitle = "Distance is oriented from higher elevation toward lower elevation"
+  subtitle = "Distance is oriented from minimum to maximum bathymetric values"
 )
 ```
 
@@ -209,10 +209,11 @@ plot_depth_profile(
 
 Isobath corridors summarize terrain along depth horizons. The source isobaths
 are shown in black so the reader can see which contour each corridor buffers.
+Corridors use a 5 m buffer around each source isobath.
 
 ```{r isobaths}
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
-corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 20)
+corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 5)
 
 corridors[, c("contour_value", "depth_label", "corridor_id")]
 summarize_isobath_terrain(terrain, corridors)[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean")]
@@ -224,7 +225,8 @@ plot_isobath_corridors(
   prepared,
   isobaths = isobaths,
   background_contours = FALSE,
-  title = "Isobath Corridors and Source Isobaths"
+  title = "Isobath Corridors and Source Isobaths",
+  subtitle = "Corridors use a 5 m buffer around each source isobath"
 )
 ```
 

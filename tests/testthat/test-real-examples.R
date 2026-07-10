@@ -52,7 +52,7 @@ test_that("real examples support isobath-corridor workflows and plots", {
 
   bathy <- read_bathy(blueterra_example("hitw"))
   terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
-  corridors <- make_isobath_corridors(bathy, depths = c(-50, -80), width = 20)
+  corridors <- make_isobath_corridors(bathy, depths = c(-50, -80), width = 5)
   expect_s4_class(corridors, "SpatVector")
   expect_equal(terra::geomtype(corridors), "polygons")
 

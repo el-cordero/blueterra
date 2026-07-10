@@ -320,10 +320,10 @@ orient_profile_distance <- function(
     value_col,
     distance_col = "distance",
     group_col = NULL,
-    profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+    profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low"),
     positive_depth = NULL
 ) {
-  profile_direction <- match.arg(profile_direction)
+  profile_direction <- normalize_profile_direction(profile_direction)
   if (!is.data.frame(data)) {
     bt_abort("`data` must be a data frame.")
   }
@@ -364,21 +364,11 @@ orient_profile_distance <- function(
     finite_piece <- piece[finite, , drop = FALSE]
     first_value <- finite_piece[[value_col]][1]
     last_value <- finite_piece[[value_col]][nrow(finite_piece)]
-    depth_positive <- infer_positive_depth_values(
-      finite_piece[[value_col]],
-      value_col = value_col,
-      positive_depth = positive_depth
-    )
-
-    high_to_low_now <- if (isTRUE(depth_positive)) {
-      first_value <= last_value
-    } else {
-      first_value >= last_value
-    }
+    min_to_max_now <- first_value <= last_value
     should_reverse <- switch(
       profile_direction,
-      high_to_low = !high_to_low_now,
-      low_to_high = high_to_low_now
+      min_to_max = !min_to_max_now,
+      max_to_min = min_to_max_now
     )
     if (isTRUE(should_reverse)) {
       max_distance <- max(piece[[distance_col]], na.rm = TRUE)
@@ -389,6 +379,19 @@ orient_profile_distance <- function(
     piece
   })
   dplyr::bind_rows(pieces)
+}
+
+normalize_profile_direction <- function(profile_direction) {
+  direction <- match.arg(
+    profile_direction,
+    choices = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low")
+  )
+  switch(
+    direction,
+    low_to_high = "min_to_max",
+    high_to_low = "max_to_min",
+    direction
+  )
 }
 
 infer_positive_depth_values <- function(values, value_col, positive_depth = NULL) {

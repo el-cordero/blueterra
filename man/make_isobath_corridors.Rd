@@ -45,7 +45,7 @@ buffering because distance interpretation may be misleading.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
-make_isobath_corridors(bathy, depths = c(-40, -60), width = 20)
+make_isobath_corridors(bathy, depths = c(-40, -60), width = 5)
 
 }
 \seealso{

@@ -83,7 +83,7 @@ extract_isobaths <- function(
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
-#' make_isobath_corridors(bathy, depths = c(-40, -60), width = 20)
+#' make_isobath_corridors(bathy, depths = c(-40, -60), width = 5)
 #'
 #' @seealso [extract_isobaths()], [summarize_isobath_terrain()]
 #' @export
@@ -140,7 +140,7 @@ make_isobath_corridors <- function(
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
 #' terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
-#' corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+#' corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 #' extract_isobath_corridors(terrain, corridors)
 #'
 #' @seealso [summarize_isobath_terrain()], [summarize_terrain()]
@@ -176,7 +176,7 @@ extract_isobath_corridors <- function(metrics, corridors, ...) {
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
 #' terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
-#' corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+#' corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 #' summarize_isobath_terrain(terrain, corridors)
 #'
 #' @seealso [make_isobath_corridors()], [summarize_terrain()]
@@ -228,7 +228,7 @@ summarize_isobath_terrain <- function(
 #' @examples
 #' if (requireNamespace("ggplot2", quietly = TRUE)) {
 #'   bathy <- read_bathy(blueterra_example("bathy"))
-#'   corridors <- make_isobath_corridors(bathy, depths = -50, width = 20)
+#'   corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 #'   isobaths <- extract_isobaths(bathy, depths = -50)
 #'   plot_isobath_corridors(corridors, bathy, isobaths = isobaths)
 #' }

@@ -572,12 +572,15 @@ summarize_cross_sections <- function(
 #' @param normalize_distance Logical. Plot distance as 0-1 normalized position
 #'   along each transect.
 #' @param profile_direction Direction used to orient distance before plotting.
-#'   `"high_to_low"` (the default) puts the shallow or higher-elevation end of
-#'   each profile on the left. `"as_sampled"` preserves the sampled line order.
-#'   `"low_to_high"` reverses the default.
-#' @param positive_depth Logical depth convention for `value_col`. Use `TRUE`
-#'   when larger positive values are deeper, `FALSE` when larger values are
-#'   higher elevation, or `NULL` to infer from the value column.
+#'   `"min_to_max"` (the default) orients each profile so the selected value
+#'   column begins with its lower numeric endpoint and ends with its higher
+#'   numeric endpoint. `"max_to_min"` reverses that convention.
+#'   `"as_sampled"` preserves the sampled line order. Legacy values
+#'   `"low_to_high"` and `"high_to_low"` are accepted as aliases for
+#'   `"min_to_max"` and `"max_to_min"`.
+#' @param positive_depth Logical depth convention for `value_col`. This affects
+#'   y-axis display for depth-like variables; profile direction is based on
+#'   numeric endpoint order.
 #' @param depth_increases_down Logical. If `TRUE`, positive-depth profiles are
 #'   plotted with a reversed y-axis so larger depths appear lower in the panel.
 #' @param title,subtitle,caption Plot text.
@@ -604,7 +607,7 @@ plot_cross_sections <- function(
     points = FALSE,
     mean_profile = FALSE,
     normalize_distance = FALSE,
-    profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+    profile_direction = c("min_to_max", "max_to_min", "as_sampled", "low_to_high", "high_to_low"),
     positive_depth = NULL,
     depth_increases_down = TRUE,
     title = NULL,

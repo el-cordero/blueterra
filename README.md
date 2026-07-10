@@ -167,20 +167,20 @@ plot_cross_sections(
   value_col = "bathy_m",
   mean_profile = TRUE,
   normalize_distance = TRUE,
-  profile_direction = "high_to_low",
+  profile_direction = "min_to_max",
   title = "Bathymetric Cross-Sections",
-  subtitle = "Profiles read from higher elevation toward lower elevation"
+  subtitle = "Profiles read from minimum to maximum bathymetric values"
 )
 ```
 
-<img src="man/figures/README-profile-and-corridors-1.png" alt="Bathymetric cross-sections oriented from shallow terrain toward deeper terrain." width="100%" />
+<img src="man/figures/README-profile-and-corridors-1.png" alt="Bathymetric cross-sections oriented from minimum to maximum bathymetric values." width="100%" />
 
 ``` r
 isobaths <- extract_isobaths(hitw_prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(
   hitw_prepared,
   depths = c(-50, -80, -120),
-  width = 20
+  width = 5
 )
 
 plot_isobath_corridors(
@@ -189,7 +189,7 @@ plot_isobath_corridors(
   isobaths = isobaths,
   background_contours = FALSE,
   title = "Isobath Corridors",
-  subtitle = "Black lines show the source isobaths"
+  subtitle = "Black lines show source isobaths; corridors use 5 m buffers"
 )
 ```
 
