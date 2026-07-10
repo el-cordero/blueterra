@@ -74,7 +74,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/el-cordero/blueterra" class="external-link">blueterra</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://el-cordero.github.io/blueterra/">blueterra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span></code></pre></div>
 <p><code>blueterra</code> works from bathymetric and elevation rasters
 already available to the analyst. The package keeps the workflow close
@@ -275,14 +275,49 @@ requiring the analyst to choose a fixed direction by hand.</p>
 <span>  show_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  normalize_distance <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"high_to_low"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 7 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="blueterra_files/figure-html/cross-section-plot-1.png" class="r-plt" alt="Bathymetric cross-section profiles with bathy_m on the y-axis." width="672"></p>
 <p>The y-axis is explicitly set to <code>bathy_m</code>. This prevents
 transect metadata such as width, angle, or offset from being mistaken
-for the raster value.</p>
+for the raster value. Distance is oriented from higher elevation toward
+lower elevation so the profile reads from the shallow side of the
+transect toward deeper terrain.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">one_transect</span> <span class="op">&lt;-</span> <span class="va">cross_sections</span><span class="op">[</span></span>
+<span>  <span class="va">cross_sections</span><span class="op">$</span><span class="va">transect_id</span> <span class="op">==</span> <span class="va">cross_sections</span><span class="op">$</span><span class="va">transect_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
+<span>  <span class="va">one_transect</span>,</span>
+<span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"high_to_low"</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Bathymetry Along One Transect"</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="st">"Distance is oriented from higher elevation toward lower elevation"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="blueterra_files/figure-html/depth-profile-1.png" class="r-plt" alt="Single bathymetric profile oriented from high elevation to low elevation." width="672"></p>
+<p>Metric profiles can use the same transect geometry. When the plotted
+value is a metric such as slope, the distance order is often best
+preserved from the bathymetric profile by using
+<code>profile_direction = "as_sampled"</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">metric_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_transects.html">sample_transects</a></span><span class="op">(</span></span>
+<span>  <span class="va">transects</span>,</span>
+<span>  <span class="va">terrain</span><span class="op">[[</span><span class="st">"slope_deg"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>  n <span class="op">=</span> <span class="fl">25</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">metric_one</span> <span class="op">&lt;-</span> <span class="va">metric_samples</span><span class="op">[</span></span>
+<span>  <span class="va">metric_samples</span><span class="op">$</span><span class="va">transect_id</span> <span class="op">==</span> <span class="va">metric_samples</span><span class="op">$</span><span class="va">transect_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
+<span>  <span class="va">metric_one</span>,</span>
+<span>  value_col <span class="op">=</span> <span class="st">"slope_deg"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"as_sampled"</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Slope Along One Transect"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="blueterra_files/figure-html/metric-profile-1.png" class="r-plt" alt="Slope profile along one transect." width="672"></p>
 </div>
 <div class="section level2">
 <h2 id="isobath-corridors">Isobath Corridors<a class="anchor" aria-label="anchor" href="#isobath-corridors"></a>
@@ -290,7 +325,7 @@ for the raster value.</p>
 <p>Isobath corridors summarize terrain along depth horizons. The source
 isobaths are shown in black so the reader can see which contour each
 corridor buffers.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">isobaths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_isobaths.html">extract_isobaths</a></span><span class="op">(</span><span class="va">prepared</span>, depths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">50</span>, <span class="op">-</span><span class="fl">80</span>, <span class="op">-</span><span class="fl">120</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">corridors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_isobath_corridors.html">make_isobath_corridors</a></span><span class="op">(</span><span class="va">prepared</span>, depths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">50</span>, <span class="op">-</span><span class="fl">80</span>, <span class="op">-</span><span class="fl">120</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
@@ -312,7 +347,7 @@ corridor buffers.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>           -<span style="color: #BB0000;">50</span>           45.0       0.150 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>           -<span style="color: #BB0000;">80</span>           45.6       0.418 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          -<span style="color: #BB0000;">120</span>           61.6       0.073<span style="text-decoration: underline;">6</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_isobath_corridors.html">plot_isobath_corridors</a></span><span class="op">(</span></span>
 <span>  <span class="va">corridors</span>,</span>
 <span>  <span class="va">prepared</span>,</span>
@@ -328,7 +363,7 @@ corridor buffers.</p>
 <p>Cell samples and extracted summaries can be sent directly into
 exploratory models. PCA is useful for checking whether terrain metrics
 form separable gradients across sites or sampling frames.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hoyo_prepared</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_bathy.html">prepare_bathy</a></span><span class="op">(</span><span class="va">hoyo</span>, depth_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">220</span>, <span class="op">-</span><span class="fl">25</span><span class="op">)</span>, smooth <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">hoyo_metrics</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_terrain.html">derive_terrain</a></span><span class="op">(</span><span class="va">hoyo_prepared</span>, metrics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slope"</span>, <span class="st">"tri"</span>, <span class="st">"bpi"</span>, <span class="st">"curvature"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -363,13 +398,158 @@ form separable gradients across sites or sampling frames.</p>
 <span><span class="fu"><a href="../reference/pca_axis_labels.html">pca_axis_labels</a></span><span class="op">(</span><span class="va">pca</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                               PC1                               PC2 </span></span>
 <span><span class="co">#&gt; "PC1 (73.4%; bpi_3x3, curvature)"     "PC2 (23.4%; slope_deg, tri)"</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_process_pca.html">plot_process_pca</a></span><span class="op">(</span></span>
 <span>  <span class="va">pca</span>,</span>
 <span>  color_col <span class="op">=</span> <span class="st">"site"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Terrain PCA"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="blueterra_files/figure-html/pca-plot-1.png" class="r-plt" alt="Terrain PCA with site-colored points and loading labels in the axis text." width="672"></p>
+<p>The same sampled table can be converted to a model matrix after
+selecting the terrain variables that belong in the analysis design.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_model_matrix.html">prepare_model_matrix</a></span><span class="op">(</span></span>
+<span>  <span class="va">comparison</span>,</span>
+<span>  response <span class="op">=</span> <span class="st">"site"</span>,</span>
+<span>  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slope_deg"</span>, <span class="st">"tri"</span>, <span class="st">"bpi_3x3"</span>, <span class="st">"curvature"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">model_matrix</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $x</span></span>
+<span><span class="co">#&gt;       slope_deg        tri      bpi_3x3     curvature</span></span>
+<span><span class="co">#&gt;  [1,] 53.771502  4.2776146  0.047225010  -0.214831882</span></span>
+<span><span class="co">#&gt;  [2,] 46.054025  3.2388989 -0.010152063  -0.398491753</span></span>
+<span><span class="co">#&gt;  [3,] 81.059597 20.2068575  1.260175729  -3.469890171</span></span>
+<span><span class="co">#&gt;  [4,] 79.892270 17.3124146 -1.098478529   3.712643941</span></span>
+<span><span class="co">#&gt;  [5,] 69.594484  8.2898547 -0.631674684   2.156751845</span></span>
+<span><span class="co">#&gt;  [6,] 53.551971  4.1491443 -0.075533455   0.173663669</span></span>
+<span><span class="co">#&gt;  [7,] 52.643780  4.1223865 -0.368243936   1.141960992</span></span>
+<span><span class="co">#&gt;  [8,] 54.754120  4.3434862  0.030169640  -0.052554660</span></span>
+<span><span class="co">#&gt;  [9,] 50.357265  3.7468315 -0.001245758   0.051052517</span></span>
+<span><span class="co">#&gt; [10,] 48.023985  3.4385543 -0.274942845   0.828564114</span></span>
+<span><span class="co">#&gt; [11,] 46.871190  3.3412274 -0.061833700   0.164659288</span></span>
+<span><span class="co">#&gt; [12,] 50.250890  3.7344566 -0.148123094   0.470535278</span></span>
+<span><span class="co">#&gt; [13,] 35.528501  2.2008902  0.110499629  -0.342886183</span></span>
+<span><span class="co">#&gt; [14,] 36.169907  2.3102840 -0.038360313   0.124103970</span></span>
+<span><span class="co">#&gt; [15,] 54.901197  4.3059165  0.920816304  -2.951790704</span></span>
+<span><span class="co">#&gt; [16,] 75.231381 11.9311598  1.802034355  -5.390027364</span></span>
+<span><span class="co">#&gt; [17,] 74.822465 11.1950880  1.898650275  -5.591580709</span></span>
+<span><span class="co">#&gt; [18,] 76.711732 12.7363065  2.578476517  -7.726888869</span></span>
+<span><span class="co">#&gt; [19,] 76.792282 12.9999932  2.595412078  -8.000186496</span></span>
+<span><span class="co">#&gt; [20,] 77.343290 13.5549534  3.279998873  -9.865381029</span></span>
+<span><span class="co">#&gt; [21,] 77.042917 13.1591659  3.437308983 -10.465014140</span></span>
+<span><span class="co">#&gt; [22,] 67.337099  7.3553222  3.557343565 -10.746496412</span></span>
+<span><span class="co">#&gt; [23,] 44.274585  3.0054715 -0.021984053   0.059376187</span></span>
+<span><span class="co">#&gt; [24,] 37.602207  2.4077347  0.076135141  -0.260565016</span></span>
+<span><span class="co">#&gt; [25,] 39.604844  2.5055916 -0.002457466  -0.019346025</span></span>
+<span><span class="co">#&gt; [26,] 40.416305  2.6593059 -0.467899746   1.401441786</span></span>
+<span><span class="co">#&gt; [27,] 39.053370  2.4771684 -0.076112159   0.210446676</span></span>
+<span><span class="co">#&gt; [28,] 44.739193  3.1514739 -0.205907092   0.651959737</span></span>
+<span><span class="co">#&gt; [29,] 36.745116  2.3140138 -0.148900162   0.389677260</span></span>
+<span><span class="co">#&gt; [30,] 46.636258  3.3109745 -0.296354459   0.930314382</span></span>
+<span><span class="co">#&gt; [31,] 38.431177  2.4536994  0.017271207  -0.046087053</span></span>
+<span><span class="co">#&gt; [32,] 39.087241  2.4574393  0.045696023  -0.166963365</span></span>
+<span><span class="co">#&gt; [33,] 51.089293  3.8183691  1.127037234  -3.805676884</span></span>
+<span><span class="co">#&gt; [34,] 54.548900  4.4227983 -0.589382295   2.160372840</span></span>
+<span><span class="co">#&gt; [35,] 52.433979  4.0633652 -0.389470842   1.128767225</span></span>
+<span><span class="co">#&gt; [36,] 46.120989  3.2096976 -0.245282585   0.731026120</span></span>
+<span><span class="co">#&gt; [37,] 47.648277  3.4893018 -0.736916201   2.315221998</span></span>
+<span><span class="co">#&gt; [38,] 44.044272  2.9300482 -0.098906882   0.257372114</span></span>
+<span><span class="co">#&gt; [39,] 41.566101  2.7559077  0.130280577  -0.397131178</span></span>
+<span><span class="co">#&gt; [40,] 31.223836  1.8659907 -0.003382365   0.022372776</span></span>
+<span><span class="co">#&gt; [41,] 18.094215  0.9419734  0.182118169  -0.538219876</span></span>
+<span><span class="co">#&gt; [42,] 62.573341  5.6479789 -0.880502206   2.439978706</span></span>
+<span><span class="co">#&gt; [43,] 35.970780  2.1171144 -0.136628139   0.400656806</span></span>
+<span><span class="co">#&gt; [44,] 36.699285  2.2968160 -0.022515191   0.020784590</span></span>
+<span><span class="co">#&gt; [45,] 10.596341  0.5346076 -0.075918127   0.198861864</span></span>
+<span><span class="co">#&gt; [46,] 11.969491  0.6161526  0.042096268  -0.134649489</span></span>
+<span><span class="co">#&gt; [47,] 58.366517  4.7099255 -0.454074624   1.309631348</span></span>
+<span><span class="co">#&gt; [48,] 37.477138  2.3487394 -0.179434506   0.554960463</span></span>
+<span><span class="co">#&gt; [49,]  7.130658  0.3703213  0.096004045  -0.344619380</span></span>
+<span><span class="co">#&gt; [50,] 24.882640  1.4225202  0.024847148  -0.065704346</span></span>
+<span><span class="co">#&gt; [51,] 41.347120  2.5767882  0.253973831  -0.756802877</span></span>
+<span><span class="co">#&gt; [52,]  9.987240  0.5034725 -0.013635989   0.034744263</span></span>
+<span><span class="co">#&gt; [53,] 19.073589  0.9860872  0.122975856  -0.371127658</span></span>
+<span><span class="co">#&gt; [54,] 61.173811  5.1671511 -0.921062328   2.673039754</span></span>
+<span><span class="co">#&gt; [55,] 25.749616  1.3871200  0.005867593  -0.015936110</span></span>
+<span><span class="co">#&gt; [56,] 38.491563  2.3013087 -0.164827465   0.536730025</span></span>
+<span><span class="co">#&gt; [57,]  8.242399  0.4233203 -0.031748077   0.087836372</span></span>
+<span><span class="co">#&gt; [58,] 31.628781  1.8512942  0.377198961  -1.181509230</span></span>
+<span><span class="co">#&gt; [59,] 24.081975  1.2843267 -0.002478046   0.000219557</span></span>
+<span><span class="co">#&gt; [60,] 36.321292  2.2071474 -0.042943507   0.108582391</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $y</span></span>
+<span><span class="co">#&gt;  [1] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt;  [5] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt;  [9] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [13] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [17] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [21] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [25] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [29] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [33] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall"</span></span>
+<span><span class="co">#&gt; [37] "Hole-in-the-Wall" "Hole-in-the-Wall" "Hole-in-the-Wall" "El Hoyo"         </span></span>
+<span><span class="co">#&gt; [41] "El Hoyo"          "El Hoyo"          "El Hoyo"          "El Hoyo"         </span></span>
+<span><span class="co">#&gt; [45] "El Hoyo"          "El Hoyo"          "El Hoyo"          "El Hoyo"         </span></span>
+<span><span class="co">#&gt; [49] "El Hoyo"          "El Hoyo"          "El Hoyo"          "El Hoyo"         </span></span>
+<span><span class="co">#&gt; [53] "El Hoyo"          "El Hoyo"          "El Hoyo"          "El Hoyo"         </span></span>
+<span><span class="co">#&gt; [57] "El Hoyo"          "El Hoyo"          "El Hoyo"          "El Hoyo"         </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $data</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 60 × 7</span></span></span>
+<span><span class="co">#&gt;          x       y slope_deg   tri  bpi_3x3 curvature site            </span></span>
+<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> <span style="text-decoration: underline;">137</span>488. <span style="text-decoration: underline;">205</span>640.      53.8  4.28  0.047<span style="text-decoration: underline;">2</span>    -<span style="color: #BB0000;">0.215</span>  Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> <span style="text-decoration: underline;">137</span>520. <span style="text-decoration: underline;">205</span>640.      46.1  3.24 -<span style="color: #BB0000;">0.010</span><span style="color: #BB0000; text-decoration: underline;">2</span>    -<span style="color: #BB0000;">0.398</span>  Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> <span style="text-decoration: underline;">137</span>488. <span style="text-decoration: underline;">205</span>672.      81.1 20.2   1.26      -<span style="color: #BB0000;">3.47</span>   Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> <span style="text-decoration: underline;">137</span>520. <span style="text-decoration: underline;">205</span>672.      79.9 17.3  -<span style="color: #BB0000;">1.10</span>       3.71   Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> <span style="text-decoration: underline;">137</span>548. <span style="text-decoration: underline;">205</span>672.      69.6  8.29 -<span style="color: #BB0000;">0.632</span>      2.16   Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> <span style="text-decoration: underline;">137</span>580. <span style="text-decoration: underline;">205</span>672.      53.6  4.15 -<span style="color: #BB0000;">0.075</span><span style="color: #BB0000; text-decoration: underline;">5</span>     0.174  Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> <span style="text-decoration: underline;">137</span>608. <span style="text-decoration: underline;">205</span>672.      52.6  4.12 -<span style="color: #BB0000;">0.368</span>      1.14   Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> <span style="text-decoration: underline;">137</span>640. <span style="text-decoration: underline;">205</span>672.      54.8  4.34  0.030<span style="text-decoration: underline;">2</span>    -<span style="color: #BB0000;">0.052</span><span style="color: #BB0000; text-decoration: underline;">6</span> Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> <span style="text-decoration: underline;">137</span>668. <span style="text-decoration: underline;">205</span>672.      50.4  3.75 -<span style="color: #BB0000;">0.001</span><span style="color: #BB0000; text-decoration: underline;">25</span>    0.051<span style="text-decoration: underline;">1</span> Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> <span style="text-decoration: underline;">137</span>700. <span style="text-decoration: underline;">205</span>672.      48.0  3.44 -<span style="color: #BB0000;">0.275</span>      0.829  Hole-in-the-Wall</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 50 more rows</span></span></span>
+<span><span class="fu"><a href="../reference/terrain_correlation.html">terrain_correlation</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slope_deg"</span>, <span class="st">"tri"</span>, <span class="st">"bpi_3x3"</span>, <span class="st">"curvature"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt;   var1      var2      correlation</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> slope_deg tri             0.863</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> slope_deg bpi_3x3         0.454</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> tri       bpi_3x3         0.560</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> slope_deg curvature      -<span style="color: #BB0000;">0.443</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> tri       curvature      -<span style="color: #BB0000;">0.541</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bpi_3x3   curvature      -<span style="color: #BB0000;">0.999</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="custom-metrics">Custom Metrics<a class="anchor" aria-label="anchor" href="#custom-metrics"></a>
+</h2>
+<p>Project-specific metrics can be added when they share the same grid
+geometry as the terrain stack. The expression below combines local
+gradient and relief variability into a compact demonstration index.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">slope_tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_custom_metric.html">derive_custom_metric</a></span><span class="op">(</span></span>
+<span>  <span class="va">terrain</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"slope_tri_index"</span>,</span>
+<span>  expression <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">quote</a></span><span class="op">(</span><span class="va">slope_deg</span> <span class="op">*</span> <span class="va">tri</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">extended_terrain</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_metric_layers.html">add_metric_layers</a></span><span class="op">(</span><span class="va">terrain</span>, <span class="va">slope_tri</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">extended_terrain</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "slope_deg"          "aspect_deg"         "northness"         </span></span>
+<span><span class="co">#&gt;  [4] "eastness"           "tri"                "rugosity_vrm_3x3"  </span></span>
+<span><span class="co">#&gt;  [7] "bpi_3x3"            "bpi_11x11"          "curvature"         </span></span>
+<span><span class="co">#&gt; [10] "surface_area_ratio" "slope_tri_index"</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_bathy.html">plot_metric</a></span><span class="op">(</span></span>
+<span>  <span class="va">extended_terrain</span>,</span>
+<span>  metric <span class="op">=</span> <span class="st">"slope_tri_index"</span>,</span>
+<span>  bathy <span class="op">=</span> <span class="va">prepared</span>,</span>
+<span>  contours <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  contour_interval <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Custom Slope-TRI Index"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="blueterra_files/figure-html/custom-metric-map-1.png" class="r-plt" alt="Custom slope-TRI metric over hillshaded bathymetry." width="672"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

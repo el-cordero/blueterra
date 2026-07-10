@@ -13,6 +13,8 @@ plot_depth_profile(
   group_col = NULL,
   points = TRUE,
   line = TRUE,
+  profile_direction = c("high_to_low", "as_sampled", "low_to_high"),
+  positive_depth = NULL,
   depth_increases_down = TRUE,
   title = NULL,
   subtitle = NULL,
@@ -52,6 +54,19 @@ plot_depth_profile(
 
   Logical. Draw profile lines when at least two finite samples are
   available.
+
+- profile_direction:
+
+  Direction used to orient distance before plotting. `"high_to_low"`
+  (the default) puts the shallow or higher-elevation end of each profile
+  on the left. `"as_sampled"` preserves the sampled line order.
+  `"low_to_high"` reverses the default.
+
+- positive_depth:
+
+  Logical depth convention for `value_col`. Use `TRUE` when larger
+  positive values are deeper, `FALSE` when larger values are higher
+  elevation, or `NULL` to infer from the value column.
 
 - depth_increases_down:
 

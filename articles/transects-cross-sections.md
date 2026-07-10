@@ -144,10 +144,9 @@ plot_cross_sections(
   show_legend = TRUE,
   mean_profile = TRUE,
   normalize_distance = TRUE,
+  profile_direction = "high_to_low",
   title = "Bathymetric Cross-Sections"
 )
-#> Warning: Removed 7 rows containing missing values or values outside the scale range
-#> (`geom_line()`).
 ```
 
 ![Bathymetric cross-sections with bathy_m on the
@@ -155,7 +154,8 @@ y-axis.](transects-cross-sections_files/figure-html/cross-section-plot-1.png)
 
 The value column is explicit. This matters because transect tables
 include numeric metadata such as `width_m`, `height_m`, `angle_deg`, and
-`offset`.
+`offset`. The default profile direction places the higher-elevation or
+shallower end of each bathymetric profile on the left.
 
 ## Single-Transect Profile
 
@@ -166,6 +166,7 @@ one <- samples[samples$transect_id == samples$transect_id[1], ]
 plot_depth_profile(
   one,
   value_col = "bathy_m",
+  profile_direction = "high_to_low",
   title = "Bathymetry Along One Transect"
 )
 ```
@@ -191,6 +192,7 @@ metric_one <- metric_samples[metric_samples$transect_id == metric_samples$transe
 plot_depth_profile(
   metric_one,
   value_col = "slope_deg",
+  profile_direction = "as_sampled",
   title = "Slope Along One Transect"
 )
 ```

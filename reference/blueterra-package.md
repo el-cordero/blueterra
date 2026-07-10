@@ -28,9 +28,9 @@ slope, area, or buffering operations depend on linear units.
 
 Useful links:
 
-- <https://github.com/el-cordero/blueterra>
-
 - <https://el-cordero.github.io/blueterra/>
+
+- <https://github.com/el-cordero/blueterra>
 
 - Report bugs at <https://github.com/el-cordero/blueterra/issues>
 

@@ -74,7 +74,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/el-cordero/blueterra" class="external-link">blueterra</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://el-cordero.github.io/blueterra/">blueterra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span></code></pre></div>
 <p>Transects turn a bathymetric raster into cross-sectional profiles.
 They are useful for showing terraces, escarpments, slope breaks, and
@@ -197,15 +197,15 @@ table.</p>
 <span>  show_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  normalize_distance <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"high_to_low"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 7 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/cross-section-plot-1.png" class="r-plt" alt="Bathymetric cross-sections with bathy_m on the y-axis." width="672"></p>
 <p>The value column is explicit. This matters because transect tables
 include numeric metadata such as <code>width_m</code>,
-<code>height_m</code>, <code>angle_deg</code>, and
-<code>offset</code>.</p>
+<code>height_m</code>, <code>angle_deg</code>, and <code>offset</code>.
+The default profile direction places the higher-elevation or shallower
+end of each bathymetric profile on the left.</p>
 </div>
 <div class="section level2">
 <h2 id="single-transect-profile">Single-Transect Profile<a class="anchor" aria-label="anchor" href="#single-transect-profile"></a>
@@ -216,6 +216,7 @@ include numeric metadata such as <code>width_m</code>,
 <span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
 <span>  <span class="va">one</span>,</span>
 <span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"high_to_low"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetry Along One Transect"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/profile-1.png" class="r-plt" alt="Bathymetric profile along a single transect." width="672"></p>
@@ -237,6 +238,7 @@ profile shows slope rather than bathymetric elevation.</p>
 <span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
 <span>  <span class="va">metric_one</span>,</span>
 <span>  value_col <span class="op">=</span> <span class="st">"slope_deg"</span>,</span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"as_sampled"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Slope Along One Transect"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/slope-profile-1.png" class="r-plt" alt="Slope profile along one transect." width="672"></p>
