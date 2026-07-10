@@ -179,3 +179,16 @@ plot_metric(
 
 ![Curvature over hillshaded
 bathymetry.](terrain-metrics_files/figure-html/curvature-map-1.png)
+
+## Methodological Background and Related Software
+
+Lindsay (2016, <https://doi.org/10.1016/j.cageo.2016.07.003>) provides a
+concise geomorphometric software and terrain-analysis reference through
+the Whitebox GAT case study. The R package `whitebox` is related
+software that provides an R frontend to WhiteboxTools: Wu, Q. and Brown,
+A. (2025). `whitebox`: WhiteboxTools R Frontend. R package version
+2.4.3. <https://doi.org/10.32614/CRAN.package.whitebox>.
+
+These references are included as methodological background and software
+context for terrain analysis. The examples in this vignette use `terra`
+operations directly.
