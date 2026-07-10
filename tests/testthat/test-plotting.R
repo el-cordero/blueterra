@@ -212,6 +212,43 @@ test_that("profile plots use top-to-bottom direction and preserve overrides", {
   expect_equal(metric_plot$labels$y, "Slope (degrees)")
 })
 
+test_that("mean cross-section profile is averaged on a common distance axis", {
+  testthat::skip_if_not_installed("ggplot2")
+  samples <- data.frame(
+    transect_id = rep(c("a", "b"), each = 3),
+    distance_profile = c(0, 50, 100, 0, 60, 120),
+    normalized_distance = c(0, 0.5, 1, 0, 0.5, 1),
+    bathy_m = c(-50, -100, -150, -60, -120, -180)
+  )
+  mean_data <- blueterra:::mean_profile_data(
+    samples,
+    x_col = "distance_profile",
+    value_col = "bathy_m",
+    group_col = "transect_id",
+    n_bins = 5
+  )
+  expect_equal(mean_data$distance_profile, c(0, 25, 50, 75, 100))
+  expect_equal(mean_data$mean_value, c(-55, -80, -105, -130, -155))
+  expect_true(all(diff(mean_data$distance_profile) > 0))
+  expect_true(all(diff(mean_data$mean_value) <= 0))
+
+  plot_samples <- data.frame(
+    transect_id = rep(c("a", "b"), each = 3),
+    distance = c(0, 50, 100, 0, 60, 120),
+    bathy_m = c(-50, -100, -150, -60, -120, -180)
+  )
+  p <- plot_cross_sections(
+    plot_samples,
+    value_col = "bathy_m",
+    profile_direction = "as_sampled",
+    mean_profile = TRUE
+  )
+  built <- ggplot2::ggplot_build(p)
+  mean_layer <- built$data[[length(built$data)]]
+  expect_true(all(diff(mean_layer$x) >= 0))
+  expect_false(any(duplicated(mean_layer$x)))
+})
+
 test_that("depth profile plots README-style transect subsets", {
   testthat::skip_if_not_installed("ggplot2")
   bathy <- read_bathy(blueterra_example("hitw"))

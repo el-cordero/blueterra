@@ -719,22 +719,97 @@ mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50)
   if (!"normalized_distance" %in% names(data)) {
     data <- add_normalized_distance(data, group_col = group_col, distance_col = x_col)
   }
-  data$profile_bin <- cut(
-    data$normalized_distance,
-    breaks = seq(0, 1, length.out = n_bins + 1),
-    include.lowest = TRUE
-  )
-  split_data <- split(data, data$profile_bin)
-  rows <- lapply(split_data, function(piece) {
-    if (nrow(piece) == 0) {
+
+  pieces <- split(data, data[[group_col]], drop = TRUE)
+  profile_pieces <- lapply(pieces, function(piece) {
+    ok <- is.finite(piece[[x_col]]) & is.finite(piece[[value_col]])
+    piece <- piece[ok, , drop = FALSE]
+    if (nrow(piece) < 2) {
       return(NULL)
     }
-    out <- tibble::tibble(
-      normalized_distance = mean(piece$normalized_distance, na.rm = TRUE),
-      mean_value = mean(piece[[value_col]], na.rm = TRUE)
+    piece <- piece[order(piece[[x_col]]), , drop = FALSE]
+    profile <- stats::aggregate(
+      piece[[value_col]],
+      by = list(profile_x = piece[[x_col]]),
+      FUN = mean,
+      na.rm = TRUE
     )
-    out[[x_col]] <- mean(piece[[x_col]], na.rm = TRUE)
-    out
+    names(profile)[[2]] <- "profile_value"
+    if (nrow(profile) < 2) {
+      return(NULL)
+    }
+    profile
   })
-  dplyr::bind_rows(Filter(Negate(is.null), rows))
+  profile_pieces <- Filter(Negate(is.null), profile_pieces)
+
+  if (!length(profile_pieces)) {
+    out <- tibble::tibble(
+      normalized_distance = numeric(),
+      mean_value = numeric()
+    )
+    if (!identical(x_col, "normalized_distance")) {
+      out[[x_col]] <- numeric()
+    }
+    return(out[, unique(c("normalized_distance", x_col, "mean_value")), drop = FALSE])
+  }
+
+  x_min <- max(vapply(profile_pieces, function(piece) min(piece$profile_x, na.rm = TRUE), numeric(1)))
+  x_max <- min(vapply(profile_pieces, function(piece) max(piece$profile_x, na.rm = TRUE), numeric(1)))
+  if (!is.finite(x_min) || !is.finite(x_max) || x_max <= x_min) {
+    x_values <- data[[x_col]]
+    x_range <- range(x_values[is.finite(x_values)], na.rm = TRUE)
+  } else {
+    x_range <- c(x_min, x_max)
+  }
+  if (!all(is.finite(x_range)) || diff(x_range) == 0) {
+    out <- tibble::tibble(
+      normalized_distance = 0,
+      mean_value = mean(data[[value_col]], na.rm = TRUE)
+    )
+    if (!identical(x_col, "normalized_distance")) {
+      out[[x_col]] <- 0
+    }
+    return(out[, unique(c("normalized_distance", x_col, "mean_value")), drop = FALSE])
+  }
+  common_x <- seq(x_range[[1]], x_range[[2]], length.out = n_bins)
+
+  profile_rows <- lapply(profile_pieces, function(profile) {
+    y <- stats::approx(
+      x = profile$profile_x,
+      y = profile$profile_value,
+      xout = common_x,
+      method = "linear",
+      ties = "ordered",
+      rule = 1
+    )$y
+    out <- tibble::tibble(mean_profile_x = common_x, profile_value = y)
+    out[is.finite(out$profile_value), , drop = FALSE]
+  })
+  profile_data <- dplyr::bind_rows(Filter(Negate(is.null), profile_rows))
+  if (!nrow(profile_data)) {
+    out <- tibble::tibble(
+      normalized_distance = numeric(),
+      mean_value = numeric()
+    )
+    if (!identical(x_col, "normalized_distance")) {
+      out[[x_col]] <- numeric()
+    }
+    return(out[, unique(c("normalized_distance", x_col, "mean_value")), drop = FALSE])
+  }
+  rows <- stats::aggregate(
+    profile_data$profile_value,
+    by = list(mean_profile_x = profile_data$mean_profile_x),
+    FUN = mean,
+    na.rm = TRUE
+  )
+  names(rows)[[2]] <- "mean_value"
+  out <- tibble::as_tibble(rows[order(rows$mean_profile_x), , drop = FALSE])
+  out$normalized_distance <- if (identical(x_col, "normalized_distance")) {
+    out$mean_profile_x
+  } else {
+    (out$mean_profile_x - x_range[[1]]) / diff(x_range)
+  }
+  out[[x_col]] <- out$mean_profile_x
+  out$mean_profile_x <- NULL
+  out[, unique(c("normalized_distance", x_col, "mean_value")), drop = FALSE]
 }
