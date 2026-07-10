@@ -535,18 +535,23 @@ plot_process_pca <- function(
 #' Plot a depth profile
 #'
 #' @description
-#' Plots a sampled raster value along a transect profile.
+#' Plots sampled raster values along a transect profile or against depth.
 #'
 #' @param data A data frame.
 #' @param distance_col Distance column name.
-#' @param depth_col Depth, elevation, or metric column name. If `NULL`, a raster
-#'   value column is inferred while ignoring transect metadata.
-#' @param value_col Alias for `depth_col`. Use this when plotting sampled
-#'   variables such as slope, rugosity, BPI, or curvature.
+#' @param depth_col Depth or elevation column name. If `NULL`, a depth-like
+#'   column is inferred where needed.
+#' @param value_col Value column to plot. Use this for sampled variables such as
+#'   bathymetry, slope, rugosity, BPI, or curvature.
 #' @param group_col Optional grouping column.
 #' @param points Logical. Draw profile points.
 #' @param line Logical. Draw profile lines when at least two finite samples are
 #'   available.
+#' @param profile_layout Plot layout. `"auto"` uses a distance profile when only
+#'   one value column is supplied and uses a metric-by-depth profile when both
+#'   `depth_col` and `value_col` identify different columns. `"distance"` plots
+#'   distance on x and the selected value on y. `"metric_by_depth"` plots the
+#'   selected metric on x and depth or elevation on y.
 #' @param profile_direction Direction used to orient distance before plotting.
 #'   `"top_to_bottom"` (the default) orients bathymetric or elevation profiles
 #'   from the shallow or top endpoint toward the deeper or bottom endpoint.
@@ -568,8 +573,10 @@ plot_process_pca <- function(
 #' @return A `ggplot` object.
 #'
 #' @details
-#' Despite the function name, the y-axis can be any sampled raster variable:
-#' elevation, depth, slope, rugosity, BPI, curvature, or a custom metric.
+#' With `profile_layout = "distance"`, the y-axis can be any sampled raster
+#' variable: elevation, depth, slope, rugosity, BPI, curvature, or a custom
+#' metric. With `profile_layout = "metric_by_depth"`, depth or elevation is
+#' placed on the y-axis and the selected terrain metric is placed on the x-axis.
 #' Metadata columns such as transect angle, offset, width, and height are
 #' ignored during automatic value-column inference.
 #'
@@ -577,6 +584,13 @@ plot_process_pca <- function(
 #' if (requireNamespace("ggplot2", quietly = TRUE)) {
 #'   df <- data.frame(distance = 1:5, depth = -c(10, 12, 20, 25, 30))
 #'   plot_depth_profile(df, depth_col = "depth")
+#'
+#'   metric_df <- data.frame(
+#'     distance = 1:5,
+#'     bathy_m = -c(10, 12, 20, 25, 30),
+#'     slope_deg = c(4, 6, 9, 12, 15)
+#'   )
+#'   plot_depth_profile(metric_df, depth_col = "bathy_m", value_col = "slope_deg")
 #' }
 #'
 #' @seealso [sample_transects()]
@@ -589,6 +603,7 @@ plot_depth_profile <- function(
     group_col = NULL,
     points = TRUE,
     line = TRUE,
+    profile_layout = c("auto", "distance", "metric_by_depth"),
     profile_direction = c(
       "top_to_bottom", "bottom_to_top", "as_sampled",
       "max_to_min", "min_to_max", "high_to_low", "low_to_high"
@@ -603,9 +618,90 @@ plot_depth_profile <- function(
   if (!is.data.frame(data) || !distance_col %in% names(data)) {
     bt_abort("`data` must contain `distance_col`.")
   }
-  if (!is.null(depth_col) && !is.null(value_col) && !identical(depth_col, value_col)) {
-    bt_abort("Use either `depth_col` or `value_col`, or supply the same column to both.")
+  profile_layout <- match.arg(profile_layout)
+  if (identical(profile_layout, "auto")) {
+    profile_layout <- if (!is.null(depth_col) && !is.null(value_col) && !identical(depth_col, value_col)) {
+      "metric_by_depth"
+    } else {
+      "distance"
+    }
   }
+  data <- data[order(data[[distance_col]]), , drop = FALSE]
+  if (!is.null(group_col)) {
+    if (!group_col %in% names(data)) {
+      bt_abort("`group_col` was not found in `data`.")
+    }
+  }
+
+  if (identical(profile_layout, "metric_by_depth")) {
+    depth_axis_col <- infer_depth_axis_col(data, depth_col = depth_col, exclude = distance_col)
+    metric_col <- infer_profile_value_col(
+      data,
+      value_col = value_col,
+      exclude = c(distance_col, depth_axis_col),
+      require_finite = TRUE,
+      require_variation = FALSE
+    )
+    if (identical(depth_axis_col, metric_col)) {
+      bt_abort("`depth_col` and `value_col` must identify different columns for `profile_layout = \"metric_by_depth\"`.")
+    }
+    finite <- is.finite(data[[distance_col]]) &
+      is.finite(data[[depth_axis_col]]) &
+      is.finite(data[[metric_col]])
+    if (!any(finite)) {
+      bt_abort("No finite distance/depth/value triples were available for the depth profile.")
+    }
+    plot_data <- orient_profile_distance(
+      data,
+      value_col = depth_axis_col,
+      distance_col = distance_col,
+      group_col = group_col,
+      profile_direction = profile_direction,
+      positive_depth = positive_depth
+    )
+    if (is.null(group_col)) {
+      plot_data <- plot_data[order(plot_data[["distance_profile"]]), , drop = FALSE]
+    } else {
+      plot_data <- plot_data[
+        order(as.character(plot_data[[group_col]]), plot_data[["distance_profile"]]),
+        ,
+        drop = FALSE
+      ]
+    }
+    if (!is.null(group_col)) {
+      p <- ggplot2::ggplot(
+        plot_data,
+        ggplot2::aes(
+          x = .data[[metric_col]],
+          y = .data[[depth_axis_col]],
+          group = .data[[group_col]]
+        )
+      )
+    } else {
+      p <- ggplot2::ggplot(
+        plot_data,
+        ggplot2::aes(x = .data[[metric_col]], y = .data[[depth_axis_col]])
+      )
+    }
+    if (isTRUE(line) && nrow(plot_data) >= 2) {
+      p <- p + ggplot2::geom_path(na.rm = TRUE)
+    } else if (isTRUE(line) && nrow(plot_data) == 1) {
+      bt_warn("Only one finite sample was available; drawing a point profile.")
+    }
+    if (isTRUE(points)) {
+      p <- p + ggplot2::geom_point(na.rm = TRUE, size = 1.8)
+    }
+    p <- p +
+      ggplot2::labs(
+        x = profile_axis_label(metric_col),
+        y = profile_axis_label(depth_axis_col),
+        title = title,
+        subtitle = subtitle,
+        caption = caption
+      )
+    return(orient_depth_axis(p, plot_data[[depth_axis_col]], depth_increases_down))
+  }
+
   value_col <- value_col %||% depth_col
   depth_col <- infer_profile_value_col(
     data,
@@ -614,17 +710,11 @@ plot_depth_profile <- function(
     require_finite = TRUE,
     require_variation = FALSE
   )
-  data <- data[order(data[[distance_col]]), , drop = FALSE]
   finite <- is.finite(data[[distance_col]]) & is.finite(data[[depth_col]])
   if (!any(finite)) {
     bt_abort("No finite distance/value pairs were available for the depth profile.")
   }
   plot_data <- data
-  if (!is.null(group_col)) {
-    if (!group_col %in% names(data)) {
-      bt_abort("`group_col` was not found in `data`.")
-    }
-  }
   plot_data <- orient_profile_distance(
     plot_data,
     value_col = depth_col,
@@ -668,10 +758,34 @@ plot_depth_profile <- function(
   orient_depth_axis(p, plot_data[[depth_col]], depth_increases_down)
 }
 
+infer_depth_axis_col <- function(data, depth_col = NULL, exclude = character()) {
+  if (!is.null(depth_col)) {
+    if (!depth_col %in% names(data) || !is.numeric(data[[depth_col]])) {
+      bt_abort("`depth_col` must identify a numeric column in `data`.")
+    }
+    return(depth_col)
+  }
+  candidates <- c("bathy_m", "depth_m", "depth", "elevation", "bathy")
+  candidates <- candidates[candidates %in% names(data)]
+  candidates <- candidates[vapply(candidates, function(col) is.numeric(data[[col]]), logical(1))]
+  candidates <- setdiff(candidates, exclude)
+  if (length(candidates)) {
+    return(candidates[[1]])
+  }
+  infer_profile_value_col(
+    data,
+    value_col = NULL,
+    exclude = exclude,
+    require_finite = TRUE,
+    require_variation = FALSE
+  )
+}
+
 profile_axis_label <- function(value_col) {
   labels <- c(
     bathy_m = "Bathymetry / elevation (m)",
     bathy = "Bathymetry / elevation",
+    depth_m = "Depth (m)",
     depth = "Depth",
     elevation = "Elevation",
     slope_deg = "Slope (degrees)",

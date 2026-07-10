@@ -1,15 +1,15 @@
 # blueterra Visual Proof
 
-- Date/time: 2026-07-09 23:53:48 AST
-- Git commit: a56cdd2851b93ea4b69632ac742dfecfad1bf028
+- Date/time: 2026-07-10 00:15:16 AST
+- Git commit: e4f80de038013bcd35a2809bc30ace108a601e34
 - Working tree dirty at proof start: TRUE
-- Dirty paths at proof start:  M R/transects.R;  M man/figures/README-profile-and-corridors-1.png;  M qa/visual-proof/figures/18-cross-sections-with-legend.png;  M qa/visual-proof/visual-proof.md;  M tests/testthat/test-plotting.R
+- Dirty paths at proof start:  M R/plotting.R;  M R/transects.R;  M README.Rmd;  M README.md;  M man/figures/README-profile-and-corridors-1.png;  M man/plot_cross_sections.Rd;  M man/plot_depth_profile.Rd;  M man/sample_transects.Rd;  M qa/visual-proof/visual-proof.R;  M tests/testthat/test-plotting.R;  M vignettes/blueterra.Rmd;  M vignettes/transects-cross-sections.Rmd
 - R version: R version 4.5.3 (2026-03-11)
 - Package version: 0.1.0
 - System: Darwin 25.2.0 arm64
 - Package tarball: blueterra_0.1.0.tar.gz
-- Package tarball size: 4484410 bytes
-- Package tarball size: 4.484 MB
+- Package tarball size: 4492353 bytes
+- Package tarball size: 4.492 MB
 - Local pkgdown site: /Users/ec/Documents/Data/MCE Geomorphometry HW v HY/Geomorphic_Analysis_Project/blueterra/docs/index.html
 - Expected GitHub Pages URL: https://el-cordero.github.io/blueterra/
 - Deployment workflow: .github/workflows/pkgdown.yaml
@@ -55,6 +55,7 @@
 - [17-transects-over-bathymetry-auto-orientation.png](figures/17-transects-over-bathymetry-auto-orientation.png)
 - [18-cross-sections-with-legend.png](figures/18-cross-sections-with-legend.png)
 - [19-depth-profile-single-transect.png](figures/19-depth-profile-single-transect.png)
+- [19b-metric-by-depth-profile.png](figures/19b-metric-by-depth-profile.png)
 - [20-isobaths-over-bathymetry.png](figures/20-isobaths-over-bathymetry.png)
 - [21-isobath-corridors-source-isobaths.png](figures/21-isobath-corridors-source-isobaths.png)
 - [22-isobath-terrain-summary.png](figures/22-isobath-terrain-summary.png)

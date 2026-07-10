@@ -362,7 +362,8 @@ estimate_surface_orientation <- function(
 #' Extracts raster values along transect lines at regular distances.
 #'
 #' @param transects Line geometry from [make_transects()] or another source.
-#' @param x A raster-like object accepted by [as_bathy()].
+#' @param x A `terra::SpatRaster` or local raster path. Multi-layer rasters are
+#'   accepted when sampling bathymetry together with derived terrain metrics.
 #' @param spacing Optional sample spacing in map units.
 #' @param n Optional number of sample points per transect.
 #' @param method Extraction method passed to `terra::extract()`.
@@ -395,7 +396,7 @@ sample_transects <- function(
     drop_na = FALSE
 ) {
   lines <- as_spatvector(transects)
-  r <- as_bathy(x, check = TRUE)
+  r <- as_bathy(x, check = FALSE)
   if (!terra::same.crs(r, lines)) {
     lines <- terra::project(lines, terra::crs(r))
   }
@@ -568,7 +569,13 @@ summarize_cross_sections <- function(
 #'   `group_col`.
 #' @param show_legend Logical. Show the line-color legend.
 #' @param points Logical. Draw sample points over profile lines.
-#' @param mean_profile Logical. Overlay a binned mean profile across transects.
+#' @param mean_profile Logical. Overlay an interpolated mean profile across
+#'   transects.
+#' @param mean_profile_na_rm Logical. Remove missing interpolated profile values
+#'   when averaging the mean profile. The default, `TRUE`, lets the mean profile
+#'   use the full available distance range rather than stopping where the
+#'   shortest transect ends. Set to `FALSE` to require every profile to
+#'   contribute at each distance.
 #' @param normalize_distance Logical. Plot distance as 0-1 normalized position
 #'   along each transect.
 #' @param profile_direction Direction used to orient distance before plotting.
@@ -610,6 +617,7 @@ plot_cross_sections <- function(
     show_legend = TRUE,
     points = FALSE,
     mean_profile = FALSE,
+    mean_profile_na_rm = TRUE,
     normalize_distance = FALSE,
     profile_direction = c(
       "top_to_bottom", "bottom_to_top", "as_sampled",
@@ -682,7 +690,13 @@ plot_cross_sections <- function(
   }
 
   if (isTRUE(mean_profile)) {
-    mean_data <- mean_profile_data(plot_data, x_col = x_col, value_col = value_col, group_col = group_col)
+    mean_data <- mean_profile_data(
+      plot_data,
+      x_col = x_col,
+      value_col = value_col,
+      group_col = group_col,
+      na.rm = mean_profile_na_rm
+    )
     p <- p +
       ggplot2::geom_line(
         data = mean_data,
@@ -714,8 +728,11 @@ add_normalized_distance <- function(samples, group_col = "transect_id", distance
   dplyr::bind_rows(pieces)
 }
 
-mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50) {
+mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50, na.rm = TRUE) {
   data <- samples
+  if (!is.logical(na.rm) || length(na.rm) != 1 || is.na(na.rm)) {
+    bt_abort("`na.rm` must be `TRUE` or `FALSE`.")
+  }
   if (!"normalized_distance" %in% names(data)) {
     data <- add_normalized_distance(data, group_col = group_col, distance_col = x_col)
   }
@@ -753,14 +770,9 @@ mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50)
     return(out[, unique(c("normalized_distance", x_col, "mean_value")), drop = FALSE])
   }
 
-  x_min <- max(vapply(profile_pieces, function(piece) min(piece$profile_x, na.rm = TRUE), numeric(1)))
-  x_max <- min(vapply(profile_pieces, function(piece) max(piece$profile_x, na.rm = TRUE), numeric(1)))
-  if (!is.finite(x_min) || !is.finite(x_max) || x_max <= x_min) {
-    x_values <- data[[x_col]]
-    x_range <- range(x_values[is.finite(x_values)], na.rm = TRUE)
-  } else {
-    x_range <- c(x_min, x_max)
-  }
+  profile_mins <- vapply(profile_pieces, function(piece) min(piece$profile_x, na.rm = TRUE), numeric(1))
+  profile_maxs <- vapply(profile_pieces, function(piece) max(piece$profile_x, na.rm = TRUE), numeric(1))
+  x_range <- c(min(profile_mins, na.rm = TRUE), max(profile_maxs, na.rm = TRUE))
   if (!all(is.finite(x_range)) || diff(x_range) == 0) {
     out <- tibble::tibble(
       normalized_distance = 0,
@@ -773,8 +785,8 @@ mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50)
   }
   common_x <- seq(x_range[[1]], x_range[[2]], length.out = n_bins)
 
-  profile_rows <- lapply(profile_pieces, function(profile) {
-    y <- stats::approx(
+  profile_values <- lapply(profile_pieces, function(profile) {
+    stats::approx(
       x = profile$profile_x,
       y = profile$profile_value,
       xout = common_x,
@@ -782,28 +794,19 @@ mean_profile_data <- function(samples, x_col, value_col, group_col, n_bins = 50)
       ties = "ordered",
       rule = 1
     )$y
-    out <- tibble::tibble(mean_profile_x = common_x, profile_value = y)
-    out[is.finite(out$profile_value), , drop = FALSE]
   })
-  profile_data <- dplyr::bind_rows(Filter(Negate(is.null), profile_rows))
-  if (!nrow(profile_data)) {
-    out <- tibble::tibble(
-      normalized_distance = numeric(),
-      mean_value = numeric()
-    )
-    if (!identical(x_col, "normalized_distance")) {
-      out[[x_col]] <- numeric()
-    }
+  value_matrix <- do.call(cbind, profile_values)
+  mean_values <- rowMeans(value_matrix, na.rm = na.rm)
+  mean_values[is.nan(mean_values)] <- NA_real_
+  if (!any(is.finite(mean_values))) {
+    out <- tibble::tibble(normalized_distance = numeric(), mean_value = numeric())
+    if (!identical(x_col, "normalized_distance")) out[[x_col]] <- numeric()
     return(out[, unique(c("normalized_distance", x_col, "mean_value")), drop = FALSE])
   }
-  rows <- stats::aggregate(
-    profile_data$profile_value,
-    by = list(mean_profile_x = profile_data$mean_profile_x),
-    FUN = mean,
-    na.rm = TRUE
+  out <- tibble::tibble(
+    mean_profile_x = common_x,
+    mean_value = mean_values
   )
-  names(rows)[[2]] <- "mean_value"
-  out <- tibble::as_tibble(rows[order(rows$mean_profile_x), , drop = FALSE])
   out$normalized_distance <- if (identical(x_col, "normalized_distance")) {
     out$mean_profile_x
   } else {

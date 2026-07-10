@@ -160,6 +160,7 @@ plot_cross_sections(
   cross_sections,
   value_col = "bathy_m",
   mean_profile = TRUE,
+  mean_profile_na_rm = TRUE,
   normalize_distance = FALSE,
   profile_direction = "top_to_bottom",
   title = "Bathymetric Cross-Sections",

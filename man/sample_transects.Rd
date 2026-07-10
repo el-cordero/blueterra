@@ -25,7 +25,8 @@ extract_cross_sections(
 \arguments{
 \item{transects}{Line geometry from \code{\link[=make_transects]{make_transects()}} or another source.}
 
-\item{x}{A raster-like object accepted by \code{\link[=as_bathy]{as_bathy()}}.}
+\item{x}{A \code{terra::SpatRaster} or local raster path. Multi-layer rasters are
+accepted when sampling bathymetry together with derived terrain metrics.}
 
 \item{spacing}{Optional sample spacing in map units.}
 

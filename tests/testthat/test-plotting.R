@@ -69,6 +69,16 @@ test_that("profile value inference ignores transect metadata", {
 
   slope_plot <- plot_depth_profile(samples[samples$transect_id == "a", ], value_col = "slope_deg")
   expect_equal(slope_plot$labels$y, "Slope (degrees)")
+
+  metric_depth_plot <- plot_depth_profile(
+    samples[samples$transect_id == "a", ],
+    depth_col = "bathy_m",
+    value_col = "slope_deg"
+  )
+  expect_equal(metric_depth_plot$labels$x, "Slope (degrees)")
+  expect_equal(metric_depth_plot$labels$y, "Bathymetry / elevation (m)")
+  metric_depth_data <- ggplot2::ggplot_build(metric_depth_plot)$data[[1]]
+  expect_equal(metric_depth_data$y, c(-40, -45, -50, -55))
 })
 
 test_that("profile distance orientation uses top-to-bottom bathymetric direction", {
@@ -227,10 +237,22 @@ test_that("mean cross-section profile is averaged on a common distance axis", {
     group_col = "transect_id",
     n_bins = 5
   )
-  expect_equal(mean_data$distance_profile, c(0, 25, 50, 75, 100))
-  expect_equal(mean_data$mean_value, c(-55, -80, -105, -130, -155))
+  expect_equal(mean_data$distance_profile, c(0, 30, 60, 90, 120))
+  expect_equal(mean_data$mean_value, c(-55, -85, -115, -145, -180))
   expect_true(all(diff(mean_data$distance_profile) > 0))
   expect_true(all(diff(mean_data$mean_value) <= 0))
+
+  strict_mean <- blueterra:::mean_profile_data(
+    samples,
+    x_col = "distance_profile",
+    value_col = "bathy_m",
+    group_col = "transect_id",
+    n_bins = 5,
+    na.rm = FALSE
+  )
+  expect_equal(strict_mean$distance_profile, c(0, 30, 60, 90, 120))
+  expect_true(is.na(strict_mean$mean_value[5]))
+  expect_false(anyNA(strict_mean$mean_value[1:4]))
 
   plot_samples <- data.frame(
     transect_id = rep(c("a", "b"), each = 3),
@@ -247,6 +269,18 @@ test_that("mean cross-section profile is averaged on a common distance axis", {
   mean_layer <- built$data[[length(built$data)]]
   expect_true(all(diff(mean_layer$x) >= 0))
   expect_false(any(duplicated(mean_layer$x)))
+  expect_equal(range(mean_layer$x, na.rm = TRUE), c(0, 120))
+
+  p_strict <- plot_cross_sections(
+    plot_samples,
+    value_col = "bathy_m",
+    profile_direction = "as_sampled",
+    mean_profile = TRUE,
+    mean_profile_na_rm = FALSE
+  )
+  strict_layer <- ggplot2::ggplot_build(p_strict)$data[[length(ggplot2::ggplot_build(p_strict)$data)]]
+  finite_strict <- is.finite(strict_layer$y)
+  expect_true(max(strict_layer$x[finite_strict], na.rm = TRUE) < 120)
 })
 
 test_that("depth profile plots README-style transect subsets", {
@@ -263,10 +297,18 @@ test_that("depth profile plots README-style transect subsets", {
   built <- ggplot2::ggplot_build(p)
   expect_true(any(vapply(built$data, nrow, integer(1)) > 0))
 
-  metric_samples <- sample_transects(transects, derive_slope(hitw_prepared), n = 8)
+  metric_samples <- sample_transects(transects, c(hitw_prepared, derive_slope(hitw_prepared)), n = 8)
   metric_one <- metric_samples[metric_samples$transect_id == metric_samples$transect_id[1], ]
   metric_plot <- plot_depth_profile(metric_one, value_col = "slope_deg")
   expect_s3_class(metric_plot, "ggplot")
+  metric_depth_plot <- plot_depth_profile(
+    metric_one,
+    depth_col = "bathy_m",
+    value_col = "slope_deg"
+  )
+  expect_s3_class(metric_depth_plot, "ggplot")
+  expect_equal(metric_depth_plot$labels$x, "Slope (degrees)")
+  expect_equal(metric_depth_plot$labels$y, "Bathymetry / elevation (m)")
 
   bad <- data.frame(distance = 1:3, transect_id = letters[1:3])
   expect_error(plot_depth_profile(bad), "Could not identify")

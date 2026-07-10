@@ -12,6 +12,7 @@ plot_cross_sections(
   show_legend = TRUE,
   points = FALSE,
   mean_profile = FALSE,
+  mean_profile_na_rm = TRUE,
   normalize_distance = FALSE,
   profile_direction = c("top_to_bottom", "bottom_to_top", "as_sampled", "max_to_min",
     "min_to_max", "high_to_low", "low_to_high"),
@@ -36,7 +37,14 @@ plot_cross_sections(
 
 \item{points}{Logical. Draw sample points over profile lines.}
 
-\item{mean_profile}{Logical. Overlay a binned mean profile across transects.}
+\item{mean_profile}{Logical. Overlay an interpolated mean profile across
+transects.}
+
+\item{mean_profile_na_rm}{Logical. Remove missing interpolated profile values
+when averaging the mean profile. The default, \code{TRUE}, lets the mean profile
+use the full available distance range rather than stopping where the
+shortest transect ends. Set to \code{FALSE} to require every profile to
+contribute at each distance.}
 
 \item{normalize_distance}{Logical. Plot distance as 0-1 normalized position
 along each transect.}

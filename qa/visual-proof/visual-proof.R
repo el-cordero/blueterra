@@ -98,6 +98,12 @@ samples <- sample_transects(transects, prepared, n = 12)
 sample_value_col <- names(prepared)[1]
 samples_plot <- samples[is.finite(samples[[sample_value_col]]), , drop = FALSE]
 one_transect <- samples[samples$transect_id == samples$transect_id[1], , drop = FALSE]
+metric_profile_samples <- sample_transects(transects, c(prepared, metrics[["slope_deg"]]), n = 25)
+one_metric_transect <- metric_profile_samples[
+  metric_profile_samples$transect_id == metric_profile_samples$transect_id[1],
+  ,
+  drop = FALSE
+]
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 5)
 corridor_summary <- summarize_isobath_terrain(metrics, corridors)
@@ -253,6 +259,7 @@ figures <- c(figures, save_plot(
     value_col = sample_value_col,
     show_legend = TRUE,
     mean_profile = TRUE,
+    mean_profile_na_rm = TRUE,
     normalize_distance = FALSE,
     profile_direction = "top_to_bottom",
     title = "Cross-Sections With Transect Legend",
@@ -269,6 +276,17 @@ figures <- c(figures, save_plot(
     subtitle = "Distance is oriented from shallow to deep terrain"
   ),
   "19-depth-profile-single-transect.png"
+))
+figures <- c(figures, save_plot(
+  plot_depth_profile(
+    one_metric_transect,
+    depth_col = sample_value_col,
+    value_col = "slope_deg",
+    profile_direction = "top_to_bottom",
+    title = "Slope Along Bathymetric Profile",
+    subtitle = "Terrain metric on x; bathymetry/elevation on y"
+  ),
+  "19b-metric-by-depth-profile.png"
 ))
 figures <- c(figures, save_plot(
   plot_bathy(
