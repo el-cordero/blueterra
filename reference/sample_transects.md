@@ -33,8 +33,10 @@ extract_cross_sections(
 
 - x:
 
-  A raster-like object accepted by
-  [`as_bathy()`](https://el-cordero.github.io/blueterra/reference/as_bathy.md).
+  A
+  [`terra::SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
+  or local raster path. Multi-layer rasters are accepted when sampling
+  bathymetry together with derived terrain metrics.
 
 - spacing:
 

@@ -237,6 +237,7 @@ plot_cross_sections(
   value_col = "bathy_m",
   show_legend = TRUE,
   mean_profile = TRUE,
+  mean_profile_na_rm = TRUE,
   normalize_distance = FALSE,
   profile_direction = "top_to_bottom",
   title = "Bathymetric Cross-Sections",
@@ -251,7 +252,10 @@ The y-axis is explicitly set to `bathy_m`. This prevents transect
 metadata such as width, angle, or offset from being mistaken for the
 raster value. Distance is oriented from the top or shallow endpoint
 toward the bottom or deeper endpoint, and the plotted distance is reset
-to zero after trimming empty profile ends.
+to zero after trimming empty profile ends. The mean cross-section is
+averaged from interpolated transects with missing interpolated values
+removed by default, so longer profiles still contribute beyond the
+shortest transect.
 
 ``` r
 
@@ -271,16 +275,18 @@ plot_depth_profile(
 ![Single bathymetric profile oriented from shallow terrain toward deeper
 terrain.](blueterra_files/figure-html/depth-profile-1.png)
 
-Metric profiles can use the same transect geometry. When the plotted
-value is a metric such as slope, the distance order is often best
-preserved from the bathymetric profile by using
-`profile_direction = "as_sampled"`.
+Metric profiles can use the same transect geometry. When both a
+bathymetry column and a metric column are present,
+[`plot_depth_profile()`](https://el-cordero.github.io/blueterra/reference/plot_depth_profile.md)
+places the metric on the x-axis and bathymetry or depth on the y-axis.
+This is useful for showing how terrain attributes change along the depth
+gradient.
 
 ``` r
 
 metric_samples <- sample_transects(
   transects,
-  terrain[["slope_deg"]],
+  c(prepared, terrain[["slope_deg"]]),
   n = 25
 )
 metric_one <- metric_samples[
@@ -289,9 +295,11 @@ metric_one <- metric_samples[
 
 plot_depth_profile(
   metric_one,
+  depth_col = "bathy_m",
   value_col = "slope_deg",
-  profile_direction = "as_sampled",
-  title = "Slope Along One Transect"
+  profile_direction = "top_to_bottom",
+  title = "Slope Along Depth",
+  subtitle = "Bathymetry is on the y-axis; slope is on the x-axis"
 )
 ```
 

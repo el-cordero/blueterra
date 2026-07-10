@@ -57,6 +57,7 @@
 <span>  show_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  mean_profile_na_rm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  normalize_distance <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  profile_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"top_to_bottom"</span>, <span class="st">"bottom_to_top"</span>, <span class="st">"as_sampled"</span>, <span class="st">"max_to_min"</span>,</span>
 <span>    <span class="st">"min_to_max"</span>, <span class="st">"high_to_low"</span>, <span class="st">"low_to_high"</span><span class="op">)</span>,</span>
@@ -98,7 +99,16 @@
 
 
 <dt id="arg-mean-profile">mean_profile<a class="anchor" aria-label="anchor" href="#arg-mean-profile"></a></dt>
-<dd><p>Logical. Overlay a binned mean profile across transects.</p></dd>
+<dd><p>Logical. Overlay an interpolated mean profile across
+transects.</p></dd>
+
+
+<dt id="arg-mean-profile-na-rm">mean_profile_na_rm<a class="anchor" aria-label="anchor" href="#arg-mean-profile-na-rm"></a></dt>
+<dd><p>Logical. Remove missing interpolated profile values
+when averaging the mean profile. The default, <code>TRUE</code>, lets the mean profile
+use the full available distance range rather than stopping where the
+shortest transect ends. Set to <code>FALSE</code> to require every profile to
+contribute at each distance.</p></dd>
 
 
 <dt id="arg-normalize-distance">normalize_distance<a class="anchor" aria-label="anchor" href="#arg-normalize-distance"></a></dt>

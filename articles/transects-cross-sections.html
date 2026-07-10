@@ -196,6 +196,7 @@ table.</p>
 <span>  value_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
 <span>  show_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mean_profile <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mean_profile_na_rm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  normalize_distance <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  profile_direction <span class="op">=</span> <span class="st">"top_to_bottom"</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Bathymetric Cross-Sections"</span>,</span>
@@ -209,7 +210,10 @@ The default profile direction places the top or shallow endpoint on the
 left and the bottom or deeper endpoint on the right. For
 negative-elevation bathymetry, that means profiles read from higher
 numeric values toward lower numeric values. Empty profile ends are
-trimmed and distance is reset to zero before plotting.</p>
+trimmed and distance is reset to zero before plotting. The mean profile
+uses <code>mean_profile_na_rm = TRUE</code> by default, so it continues
+across the full available distance range instead of stopping where the
+shortest transect ends.</p>
 </div>
 <div class="section level2">
 <h2 id="single-transect-profile">Single-Transect Profile<a class="anchor" aria-label="anchor" href="#single-transect-profile"></a>
@@ -228,27 +232,31 @@ trimmed and distance is reset to zero before plotting.</p>
 <div class="section level2">
 <h2 id="metric-profiles">Metric Profiles<a class="anchor" aria-label="anchor" href="#metric-profiles"></a>
 </h2>
-<p>The same plotting functions work with derived metrics. Here the
-profile shows slope rather than bathymetric elevation.</p>
+<p>The same plotting functions work with derived metrics. When both
+bathymetry and a metric are sampled together,
+<code><a href="../reference/plot_depth_profile.html">plot_depth_profile()</a></code> can draw the metric value against
+bathymetric elevation, with depth or elevation on the y-axis.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metrics</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_terrain.html">derive_terrain</a></span><span class="op">(</span><span class="va">prepared</span>, metrics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slope"</span>, <span class="st">"tri"</span>, <span class="st">"bpi"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">metric_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_transects.html">sample_transects</a></span><span class="op">(</span></span>
 <span>  <span class="va">transects</span>,</span>
-<span>  <span class="va">metrics</span><span class="op">[[</span><span class="st">"slope_deg"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">prepared</span>, <span class="va">metrics</span><span class="op">[[</span><span class="st">"slope_deg"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  n <span class="op">=</span> <span class="fl">25</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">metric_one</span> <span class="op">&lt;-</span> <span class="va">metric_samples</span><span class="op">[</span><span class="va">metric_samples</span><span class="op">$</span><span class="va">transect_id</span> <span class="op">==</span> <span class="va">metric_samples</span><span class="op">$</span><span class="va">transect_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot_depth_profile.html">plot_depth_profile</a></span><span class="op">(</span></span>
 <span>  <span class="va">metric_one</span>,</span>
+<span>  depth_col <span class="op">=</span> <span class="st">"bathy_m"</span>,</span>
 <span>  value_col <span class="op">=</span> <span class="st">"slope_deg"</span>,</span>
-<span>  profile_direction <span class="op">=</span> <span class="st">"as_sampled"</span>,</span>
-<span>  title <span class="op">=</span> <span class="st">"Slope Along One Transect"</span></span>
+<span>  profile_direction <span class="op">=</span> <span class="st">"top_to_bottom"</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Slope Along Depth"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/slope-profile-1.png" class="r-plt" alt="Slope profile along one transect." width="672"></p>
-<p>The profile y-axis changes with the selected raster value. The
-function name is historical; the plotted variable can be bathymetry,
-elevation, slope, rugosity, BPI, or a custom metric.</p>
+<p>In this layout, the x-axis is the terrain metric and the y-axis is
+the bathymetric or elevation coordinate. If only one value column is
+supplied, <code><a href="../reference/plot_depth_profile.html">plot_depth_profile()</a></code> falls back to the
+distance-profile layout.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

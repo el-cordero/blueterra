@@ -1,6 +1,6 @@
 # Plot a depth profile
 
-Plots a sampled raster value along a transect profile.
+Plots sampled raster values along a transect profile or against depth.
 
 ## Usage
 
@@ -13,6 +13,7 @@ plot_depth_profile(
   group_col = NULL,
   points = TRUE,
   line = TRUE,
+  profile_layout = c("auto", "distance", "metric_by_depth"),
   profile_direction = c("top_to_bottom", "bottom_to_top", "as_sampled", "max_to_min",
     "min_to_max", "high_to_low", "low_to_high"),
   positive_depth = NULL,
@@ -35,13 +36,13 @@ plot_depth_profile(
 
 - depth_col:
 
-  Depth, elevation, or metric column name. If `NULL`, a raster value
-  column is inferred while ignoring transect metadata.
+  Depth or elevation column name. If `NULL`, a depth-like column is
+  inferred where needed.
 
 - value_col:
 
-  Alias for `depth_col`. Use this when plotting sampled variables such
-  as slope, rugosity, BPI, or curvature.
+  Value column to plot. Use this for sampled variables such as
+  bathymetry, slope, rugosity, BPI, or curvature.
 
 - group_col:
 
@@ -55,6 +56,14 @@ plot_depth_profile(
 
   Logical. Draw profile lines when at least two finite samples are
   available.
+
+- profile_layout:
+
+  Plot layout. `"auto"` uses a distance profile when only one value
+  column is supplied and uses a metric-by-depth profile when both
+  `depth_col` and `value_col` identify different columns. `"distance"`
+  plots distance on x and the selected value on y. `"metric_by_depth"`
+  plots the selected metric on x and depth or elevation on y.
 
 - profile_direction:
 
@@ -91,9 +100,11 @@ A `ggplot` object.
 
 ## Details
 
-Despite the function name, the y-axis can be any sampled raster
+With `profile_layout = "distance"`, the y-axis can be any sampled raster
 variable: elevation, depth, slope, rugosity, BPI, curvature, or a custom
-metric. Metadata columns such as transect angle, offset, width, and
+metric. With `profile_layout = "metric_by_depth"`, depth or elevation is
+placed on the y-axis and the selected terrain metric is placed on the
+x-axis. Metadata columns such as transect angle, offset, width, and
 height are ignored during automatic value-column inference.
 
 ## See also
@@ -106,6 +117,13 @@ height are ignored during automatic value-column inference.
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   df <- data.frame(distance = 1:5, depth = -c(10, 12, 20, 25, 30))
   plot_depth_profile(df, depth_col = "depth")
+
+  metric_df <- data.frame(
+    distance = 1:5,
+    bathy_m = -c(10, 12, 20, 25, 30),
+    slope_deg = c(4, 6, 9, 12, 15)
+  )
+  plot_depth_profile(metric_df, depth_col = "bathy_m", value_col = "slope_deg")
 }
 
 ```

@@ -143,6 +143,7 @@ plot_cross_sections(
   value_col = "bathy_m",
   show_legend = TRUE,
   mean_profile = TRUE,
+  mean_profile_na_rm = TRUE,
   normalize_distance = FALSE,
   profile_direction = "top_to_bottom",
   title = "Bathymetric Cross-Sections",
@@ -159,7 +160,10 @@ include numeric metadata such as `width_m`, `height_m`, `angle_deg`, and
 endpoint on the left and the bottom or deeper endpoint on the right. For
 negative-elevation bathymetry, that means profiles read from higher
 numeric values toward lower numeric values. Empty profile ends are
-trimmed and distance is reset to zero before plotting.
+trimmed and distance is reset to zero before plotting. The mean profile
+uses `mean_profile_na_rm = TRUE` by default, so it continues across the
+full available distance range instead of stopping where the shortest
+transect ends.
 
 ## Single-Transect Profile
 
@@ -180,30 +184,36 @@ transect.](transects-cross-sections_files/figure-html/profile-1.png)
 
 ## Metric Profiles
 
-The same plotting functions work with derived metrics. Here the profile
-shows slope rather than bathymetric elevation.
+The same plotting functions work with derived metrics. When both
+bathymetry and a metric are sampled together,
+[`plot_depth_profile()`](https://el-cordero.github.io/blueterra/reference/plot_depth_profile.md)
+can draw the metric value against bathymetric elevation, with depth or
+elevation on the y-axis.
 
 ``` r
 
 metrics <- derive_terrain(prepared, metrics = c("slope", "tri", "bpi"))
 metric_samples <- sample_transects(
   transects,
-  metrics[["slope_deg"]],
+  c(prepared, metrics[["slope_deg"]]),
   n = 25
 )
 metric_one <- metric_samples[metric_samples$transect_id == metric_samples$transect_id[1], ]
 
 plot_depth_profile(
   metric_one,
+  depth_col = "bathy_m",
   value_col = "slope_deg",
-  profile_direction = "as_sampled",
-  title = "Slope Along One Transect"
+  profile_direction = "top_to_bottom",
+  title = "Slope Along Depth"
 )
 ```
 
 ![Slope profile along one
 transect.](transects-cross-sections_files/figure-html/slope-profile-1.png)
 
-The profile y-axis changes with the selected raster value. The function
-name is historical; the plotted variable can be bathymetry, elevation,
-slope, rugosity, BPI, or a custom metric.
+In this layout, the x-axis is the terrain metric and the y-axis is the
+bathymetric or elevation coordinate. If only one value column is
+supplied,
+[`plot_depth_profile()`](https://el-cordero.github.io/blueterra/reference/plot_depth_profile.md)
+falls back to the distance-profile layout.
