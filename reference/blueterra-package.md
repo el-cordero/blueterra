@@ -36,7 +36,7 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Elvin Cordero <cordero.elvin@gmail.com>
+**Maintainer**: Elvin Cordero <elvin.cordero@seamountgeo.com>
 
 Other contributors:
 
