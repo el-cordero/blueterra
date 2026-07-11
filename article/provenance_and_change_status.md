@@ -51,10 +51,10 @@ concentration measure, and updates metric definitions and documentation.
 Regression and functional checks are retained in `tests/testthat/` and
 `article/validation/`.
 
-The complete baseline SHA is retained only in the machine-readable change and
-reproducibility records. The intended public release is version 0.2.0 with tag
-`v0.2.0`; a persistent archive DOI remains unresolved until an archive is
-actually deposited.
+The complete baseline and release SHA values are retained only in the
+machine-readable change and reproducibility records. Version 0.2.0 is publicly
+available through annotated tag and GitHub release `v0.2.0`; a persistent
+archive DOI remains unresolved until an archive is actually deposited.
 
 ## Remaining boundaries
 
@@ -63,5 +63,5 @@ statement, and final disclosure decision concerning AI-assisted tools remain
 unresolved. Neither the documented Route-B acquisition nor the package MIT
 licence establishes redistribution rights for the historical bundled fixtures.
 The submission materials must not be described as submission-ready until those
-items, the immutable public release, persistent archival decision, and final
-visual document quality assurance are completed.
+items, the persistent archival decision, and final visual document quality
+assurance are completed.

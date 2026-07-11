@@ -1,0 +1,2 @@
+"run_id","release_tag","status","started_at_utc","finished_at_utc","input_artifacts","output_table_artifacts","output_binary_artifacts"
+"run_01","v0.2.0","PASS","2026-07-11T19:47:51Z UTC","2026-07-11T19:47:54Z UTC",3,9,4

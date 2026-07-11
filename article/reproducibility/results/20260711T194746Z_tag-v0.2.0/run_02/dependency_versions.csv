@@ -1,0 +1,9 @@
+"package","role","available","version","library","loaded"
+"blueterra","tagged package under test",TRUE,"0.2.0","/private/tmp/blueterra-clean-repro-6a5e44ca3572/R-library/blueterra",TRUE
+"terra","direct import and Route-B spatial workflow",TRUE,"1.9.27","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/terra",TRUE
+"cli","direct import",TRUE,"3.6.6","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/cli",TRUE
+"dplyr","direct import",TRUE,"1.2.0","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/dplyr",TRUE
+"rlang","direct import",TRUE,"1.2.0","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/rlang",TRUE
+"tibble","direct import",TRUE,"3.3.1","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/tibble",TRUE
+"exactextractr","exact coverage-fraction-weighted polygon summaries",TRUE,"0.10.1","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/exactextractr",TRUE
+"sf","exact summary geometry conversion",TRUE,"1.1.0","/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/sf",TRUE

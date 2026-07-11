@@ -109,6 +109,7 @@ FIGURES = {
 
 CITED_KEYS = [
     "Baston2025_exactextractr",
+    "blueterra_ReleaseArchive",
     "DeReuEtAl2013",
     "DolanLucieer2014",
     "ErdeyHeydorn2008",
@@ -222,10 +223,10 @@ def configure_document(doc):
         style.font.name = "Times New Roman"
         style._element.rPr.rFonts.set(qn("w:ascii"), "Times New Roman")
         style._element.rPr.rFonts.set(qn("w:hAnsi"), "Times New Roman")
-        style.font.size = Pt(8.5)
+        style.font.size = Pt(8)
         style.paragraph_format.left_indent = Inches(0.25)
         style.paragraph_format.first_line_indent = Inches(-0.25)
-        style.paragraph_format.space_after = Pt(3)
+        style.paragraph_format.space_after = Pt(0)
         style.paragraph_format.line_spacing = 1.0
     if "Inline Code" not in [style.name for style in doc.styles]:
         style = doc.styles.add_style("Inline Code", WD_STYLE_TYPE.CHARACTER)
@@ -258,11 +259,26 @@ def add_text_paragraph(doc, text, align=WD_ALIGN_PARAGRAPH.LEFT, reference=False
     return paragraph
 
 
+def add_software_files_paragraph(doc, text):
+    """Keep the short final software-files notice compact and readable."""
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.paragraph_format.line_spacing = 0.9
+    add_inline_text(paragraph, text, size=8)
+    return paragraph
+
+
 def add_heading(doc, text, level):
     paragraph = doc.add_paragraph(style=f"Heading {min(level, 3)}")
     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
     run = paragraph.add_run(text)
-    set_font(run, {1: 12, 2: 11, 3: 10}[min(level, 3)], bold=True)
+    if text == "Software Files":
+        paragraph.paragraph_format.space_before = Pt(4)
+        paragraph.paragraph_format.space_after = Pt(1)
+        set_font(run, 10, bold=True)
+    else:
+        set_font(run, {1: 12, 2: 11, 3: 10}[min(level, 3)], bold=True)
     return paragraph
 
 
@@ -475,11 +491,16 @@ def parse_manuscript(doc):
     heading_re = re.compile(r"^(#{1,3})\s+(.*)$")
     buffer = []
     skip_reference_source = False
+    software_files_section = False
 
     def flush():
         nonlocal buffer
         if buffer:
-            add_text_paragraph(doc, " ".join(buffer).strip())
+            text = " ".join(buffer).strip()
+            if software_files_section:
+                add_software_files_paragraph(doc, text)
+            else:
+                add_text_paragraph(doc, text)
             buffer = []
 
     for raw_line in SOURCE_MANUSCRIPT.read_text(encoding="utf-8").splitlines():
@@ -494,6 +515,7 @@ def parse_manuscript(doc):
             flush()
             text = heading.group(2)
             add_heading(doc, text, len(heading.group(1)))
+            software_files_section = text == "Software Files"
             if text == "References":
                 add_references(doc)
                 skip_reference_source = True
@@ -600,11 +622,16 @@ def ignore_superseded_article_materials(directory, names):
     if relative == Path("references"):
         ignored.update({
             "assemble_reference_audit.py", "reference_audit_foundational.csv",
-            "reference_audit_marine.csv", "reference_audit_revision.csv",
+            "reference_audit_marine.csv",
             "reference_audit_software.csv",
         })
     if relative == Path("tables"):
-        ignored.add("collect_tables_4_and_5.R")
+        ignored.update({
+            "collect_tables_4_and_5.R", "generate_table1 2.R",
+            "generate_table2 2.R", "generate_table3 2.R",
+        })
+    if relative == Path("validation"):
+        ignored.add("README 2.md")
     if relative == Path("tables") / "results":
         ignored.update({
             "table1_core_metric_implementation.csv", "table2_source_records.csv",
@@ -615,13 +642,17 @@ def ignore_superseded_article_materials(directory, names):
 
 
 def copy_submission_components():
-    for name in ["figures", "tables", "scripts", "environment", "supplementary"]:
+    # Supplementary PDFs/ZIPs can be large. Preserve that directory while
+    # rebuilding the DOCX components; its named artifacts are rebuilt after
+    # this document step rather than repeatedly deleted and recopied.
+    for name in ["figures", "tables", "scripts", "environment"]:
         reset_directory(SUBMISSION_ROOT / name)
     figures_out = SUBMISSION_ROOT / "figures"
     tables_out = SUBMISSION_ROOT / "tables"
     scripts_out = SUBMISSION_ROOT / "scripts"
     environment_out = SUBMISSION_ROOT / "environment"
     supplementary_out = SUBMISSION_ROOT / "supplementary"
+    supplementary_out.mkdir(parents=True, exist_ok=True)
     for source in FIGURE_DIR.glob("Fig*.*"):
         if source.suffix.lower() in {".pdf", ".png", ".tiff"}:
             shutil.copy2(source, figures_out / source.name)

@@ -1,0 +1,4 @@
+"scope","artifact","input_name","bytes","sha256"
+"documented_route_b_input","data_provenance/results/bluetopo_bh54s4zb_elevation_example.tif","elevation_raster",1347630,"2c7fe8b1e811d0dd4ea2672b11443f5a1d1b6e40911cea8ca7b39b2d3cd89e4e"
+"documented_route_b_input","data_provenance/results/bluetopo_author_analysis_windows.gpkg","analysis_windows",98304,"1106b0c1e11cd1861266e439f5ff15e424ebe01ded4b26dd1c4424722bdf2a42"
+"documented_route_b_input","data_provenance/results/bluetopo_example_manifest.csv","provenance_manifest",3326,"d680b9e9c5fd8ad7ac7cad66fd559c829f307835710b656aec3fa612931d919f"

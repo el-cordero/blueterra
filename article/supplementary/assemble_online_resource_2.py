@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Assemble the v0.2.0 code-and-results archive and checksum manifests.
 
-The package source is obtained only with ``git archive v0.2.0``.  The archive
-contains the current Route-B evidence tree but excludes pre-v0.2.0 clean-run
-directories, which are retained locally only as superseded work records.
+The complete tagged source archive already contains the versioned Route-B
+scripts, data, generated figures, and result records.  The ZIP therefore adds
+only the post-tag clean-environment record and post-release metadata rather
+than duplicating every large raster and figure a second time.
 """
 
 from __future__ import annotations
@@ -106,6 +107,14 @@ def append_manifest_entry(manifest: list[dict[str, str]], archive_path: str, sou
     )
 
 
+def write_archive_member(zip_file: zipfile.ZipFile, source: Path, archive_path: str) -> None:
+    """Copy large binary evidence efficiently without deflating it again."""
+    with source.open("rb") as input_stream, zip_file.open(
+        archive_path, "w", force_zip64=True
+    ) as output_stream:
+        shutil.copyfileobj(input_stream, output_stream, length=4 * 1024 * 1024)
+
+
 def add_tree(
     zip_file: zipfile.ZipFile,
     root: Path,
@@ -131,7 +140,6 @@ def add_tree(
                 "references/assemble_reference_audit.py",
                 "references/reference_audit_foundational.csv",
                 "references/reference_audit_marine.csv",
-                "references/reference_audit_revision.csv",
                 "references/reference_audit_software.csv",
                 "tables/collect_tables_4_and_5.R",
                 "tables/results/table1_core_metric_implementation.csv",
@@ -152,7 +160,7 @@ def add_tree(
         ):
             continue
         archive_path = f"{prefix}/{relative.as_posix()}"
-        zip_file.write(source, archive_path)
+        write_archive_member(zip_file, source, archive_path)
         append_manifest_entry(manifest, archive_path, source)
 
 
@@ -206,23 +214,42 @@ def main() -> None:
         )
         manifest: list[dict[str, str]] = []
         with zipfile.ZipFile(
-            ZIP_PATH, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
+            ZIP_PATH, "w", compression=zipfile.ZIP_STORED
         ) as archive:
             archive_source_path = f"source/{SOURCE_ARCHIVE_NAME}"
-            archive.write(source_archive, archive_source_path)
+            write_archive_member(archive, source_archive, archive_source_path)
             append_manifest_entry(manifest, archive_source_path, source_archive)
 
             identifier_archive_path = "source/source_identifier_manifest.csv"
-            archive.write(SOURCE_IDENTIFIER_PATH, identifier_archive_path)
+            write_archive_member(archive, SOURCE_IDENTIFIER_PATH, identifier_archive_path)
             append_manifest_entry(manifest, identifier_archive_path, SOURCE_IDENTIFIER_PATH)
 
             add_tree(
                 archive,
-                ARTICLE_ROOT,
-                "article",
+                selected_reproducibility_dir,
+                "post_tag_clean_reproducibility",
                 manifest,
                 selected_reproducibility_dir,
             )
+            for relative in [
+                Path("article/references/reference_audit.csv"),
+                Path("article/references/references.csv"),
+                Path("article/references/reference_audit_revision.csv"),
+                Path("article/submission_compliance_checklist.md"),
+                Path("article/package_modifications.csv"),
+                Path("article/provenance_and_change_status.md"),
+                Path("article/manuscript/blueterra_ESI_manuscript.md"),
+                Path("article/manuscript/build_submission_documents.py"),
+                Path("article/supplementary/build_online_resource_1.py"),
+                Path("article/supplementary/assemble_online_resource_2.py"),
+                Path("article/supplementary/Online_Resource_Captions.md"),
+            ]:
+                source = PACKAGE_ROOT / relative
+                if not source.is_file():
+                    raise FileNotFoundError(f"Missing post-release archive member: {source}")
+                archive_path = f"post_release_metadata/{relative.as_posix()}"
+                write_archive_member(archive, source, archive_path)
+                append_manifest_entry(manifest, archive_path, source)
 
         with MANIFEST_PATH.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=["archive_path", "bytes", "sha256"])
