@@ -48,9 +48,10 @@ plot_bathy(
 ```
 
 Buffers are measured in map units, so the raster should use a projected CRS.
-The example raster is projected; other rasters should be reprojected explicitly
-when needed.
-Corridors use a 5 m buffer around each source isobath.
+The example raster is projected; longitude/latitude rasters generate a warning
+because their map-unit widths are usually not interpretable distances.
+Here `width = 5` is a one-sided buffer distance, so the nominal full corridor
+width is 10 m.
 
 ```{r corridors}
 corridors <- make_isobath_corridors(
@@ -58,7 +59,10 @@ corridors <- make_isobath_corridors(
   depths = c(-50, -80, -120),
   width = 5
 )
-corridors[, c("contour_value", "depth_label", "corridor_id")]
+corridors[, c(
+  "contour_value", "depth_label", "corridor_id", "buffer_distance",
+  "nominal_corridor_width", "overlap_policy"
+)]
 ```
 
 ```{r corridor-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Isobath corridors over hillshaded bathymetry."}
@@ -68,13 +72,15 @@ plot_isobath_corridors(
   isobaths = isobaths,
   background_contours = FALSE,
   title = "Isobath Corridors and Source Isobaths",
-  subtitle = "Corridors use a 5 m buffer around each source isobath"
+  subtitle = "5 m is the one-sided buffer distance (10 m nominal full width)"
 )
 ```
 
 The black lines are the source isobaths. The corridor polygons buffer those
-depth horizons by 5 m and define the terrain extraction zones used in the
-summary.
+depth horizons by 5 m on each side and define the terrain extraction zones used
+in the summary. Corridors are independent buffers and may overlap; values in an
+overlap can contribute to more than one corridor, so corridor summaries are not
+mutually exclusive or additive.
 
 ## Extract and Summarize Terrain
 

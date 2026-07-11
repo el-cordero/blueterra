@@ -70,16 +70,20 @@ extract_isobaths <- function(
 #' Buffers isobath contour lines to create depth-following corridor polygons.
 #'
 #' @inheritParams extract_isobaths
-#' @param width Buffer width in map units.
+#' @param width One-sided buffer distance in map units. The nominal full
+#'   corridor width is twice this value.
 #' @param smooth Logical. If `TRUE`, apply a zero-width buffer after buffering
 #'   to clean polygon topology.
 #'
 #' @return Isobath corridor polygons as `terra::SpatVector` by default.
 #'
 #' @details
-#' `width` is interpreted in the CRS map units. Projected CRS are strongly
-#' recommended. If the raster uses longitude/latitude, the function warns before
-#' buffering because distance interpretation may be misleading.
+#' `width` is interpreted as a one-sided buffer distance in the CRS map units.
+#' Projected CRS are strongly recommended. If the raster uses
+#' longitude/latitude, the function warns before buffering because distance
+#' interpretation may be misleading. Corridors are returned as independent
+#' buffers and can overlap; their summaries are therefore not mutually
+#' exclusive or additive.
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
@@ -118,6 +122,9 @@ make_isobath_corridors <- function(
     corridors <- terra::buffer(corridors, width = 0)
   }
   corridors$corridor_id <- seq_len(nrow(corridors))
+  corridors$buffer_distance <- width
+  corridors$nominal_corridor_width <- 2 * width
+  corridors$overlap_policy <- "independent_may_overlap"
   if (as == "sf") {
     check_installed("sf", "to return sf objects")
     return(sf::st_as_sf(corridors))
@@ -153,8 +160,8 @@ extract_isobath_corridors <- function(metrics, corridors, ...) {
     zones <- terra::project(zones, terra::crs(r))
   }
   vals <- terra::extract(r, zones, ID = TRUE, ...)
-  attrs <- as.data.frame(zones)
-  attrs$ID <- seq_len(nrow(attrs))
+  attrs <- zone_attributes(zones)
+  attrs$ID <- seq_len(nrow(zones))
   out <- merge(attrs, vals, by = "ID", all.y = TRUE)
   tibble::as_tibble(out)
 }
@@ -168,7 +175,8 @@ extract_isobath_corridors <- function(metrics, corridors, ...) {
 #' @param corridors Corridor polygons.
 #' @param fun Summary functions.
 #' @param na.rm Logical. Remove missing values.
-#' @param exact Logical. Use `exactextractr` when available.
+#' @param exact Logical. Use coverage-fraction-weighted exact intersections
+#'   through [summarize_terrain()] when available.
 #' @param ... Additional arguments passed to [summarize_terrain()].
 #'
 #' @return A tibble with one row per corridor.

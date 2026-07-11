@@ -1,6 +1,6 @@
 Package: blueterra
 Title: Process-Oriented Geomorphometry for Submerged Terrain
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(
     person("Elvin", "Cordero",
            email = "elvin.cordero@seamountgeo.com",
@@ -8,12 +8,12 @@ Authors@R: c(
     person("SeaMount Geospatial Labs", role = "cph")
   )
 Description: Derives, organizes, summarizes, and visualizes terrain metrics
-    from bathymetric and elevation rasters for submerged-landscape
+    from bathymetric and elevation rasters for submerged-terrain
     geomorphometry. Tools support terra-based raster preparation, slope and
-    aspect decomposition, terrain position, rugosity, curvature, depth-band
-    summaries, transect extraction, isobath-corridor analysis, and model-ready
-    summaries for seafloor classification, habitat mapping, shelf-margin
-    analysis, and spatial modeling. Methodological context for geomorphometric
+    aspect decomposition, terrain position, rugosity, a four-neighbor
+    Laplacian-style index, depth-band summaries, transect extraction,
+    isobath-corridor analysis, table preparation, visualization, and aligned
+    user-defined metric layers. Methodological context for geomorphometric
     terrain analysis is provided by Lindsay (2016)
     <doi:10.1016/j.cageo.2016.07.003>.
 License: MIT + file LICENSE

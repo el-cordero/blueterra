@@ -10,8 +10,10 @@
 #' @param fun Summary functions. Supported values are `"mean"`, `"sd"`,
 #'   `"min"`, `"max"`, `"median"`, `"sum"`, and `"count"`.
 #' @param na.rm Logical. Remove missing values before summarizing.
-#' @param exact Logical. If `TRUE`, use `exactextractr` for extraction. The
-#'   optional package must be installed.
+#' @param exact Logical. If `TRUE`, use `exactextractr` for exact
+#'   raster-polygon intersections and coverage-fraction-weighted summaries. The
+#'   optional package must be installed. Weighted `count` is an effective cell
+#'   count and weighted `sum` is a coverage-fraction-weighted cell-value sum.
 #' @param ... Additional arguments passed to extraction functions.
 #'
 #' @return A tibble with zone identifiers, zone attributes, and wide summary
@@ -20,7 +22,11 @@
 #' @details
 #' `summarize_terrain()` does not assume specific zones, depth ranges, or
 #' ecological labels. For distance-sensitive summaries, use zones and rasters in
-#' a projected CRS.
+#' a projected CRS. With `exact = TRUE`, positive `coverage_fraction` values
+#' weight means, population standard deviations, sums, counts, and medians.
+#' Minimum and maximum are evaluated over intersected cells with positive
+#' coverage. The resulting exact mean is area-weighted when raster cells have
+#' equal area in the working CRS.
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
@@ -49,8 +55,7 @@ summarize_terrain <- function(
     z <- terra::project(z, terra::crs(r))
   }
   values <- terra::extract(r, z, ID = TRUE, ...)
-  attrs <- as.data.frame(z)
-  attrs$zone_id <- seq_len(nrow(attrs))
+  attrs <- zone_attributes(z)
   pieces <- split(values, values$ID)
   rows <- lapply(seq_along(pieces), function(id) {
     vals <- pieces[[id]]
@@ -67,26 +72,85 @@ summarize_terrain_exact <- function(r, zones, fun, na.rm, ...) {
     zsf <- sf::st_transform(zsf, terra::crs(r))
   }
   extracted <- exactextractr::exact_extract(r, zsf, progress = FALSE, ...)
-  attrs <- sf::st_drop_geometry(zsf)
-  attrs$zone_id <- seq_len(nrow(attrs))
+  attrs <- zone_attributes(zsf)
   rows <- lapply(seq_along(extracted), function(id) {
     vals <- extracted[[id]]
-    summarize_zone_values(vals, id = id, attrs = attrs, fun = fun, na.rm = na.rm)
+    # exactextractr names a single extracted layer "value" regardless of the
+    # SpatRaster layer name. Restore the user-visible metric name before
+    # constructing wide summary columns.
+    if (terra::nlyr(r) == 1L && "value" %in% names(vals) && !names(r)[[1]] %in% names(vals)) {
+      names(vals)[names(vals) == "value"] <- names(r)[[1]]
+    }
+    summarize_zone_values(
+      vals, id = id, attrs = attrs, fun = fun, na.rm = na.rm,
+      weights = vals$coverage_fraction
+    )
   })
   tibble::as_tibble(do.call(rbind, rows))
 }
 
-summarize_zone_values <- function(vals, id, attrs, fun, na.rm) {
+zone_attributes <- function(zones) {
+  attrs <- if (inherits(zones, "sf")) sf::st_drop_geometry(zones) else as.data.frame(zones)
+  if (nrow(attrs) != nrow(zones)) {
+    attrs <- data.frame(row.names = seq_len(nrow(zones)))
+  }
+  attrs$zone_id <- seq_len(nrow(zones))
+  attrs
+}
+
+summarize_zone_values <- function(vals, id, attrs, fun, na.rm, weights = NULL) {
   metric_cols <- intersect(names(vals), names(vals)[vapply(vals, is.numeric, logical(1))])
   metric_cols <- setdiff(metric_cols, c("ID", "coverage_fraction"))
   attr_row <- attrs[attrs$zone_id == id, , drop = FALSE]
   out <- as.list(attr_row[1, , drop = FALSE])
   for (metric in metric_cols) {
     for (f in fun) {
-      out[[paste(metric, f, sep = "_")]] <- apply_summary_fun(vals[[metric]], f, na.rm = na.rm)
+      out[[paste(metric, f, sep = "_")]] <- if (is.null(weights)) {
+        apply_summary_fun(vals[[metric]], f, na.rm = na.rm)
+      } else {
+        apply_weighted_summary_fun(vals[[metric]], weights, f, na.rm = na.rm)
+      }
     }
   }
   as.data.frame(out, check.names = FALSE)
+}
+
+apply_weighted_summary_fun <- function(x, weights, fun, na.rm = TRUE) {
+  x <- as.numeric(x)
+  weights <- as.numeric(weights)
+  if (length(x) != length(weights)) {
+    bt_abort("Exact-summary values and coverage fractions must have the same length.")
+  }
+  valid_weight <- is.finite(weights) & weights > 0
+  if (!isTRUE(na.rm) && any(is.na(x[valid_weight]))) {
+    return(NA_real_)
+  }
+  keep <- valid_weight & is.finite(x)
+  x <- x[keep]
+  weights <- weights[keep]
+  if (length(x) == 0L || sum(weights) <= 0) {
+    return(NA_real_)
+  }
+  total_weight <- sum(weights)
+  weighted_mean <- sum(weights * x) / total_weight
+  switch(
+    fun,
+    mean = weighted_mean,
+    sd = sqrt(sum(weights * (x - weighted_mean)^2) / total_weight),
+    min = min(x),
+    max = max(x),
+    median = weighted_median(x, weights),
+    sum = sum(weights * x),
+    count = total_weight,
+    bt_abort("Unknown weighted summary function.")
+  )
+}
+
+weighted_median <- function(x, weights) {
+  order_index <- order(x)
+  x <- x[order_index]
+  weights <- weights[order_index]
+  x[[which(cumsum(weights) >= sum(weights) / 2)[[1]]]]
 }
 
 #' @rdname summarize_terrain

@@ -34,8 +34,10 @@ path.}
 
 \item{na.rm}{Logical. Remove missing values before summarizing.}
 
-\item{exact}{Logical. If \code{TRUE}, use \code{exactextractr} for extraction. The
-optional package must be installed.}
+\item{exact}{Logical. If \code{TRUE}, use \code{exactextractr} for exact
+raster-polygon intersections and coverage-fraction-weighted summaries. The
+optional package must be installed. Weighted \code{count} is an effective cell
+count and weighted \code{sum} is a coverage-fraction-weighted cell-value sum.}
 
 \item{...}{Additional arguments passed to extraction functions.}
 }
@@ -50,7 +52,11 @@ corridor features.
 \details{
 \code{summarize_terrain()} does not assume specific zones, depth ranges, or
 ecological labels. For distance-sensitive summaries, use zones and rasters in
-a projected CRS.
+a projected CRS. With \code{exact = TRUE}, positive \code{coverage_fraction} values
+weight means, population standard deviations, sums, counts, and medians.
+Minimum and maximum are evaluated over intersected cells with positive
+coverage. The resulting exact mean is area-weighted when raster cells have
+equal area in the working CRS.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))

@@ -85,11 +85,18 @@ Functions preserve the input raster sign. For example, slope depends on the
 magnitude of local gradients, while BPI/TPI interpretation depends on whether
 the raster stores elevation-like values or positive depth.
 
-\code{derive_curvature()} computes a simple Laplacian-style local curvature index
-using a four-neighbor focal kernel. It is not profile curvature or plan
-curvature. \code{derive_surface_area_ratio()} uses \code{1 / cos(slope)} from the
-terrain slope layer and clamps near-zero cosine values to avoid pathological
-ratios at extreme slopes.
+\code{derive_rugosity()} computes a vector-ruggedness-measure-style index from
+local slope and aspect vectors. Its focal means use available derivative
+cells, including partial focal support adjacent to a derivative boundary or
+missing data, but the outermost cells can remain missing because slope and
+aspect themselves require neighbouring elevation values.
+
+\code{derive_curvature()} computes a four-neighbor Laplacian-style index. It is
+not plan, profile, mean, or Gaussian curvature, is not scaled by cell
+dimensions, and is consequently strongly resolution-dependent.
+\code{derive_surface_area_ratio()} is a slope-secant approximation, \code{1 / cos(slope)},
+rather than a triangulated or directly measured benthic surface area. It
+clamps near-zero cosine values to avoid pathological ratios at extreme slopes.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))

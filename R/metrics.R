@@ -78,11 +78,18 @@ derive_terrain <- function(
 #' magnitude of local gradients, while BPI/TPI interpretation depends on whether
 #' the raster stores elevation-like values or positive depth.
 #'
-#' `derive_curvature()` computes a simple Laplacian-style local curvature index
-#' using a four-neighbor focal kernel. It is not profile curvature or plan
-#' curvature. `derive_surface_area_ratio()` uses `1 / cos(slope)` from the
-#' terrain slope layer and clamps near-zero cosine values to avoid pathological
-#' ratios at extreme slopes.
+#' `derive_rugosity()` computes a vector-ruggedness-measure-style index from
+#' local slope and aspect vectors. Its focal means use available derivative
+#' cells, including partial focal support adjacent to a derivative boundary or
+#' missing data, but the outermost cells can remain missing because slope and
+#' aspect themselves require neighbouring elevation values.
+#'
+#' `derive_curvature()` computes a four-neighbor Laplacian-style index. It is
+#' not plan, profile, mean, or Gaussian curvature, is not scaled by cell
+#' dimensions, and is consequently strongly resolution-dependent.
+#' `derive_surface_area_ratio()` is a slope-secant approximation, `1 / cos(slope)`,
+#' rather than a triangulated or directly measured benthic surface area. It
+#' clamps near-zero cosine values to avoid pathological ratios at extreme slopes.
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
@@ -231,7 +238,7 @@ derive_rugosity <- function(
 #' @param window Optional odd integer square window size in cells.
 #' @param scale Preset scale when `window` and `outer_radius` are not supplied.
 #' @param normalize Logical. If `TRUE`, divide BPI by local focal standard
-#'   deviation.
+#'   deviation. Zero-variance or unavailable focal neighborhoods return `NA`.
 #' @param filename Optional output raster path.
 #' @param overwrite Logical. Allow overwriting `filename`.
 #' @param ... Reserved for future extensions.
@@ -242,7 +249,12 @@ derive_rugosity <- function(
 #' The calculation is `cell value - focal mean`. Positive values therefore mean
 #' higher-than-neighborhood values when the raster is elevation-like. For
 #' positive-depth rasters, interpretation is reversed unless users convert the
-#' sign convention first.
+#' sign convention first. Square windows are measured in cells and include the
+#' focal cell. Annular windows are measured in map units, require a projected
+#' CRS with linear units, and use separate x- and y-cell resolutions when cells
+#' are not square. At raster edges and next to missing cells, BPI uses the
+#' available cells in its partial focal support; a missing focal value remains
+#' missing.
 #'
 #' @examples
 #' bathy <- read_bathy(blueterra_example("bathy"))
@@ -268,7 +280,7 @@ derive_bpi <- function(
   out <- r - focal_mean
   if (isTRUE(normalize)) {
     focal_sd <- terra::focal(r, w = w, fun = stats::sd, na.rm = TRUE, na.policy = "omit")
-    out <- out / focal_sd
+    out <- terra::ifel(focal_sd > 0, out / focal_sd, NA)
   }
   suffix <- if (!is.null(window)) {
     paste0(window, "x", window)
@@ -298,11 +310,16 @@ bpi_window <- function(r, inner_radius, outer_radius, window, scale) {
     if (length(inner_radius) != 1 || inner_radius < 0 || !is.finite(inner_radius)) {
       bt_abort("`inner_radius` must be one non-negative finite value.")
     }
-    cell <- min(terra::res(r))
-    n <- ceiling(outer_radius / cell)
-    n <- max(1, n)
-    axis <- seq(-n, n)
-    d <- sqrt(outer(axis * cell, axis * cell, function(a, b) a^2 + b^2))
+    require_projected(r, operation = "BPI annulus radii")
+    res_xy <- terra::res(r)
+    if (length(res_xy) != 2L || any(!is.finite(res_xy)) || any(res_xy <= 0)) {
+      bt_abort("BPI annulus radii require finite positive raster cell dimensions.")
+    }
+    nx <- max(1, ceiling(outer_radius / res_xy[[1]]))
+    ny <- max(1, ceiling(outer_radius / res_xy[[2]]))
+    x_offset <- seq(-nx, nx) * res_xy[[1]]
+    y_offset <- seq(-ny, ny) * res_xy[[2]]
+    d <- sqrt(outer(y_offset^2, x_offset^2, "+"))
     w <- ifelse(d <= outer_radius & d >= inner_radius, 1, NA)
     if (all(is.na(w))) {
       bt_abort("BPI annulus does not include any cells.")

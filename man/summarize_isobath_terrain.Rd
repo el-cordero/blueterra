@@ -22,7 +22,8 @@ summarize_isobath_terrain(
 
 \item{na.rm}{Logical. Remove missing values.}
 
-\item{exact}{Logical. Use \code{exactextractr} when available.}
+\item{exact}{Logical. Use coverage-fraction-weighted exact intersections
+through \code{\link[=summarize_terrain]{summarize_terrain()}} when available.}
 
 \item{...}{Additional arguments passed to \code{\link[=summarize_terrain]{summarize_terrain()}}.}
 }

@@ -39,8 +39,9 @@
 #' components, and converted to the mathematical line angle used for transect
 #' generation. For example, a south-facing mean aspect near 180 degrees yields a
 #' transect angle near 90 degrees, producing north-south transects in projected
-#' coordinates. The estimated angle and source metadata are stored on the output
-#' lines so the orientation can be inspected.
+#' coordinates. The estimated angle, source metadata, and circular resultant
+#' length are stored on the output lines. Resultant lengths near zero indicate
+#' weakly concentrated aspects and an unstable mean direction.
 #'
 #' @examples
 #' zones <- terra::vect(blueterra_example("zones"))
@@ -139,7 +140,8 @@ resolve_transect_orientation <- function(
       angle_source = "manual",
       mean_aspect_deg = NA_real_,
       orientation_weight = NA_character_,
-      n_orientation_cells = NA_integer_
+      n_orientation_cells = NA_integer_,
+      orientation_resultant_length = NA_real_
     ))
   }
 
@@ -156,7 +158,8 @@ resolve_transect_orientation <- function(
       angle_source = "surface",
       mean_aspect_deg = estimated$bearing_deg[[1]],
       orientation_weight = orientation_weight,
-      n_orientation_cells = estimated$n_orientation_cells[[1]]
+      n_orientation_cells = estimated$n_orientation_cells[[1]],
+      orientation_resultant_length = estimated$orientation_resultant_length[[1]]
     ))
   }
 
@@ -166,7 +169,8 @@ resolve_transect_orientation <- function(
       angle_source = "bbox",
       mean_aspect_deg = NA_real_,
       orientation_weight = NA_character_,
-      n_orientation_cells = NA_integer_
+      n_orientation_cells = NA_integer_,
+      orientation_resultant_length = NA_real_
     ))
   }
 
@@ -179,7 +183,8 @@ resolve_transect_orientation <- function(
     angle_source = "fallback",
     mean_aspect_deg = NA_real_,
     orientation_weight = NA_character_,
-    n_orientation_cells = NA_integer_
+    n_orientation_cells = NA_integer_,
+    orientation_resultant_length = NA_real_
   )
 }
 
@@ -229,6 +234,7 @@ transects_for_zone <- function(zone, spacing, angle, length, zone_id, orientatio
       clipped$mean_aspect_deg <- orientation_info$mean_aspect_deg
       clipped$orientation_weight <- orientation_info$orientation_weight
       clipped$n_orientation_cells <- orientation_info$n_orientation_cells
+      clipped$orientation_resultant_length <- orientation_info$orientation_resultant_length
       pieces[[j]] <- clipped
     }
   }
@@ -330,8 +336,9 @@ estimate_surface_orientation <- function(
     mean_east <- mean(eastness[keep])
   }
 
+  orientation_resultant_length <- sqrt(mean_north^2 + mean_east^2)
   if (!is.finite(mean_north) || !is.finite(mean_east) ||
-      sqrt(mean_north^2 + mean_east^2) < .Machine$double.eps) {
+      orientation_resultant_length < .Machine$double.eps) {
     bt_abort("Mean aspect components cancel out; surface orientation is ambiguous.")
   }
 
@@ -352,7 +359,8 @@ estimate_surface_orientation <- function(
     transect_angle_deg = transect_angle_deg,
     orientation_weight = orientation_weight,
     min_slope = min_slope,
-    n_orientation_cells = sum(keep)
+    n_orientation_cells = sum(keep),
+    orientation_resultant_length = orientation_resultant_length
   )
 }
 

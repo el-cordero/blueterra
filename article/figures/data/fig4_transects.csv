@@ -1,0 +1,7 @@
+"zone_id","polygon_provenance","offset","angle_deg","angle_source","mean_aspect_deg","orientation_weight","n_orientation_cells","orientation_resultant_length","transect_id"
+"1","author-created deterministic analytical window",-593.908891458578,84.7831685109776,"surface",185.216831489022,"slope",103666,0.771333888758782,"1_1"
+"1","author-created deterministic analytical window",-343.908891458578,84.7831685109776,"surface",185.216831489022,"slope",103666,0.771333888758782,"1_2"
+"1","author-created deterministic analytical window",-93.9088914585775,84.7831685109776,"surface",185.216831489022,"slope",103666,0.771333888758782,"1_3"
+"1","author-created deterministic analytical window",156.091108541422,84.7831685109776,"surface",185.216831489022,"slope",103666,0.771333888758782,"1_4"
+"1","author-created deterministic analytical window",406.091108541422,84.7831685109776,"surface",185.216831489022,"slope",103666,0.771333888758782,"1_5"
+"1","author-created deterministic analytical window",656.091108541422,84.7831685109776,"surface",185.216831489022,"slope",103666,0.771333888758782,"1_6"

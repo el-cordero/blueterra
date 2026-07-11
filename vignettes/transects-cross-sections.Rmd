@@ -38,7 +38,9 @@ estimate_surface_orientation(prepared, hitw_rect)
 
 `estimate_surface_orientation()` converts local aspect into a representative
 bearing and a transect angle. Slope weighting emphasizes cells where orientation
-is better defined.
+is better defined. Its `orientation_resultant_length` records aspect-vector
+concentration: values near one indicate a stable common direction, whereas
+values near zero indicate cancelling aspects and an unstable mean angle.
 
 ## Automatic Transect Orientation
 
@@ -49,7 +51,10 @@ transects <- make_transects(
   bathy = prepared
 )
 
-transects[, c("transect_id", "angle_deg", "angle_source", "mean_aspect_deg")]
+transects[, c(
+  "transect_id", "angle_deg", "angle_source", "mean_aspect_deg",
+  "orientation_resultant_length"
+)]
 ```
 
 ```{r automatic-map, eval=requireNamespace("ggplot2", quietly = TRUE), fig.alt="Automatically oriented transects over hillshaded bathymetry."}
@@ -63,6 +68,11 @@ plot_transects(
   subtitle = "Line angle estimated from local surface aspect"
 )
 ```
+
+Inspect the resultant length before treating an automatic angle as a useful
+surface-derived direction. A weak value calls for a manual angle or the
+bounding-box orientation rather than a precise interpretation of the estimated
+mean aspect.
 
 ## Manual Angle Override
 

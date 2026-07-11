@@ -8,6 +8,8 @@
 *.tgz
 *.zip
 *.log
+__pycache__/
+*.py[cod]
 *.aux.xml
 *.ovr
 *.tmp

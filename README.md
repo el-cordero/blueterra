@@ -118,6 +118,20 @@ Depth sign conventions are preserved unless conversion is requested
 explicitly. The example rasters are stored as negative elevation, so
 larger numeric values are shallower and smaller values are deeper.
 
+Square BPI windows are expressed in cells and include the focal cell.
+Annular BPI radii are expressed in map units, require a projected CRS,
+and use each raster axis's own cell dimension. BPI and VRM-style
+rugosity use available focal support at raster edges and along
+missing-data boundaries; the outermost derivative cells can still be
+missing. Normalized BPI returns `NA` when its focal support has zero
+variance or no usable values.
+
+For boundary-sensitive polygon summaries, set `exact = TRUE` when the
+optional `exactextractr` dependency is available. This uses
+raster--polygon coverage fractions to weight means, population standard
+deviations, medians, sums, and effective cell counts; minima and maxima
+use positively intersected cells.
+
 ## Key Figures
 
 Hillshade is used in these figures as visual relief. It helps the reader
@@ -170,6 +184,12 @@ plot_cross_sections(
 
 <img src="man/figures/README-profile-and-corridors-1.png" alt="Bathymetric cross-sections oriented from shallow terrain toward deeper terrain." width="100%" />
 
+Surface-derived transects record `orientation_resultant_length` alongside
+the angle and source. Values near one indicate aligned aspect vectors;
+values near zero indicate cancelling aspects and an unreliable mean
+direction, in which case a manual or bounding-box orientation is more
+defensible.
+
 ``` r
 isobaths <- extract_isobaths(hitw_prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(
@@ -184,11 +204,17 @@ plot_isobath_corridors(
   isobaths = isobaths,
   background_contours = FALSE,
   title = "Isobath Corridors",
-  subtitle = "Black lines show source isobaths; corridors use 5 m buffers"
+  subtitle = "Black lines show source isobaths; 5 m is the one-sided buffer distance"
 )
 ```
 
 <img src="man/figures/README-isobath-map-1.png" alt="Isobath corridors over hillshaded bathymetry with source isobaths." width="100%" />
+
+Here `width = 5` creates a nominal 10 m full-width corridor around each
+source isobath. Corridors are independent buffers and may overlap, so
+their summaries are not mutually exclusive or additive. The returned
+features record `buffer_distance`, `nominal_corridor_width`, and
+`overlap_policy`.
 
 ## Articles
 

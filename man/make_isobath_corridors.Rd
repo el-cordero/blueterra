@@ -19,7 +19,8 @@ make_isobath_corridors(
 
 \item{depths}{Numeric contour levels.}
 
-\item{width}{Buffer width in map units.}
+\item{width}{One-sided buffer distance in map units. The nominal full
+corridor width is twice this value.}
 
 \item{smooth}{Logical. If \code{TRUE}, apply a zero-width buffer after buffering
 to clean polygon topology.}
@@ -39,9 +40,12 @@ Isobath corridor polygons as \code{terra::SpatVector} by default.
 Buffers isobath contour lines to create depth-following corridor polygons.
 }
 \details{
-\code{width} is interpreted in the CRS map units. Projected CRS are strongly
-recommended. If the raster uses longitude/latitude, the function warns before
-buffering because distance interpretation may be misleading.
+\code{width} is interpreted as a one-sided buffer distance in the CRS map units.
+Projected CRS are strongly recommended. If the raster uses
+longitude/latitude, the function warns before buffering because distance
+interpretation may be misleading. Corridors are returned as independent
+buffers and can overlap; their summaries are therefore not mutually
+exclusive or additive.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))

@@ -1,0 +1,7 @@
+"scenario","geometry","normalize","centre_included_by_weights","neighbourhood_cells","focal_mean","focal_sd","expected_centre_value","observed_centre_value","counterfactual_excluding_centre","tolerance","pass"
+"bpi_square_3x3","square 3 x 3",FALSE,TRUE,9,40.3333333333333,15.2725243493013,34.6666666666667,34.6666666666667,39,3.46666666666667e-07,TRUE
+"bpi_square_3x3","square 3 x 3",TRUE,TRUE,9,40.3333333333333,15.2725243493013,2.26987142883506,2.26987142883506,4.55126441575318,2.26987142883506e-08,TRUE
+"bpi_annulus_inner0_outer1","annulus inner 0, outer 1",FALSE,TRUE,5,43.8,18.619881847101,31.2,31.2,39,3.12e-07,TRUE
+"bpi_annulus_inner0_outer1","annulus inner 0, outer 1",TRUE,TRUE,5,43.8,18.619881847101,1.6756282481383,1.6756282481383,5.18084708040956,1.6756282481383e-08,TRUE
+"bpi_annulus_inner1_outer_sqrt2","annulus inner 1, outer sqrt(2)",FALSE,FALSE,8,36,8.5690472882679,39,39,39,3.9e-07,TRUE
+"bpi_annulus_inner1_outer_sqrt2","annulus inner 1, outer sqrt(2)",TRUE,FALSE,8,36,8.5690472882679,4.55126441575318,4.55126441575318,4.55126441575318,4.55126441575318e-08,TRUE

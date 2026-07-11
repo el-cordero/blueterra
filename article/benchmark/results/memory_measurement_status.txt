@@ -1,0 +1,3 @@
+Peak-memory result: not reported.
+Reason: the sandboxed execution environment did not permit OS-level RSS tools.
+The benchmark deliberately does not report R GC Vcell values as peak memory.

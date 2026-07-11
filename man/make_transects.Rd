@@ -67,8 +67,9 @@ Aspect is converted to northness and eastness, averaged as circular
 components, and converted to the mathematical line angle used for transect
 generation. For example, a south-facing mean aspect near 180 degrees yields a
 transect angle near 90 degrees, producing north-south transects in projected
-coordinates. The estimated angle and source metadata are stored on the output
-lines so the orientation can be inspected.
+coordinates. The estimated angle, source metadata, and circular resultant
+length are stored on the output lines. Resultant lengths near zero indicate
+weakly concentrated aspects and an unstable mean direction.
 }
 \examples{
 zones <- terra::vect(blueterra_example("zones"))

@@ -33,8 +33,9 @@ context while preserving the metric as the mapped value.*
 <img src="../man/figures/site/visual-proof-transects.png" width="100%" alt="Terrain-oriented transects over hillshaded bathymetry." />
 
 *Transects are oriented from local surface aspect and plotted over the prepared
-bathymetry. The line angle is recorded in the transect attributes so the choice
-is inspectable.*
+bathymetry. The line angle and `orientation_resultant_length` are recorded in
+the transect attributes; a low resultant length signals an unstable automatic
+mean direction.*
 
 ## Cross-Sections
 
@@ -49,7 +50,8 @@ automatic value-column inference.*
 <img src="../man/figures/site/visual-proof-isobath-corridors.png" width="100%" alt="Isobath corridors over hillshaded bathymetry with source isobaths in black." />
 
 *Isobath corridors are shown with the source isobaths in black. The black lines
-mark the depth horizons that were buffered to create extraction corridors.*
+mark the depth horizons that were buffered to create independent extraction
+corridors; overlapping corridor summaries are not mutually exclusive.*
 
 ## PCA
 

@@ -267,8 +267,9 @@ infer_profile_value_col <- function(
     "distance", "normalized_distance", "x", "y", "ID", "id", "cell",
     "row", "col", "zone_id", "corridor_id", "transect_id", "site_id",
     "width_m", "height_m", "angle_deg", "angle_source", "mean_aspect_deg",
-    "n_orientation_cells", "orientation_weight", "offset", "feature_type",
-    "contour_value", "depth_label"
+    "n_orientation_cells", "orientation_resultant_length", "orientation_weight",
+    "offset", "feature_type", "contour_value", "depth_label",
+    "buffer_distance", "nominal_corridor_width", "overlap_policy"
   )
   exclude <- unique(c(default_exclude, exclude))
   candidates <- setdiff(numeric_cols, exclude)

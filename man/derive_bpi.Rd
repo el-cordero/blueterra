@@ -38,7 +38,7 @@ derive_multiscale_bpi(
 \item{scale}{Preset scale when \code{window} and \code{outer_radius} are not supplied.}
 
 \item{normalize}{Logical. If \code{TRUE}, divide BPI by local focal standard
-deviation.}
+deviation. Zero-variance or unavailable focal neighborhoods return \code{NA}.}
 
 \item{filename}{Optional output raster path.}
 
@@ -59,7 +59,12 @@ cell and its focal-neighborhood mean.
 The calculation is \verb{cell value - focal mean}. Positive values therefore mean
 higher-than-neighborhood values when the raster is elevation-like. For
 positive-depth rasters, interpretation is reversed unless users convert the
-sign convention first.
+sign convention first. Square windows are measured in cells and include the
+focal cell. Annular windows are measured in map units, require a projected
+CRS with linear units, and use separate x- and y-cell resolutions when cells
+are not square. At raster edges and next to missing cells, BPI uses the
+available cells in its partial focal support; a missing focal value remains
+missing.
 }
 \examples{
 bathy <- read_bathy(blueterra_example("bathy"))
