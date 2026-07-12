@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -134,8 +134,9 @@ Aspect is converted to northness and eastness, averaged as circular
 components, and converted to the mathematical line angle used for transect
 generation. For example, a south-facing mean aspect near 180 degrees yields a
 transect angle near 90 degrees, producing north-south transects in projected
-coordinates. The estimated angle and source metadata are stored on the output
-lines so the orientation can be inspected.</p>
+coordinates. The estimated angle, source metadata, and circular resultant
+length are stored on the output lines. Resultant lengths near zero indicate
+weakly concentrated aspects and an unstable mean direction.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -151,10 +152,10 @@ lines so the orientation can be inspected.</p>
 <span class="r-in"><span><span class="va">transects</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> class       : SpatVector</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> geometry    : lines</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> dimensions  : 6, 14  (geometries, attributes)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> dimensions  : 6, 15  (geometries, attributes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> extent      : 137487.8, 137761.1, 205591, 205891  (xmin, xmax, ymin, ymax)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> coord. ref. : NAD83 / Puerto Rico &amp; Virgin Is. (EPSG:32161)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset angle_source   (and 4 more)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset angle_source   (and 5 more)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> type        :   &lt;chr&gt;            &lt;chr&gt;           &lt;chr&gt;            &lt;chr&gt;   &lt;num&gt;    &lt;num&gt;     &lt;num&gt;   &lt;chr&gt;    &lt;num&gt;        &lt;chr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300    94.311       1 -124.264      surface</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300    94.311       1 -74.2641      surface</span>

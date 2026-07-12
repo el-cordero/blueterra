@@ -91,9 +91,10 @@ Aspect is converted to northness and eastness, averaged as circular
 components, and converted to the mathematical line angle used for
 transect generation. For example, a south-facing mean aspect near 180
 degrees yields a transect angle near 90 degrees, producing north-south
-transects in projected coordinates. The estimated angle and source
-metadata are stored on the output lines so the orientation can be
-inspected.
+transects in projected coordinates. The estimated angle, source
+metadata, and circular resultant length are stored on the output lines.
+Resultant lengths near zero indicate weakly concentrated aspects and an
+unstable mean direction.
 
 ## See also
 
@@ -110,10 +111,10 @@ transects <- make_transects(zones[1, ], spacing = 50, bathy = bathy)
 transects
 #> class       : SpatVector
 #> geometry    : lines
-#> dimensions  : 6, 14  (geometries, attributes)
+#> dimensions  : 6, 15  (geometries, attributes)
 #> extent      : 137487.8, 137761.1, 205591, 205891  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset angle_source   (and 4 more)
+#> names       : site_id        site_name    feature_type      source_name width_m height_m angle_deg zone_id   offset angle_source   (and 5 more)
 #> type        :   <chr>            <chr>           <chr>            <chr>   <num>    <num>     <num>   <chr>    <num>        <chr>
 #> values      :    hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300    94.311       1 -124.264      surface
 #>                  hitw Hole-in-the-Wall sampling_recta~ Hole In the Wall     300      300    94.311       1 -74.2641      surface

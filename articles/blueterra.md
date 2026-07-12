@@ -133,12 +133,12 @@ assign_process_groups(terrain)
 #>  2 aspect_deg    aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect  
 #>  3 northness     northness       Nort… seafloor_asp… Cosine tra… derive_northne…
 #>  4 eastness      eastness        East… seafloor_asp… Sine trans… derive_eastness
-#>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
-#>  6 rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… Vector rug… derive_rugosity
+#>  5 tri           tri             Terr… seafloor_rug… terra terr… derive_tri     
+#>  6 rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… One minus … derive_rugosity
 #>  7 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
 #>  8 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
-#>  9 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
-#> 10 surface_area… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface…
+#>  9 curvature     curvature       Four… curvature     Sum of the… derive_curvatu…
+#> 10 surface_area… surface_area_r… Surf… seafloor_rug… Slope-seca… derive_surface…
 #> # ℹ 1 more variable: matched <lgl>
 summarize_process_groups(terrain)
 #> # A tibble: 5 × 3
@@ -184,6 +184,12 @@ zone_summary[, c("site_id", "site_name", "slope_deg_mean", "bpi_3x3_mean")]
 #> 1 hitw    Hole-in-the-Wall           50.9      0.00568
 ```
 
+Set `exact = TRUE` for boundary-sensitive polygon summaries when the
+optional `exactextractr` dependency is available. Exact raster–polygon
+intersections then supply coverage fractions used to weight means,
+population standard deviations, medians, sums, and effective cell
+counts; minima and maxima use positively intersected cells.
+
 ## Transects and Cross-Sections
 
 Transects convert the raster surface into profiles. When `bathy` is
@@ -200,9 +206,12 @@ cross_sections <- sample_transects(transects, prepared, n = 12)
 
 orientation
 #> [1] 94.61515
-unique(as.data.frame(transects)[, c("angle_deg", "angle_source", "mean_aspect_deg")])
-#>   angle_deg angle_source mean_aspect_deg
-#> 1  94.61515      surface        175.3849
+unique(as.data.frame(transects)[, c(
+  "angle_deg", "angle_source", "mean_aspect_deg",
+  "orientation_resultant_length"
+)])
+#>   angle_deg angle_source mean_aspect_deg orientation_resultant_length
+#> 1  94.61515      surface        175.3849                    0.9817056
 head(cross_sections[, c("transect_id", "distance", "bathy_m")])
 #> # A tibble: 6 × 3
 #>   transect_id distance bathy_m
@@ -214,6 +223,12 @@ head(cross_sections[, c("transect_id", "distance", "bathy_m")])
 #> 5 1_1            109.    -94.8
 #> 6 1_1            137.    -71.8
 ```
+
+Automatic orientation metadata include `orientation_resultant_length`.
+Values near one indicate a concentrated aspect direction; values near
+zero signal cancelling aspect vectors and an unreliable mean angle. In
+that case, use a manual or bounding-box orientation rather than
+overinterpreting the automatic direction.
 
 ``` r
 
@@ -310,24 +325,28 @@ transect.](blueterra_files/figure-html/metric-profile-1.png)
 
 Isobath corridors summarize terrain along depth horizons. The source
 isobaths are shown in black so the reader can see which contour each
-corridor buffers. Corridors use a 5 m buffer around each source isobath.
+corridor buffers. Here `width = 5` is a one-sided buffer distance,
+producing a nominal 10 m full-width corridor.
 
 ``` r
 
 isobaths <- extract_isobaths(prepared, depths = c(-50, -80, -120))
 corridors <- make_isobath_corridors(prepared, depths = c(-50, -80, -120), width = 5)
 
-corridors[, c("contour_value", "depth_label", "corridor_id")]
+corridors[, c(
+  "contour_value", "depth_label", "corridor_id", "buffer_distance",
+  "nominal_corridor_width", "overlap_policy"
+)]
 #> class       : SpatVector
 #> geometry    : polygons
-#> dimensions  : 3, 3  (geometries, attributes)
+#> dimensions  : 3, 6  (geometries, attributes)
 #> extent      : 137471.2, 137777, 205664.4, 205761.6  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> names       : contour_value depth_label corridor_id
-#> type        :         <num>       <num>       <int>
-#> values      :           -50         -50           1
-#>                         -80         -80           2
-#>                        -120        -120           3
+#> names       : contour_value depth_label corridor_id buffer_distance nominal_corrido~   overlap_policy
+#> type        :         <num>       <num>       <int>           <num>            <num>            <chr>
+#> values      :           -50         -50           1               5               10 independent_may~
+#>                         -80         -80           2               5               10 independent_may~
+#>                        -120        -120           3               5               10 independent_may~
 summarize_isobath_terrain(terrain, corridors)[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean")]
 #> # A tibble: 3 × 3
 #>   contour_value slope_deg_mean bpi_3x3_mean
@@ -345,12 +364,16 @@ plot_isobath_corridors(
   isobaths = isobaths,
   background_contours = FALSE,
   title = "Isobath Corridors and Source Isobaths",
-  subtitle = "Corridors use a 5 m buffer around each source isobath"
+  subtitle = "5 m is the one-sided buffer distance (10 m nominal full width)"
 )
 ```
 
 ![Isobath corridors over hillshaded bathymetry with source isobaths in
 black.](blueterra_files/figure-html/corridor-map-1.png)
+
+Corridors are independent buffers and may overlap. A cell in an overlap
+can be included in more than one corridor summary, so corridor summaries
+are not mutually exclusive or additive.
 
 ## PCA and Model-Ready Tables
 

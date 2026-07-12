@@ -48,8 +48,10 @@ summarize_terrain_by_zone(
 
 - exact:
 
-  Logical. If `TRUE`, use `exactextractr` for extraction. The optional
-  package must be installed.
+  Logical. If `TRUE`, use `exactextractr` for exact raster-polygon
+  intersections and coverage-fraction-weighted summaries. The optional
+  package must be installed. Weighted `count` is an effective cell count
+  and weighted `sum` is a coverage-fraction-weighted cell-value sum.
 
 - ...:
 
@@ -64,7 +66,11 @@ columns named `metric_function`.
 
 `summarize_terrain()` does not assume specific zones, depth ranges, or
 ecological labels. For distance-sensitive summaries, use zones and
-rasters in a projected CRS.
+rasters in a projected CRS. With `exact = TRUE`, positive
+`coverage_fraction` values weight means, population standard deviations,
+sums, counts, and medians. Minimum and maximum are evaluated over
+intersected cells with positive coverage. The resulting exact mean is
+area-weighted when raster cells have equal area in the working CRS.
 
 ## See also
 

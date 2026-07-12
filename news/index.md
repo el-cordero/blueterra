@@ -1,5 +1,27 @@
 # Changelog
 
+## blueterra 0.2.0
+
+- Corrected map-unit annular BPI kernels to use independent x and y cell
+  dimensions, and require a projected CRS for radii expressed in map
+  units.
+- Made normalized BPI return `NA` for zero-variance or unavailable focal
+  neighborhoods rather than an accidental `NaN`.
+- Made `exact = TRUE` polygon summaries coverage-fraction weighted for
+  mean, population standard deviation, median, sum, and effective cell
+  count; single-layer exact summaries now preserve the raster layer
+  name.
+- Corrected polygon summaries and isobath-corridor extraction for
+  vectors with no attribute table by assigning stable zone identifiers.
+- Added transect orientation-resultant metadata and documented its use
+  as a concentration indicator for surface-derived directions.
+- Recorded corridor buffer distance, nominal full width, and independent
+  overlap policy in corridor outputs.
+- Added regression tests for annular BPI geometry and CRS handling, zero
+  variance, focal support, known spatial summaries, transect geometry
+  and reliability, isobath corridors, custom-layer geometry, and
+  unmatched metric catalog entries.
+
 ## blueterra 0.1.0
 
 - Initial development version.

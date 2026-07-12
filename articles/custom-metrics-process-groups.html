@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -232,10 +232,10 @@ group it belongs to, and how it should be interpreted.</p>
 <span><span class="co">#&gt;   metric metric_standard label process_group description source_function matched</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> slope… slope_deg       Slope slope_gradie… Local stee… derive_slope    TRUE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> tri    tri             Terr… seafloor_rug… Local terr… derive_tri      TRUE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> tri    tri             Terr… seafloor_rug… terra terr… derive_tri      TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bpi_3… bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi      TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bpi_1… bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi      TRUE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> curva… curvature       Curv… curvature     Laplacian-… derive_curvatu… TRUE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> curva… curvature       Four… curvature     Sum of the… derive_curvatu… TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> slope… slope_tri_index Slop… custom_relief Product of… derive_custom_… TRUE   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> relie… relief_positio… Reli… custom_relief TRI plus w… derive_custom_… TRUE</span></span>
 <span><span class="fu"><a href="../reference/summarize_process_groups.html">summarize_process_groups</a></span><span class="op">(</span><span class="va">extended</span>, catalog <span class="op">=</span> <span class="va">custom_catalog</span><span class="op">)</span></span>
@@ -255,9 +255,9 @@ group it belongs to, and how it should be interpreted.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 9</span></span></span>
 <span><span class="co">#&gt;   metric                label    process_group description units source_function</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> curvature             Curvatu… curvature     Laplacian-… inpu… derive_curvatu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> curvature             Four-ne… curvature     Sum of the… inpu… derive_curvatu…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bpi_3x3               Fine-sc… seafloor_pos… Fine-scale… inpu… derive_bpi     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> tri                   Terrain… seafloor_rug… Local terr… inpu… derive_tri     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> tri                   Terrain… seafloor_rug… terra terr… inpu… derive_tri     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> slope_deg             Slope    slope_gradie… Local stee… degr… derive_slope   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> relief_position_index Relief-… custom_relief TRI plus w… index derive_custom_…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: requires_optional_dependency &lt;lgl&gt;,</span></span></span>

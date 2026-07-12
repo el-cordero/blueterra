@@ -9,7 +9,7 @@ corridor features."><meta property="og:image" content="https://el-cordero.github
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,8 +94,10 @@ path.</p></dd>
 
 
 <dt id="arg-exact">exact<a class="anchor" aria-label="anchor" href="#arg-exact"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, use <code>exactextractr</code> for extraction. The
-optional package must be installed.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, use <code>exactextractr</code> for exact
+raster-polygon intersections and coverage-fraction-weighted summaries. The
+optional package must be installed. Weighted <code>count</code> is an effective cell
+count and weighted <code>sum</code> is a coverage-fraction-weighted cell-value sum.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -111,7 +113,11 @@ columns named <code>metric_function</code>.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>summarize_terrain()</code> does not assume specific zones, depth ranges, or
 ecological labels. For distance-sensitive summaries, use zones and rasters in
-a projected CRS.</p>
+a projected CRS. With <code>exact = TRUE</code>, positive <code>coverage_fraction</code> values
+weight means, population standard deviations, sums, counts, and medians.
+Minimum and maximum are evaluated over intersected cells with positive
+coverage. The resulting exact mean is area-weighted when raster cells have
+equal area in the working CRS.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

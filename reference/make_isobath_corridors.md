@@ -30,7 +30,8 @@ make_isobath_corridors(
 
 - width:
 
-  Buffer width in map units.
+  One-sided buffer distance in map units. The nominal full corridor
+  width is twice this value.
 
 - smooth:
 
@@ -59,9 +60,12 @@ by default.
 
 ## Details
 
-`width` is interpreted in the CRS map units. Projected CRS are strongly
-recommended. If the raster uses longitude/latitude, the function warns
-before buffering because distance interpretation may be misleading.
+`width` is interpreted as a one-sided buffer distance in the CRS map
+units. Projected CRS are strongly recommended. If the raster uses
+longitude/latitude, the function warns before buffering because distance
+interpretation may be misleading. Corridors are returned as independent
+buffers and can overlap; their summaries are therefore not mutually
+exclusive or additive.
 
 ## See also
 
@@ -75,11 +79,11 @@ bathy <- read_bathy(blueterra_example("bathy"))
 make_isobath_corridors(bathy, depths = c(-40, -60), width = 5)
 #> class       : SpatVector
 #> geometry    : polygons
-#> dimensions  : 2, 4  (geometries, attributes)
+#> dimensions  : 2, 7  (geometries, attributes)
 #> extent      : 134965.3, 138732.2, 204565.3, 205790.1  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> names       : level contour_value depth_label corridor_id
-#> type        : <num>         <num>       <num>       <int>
-#> values      :   -40           -40         -40           1
-#>                 -60           -60         -60           2
+#> names       : level contour_value depth_label corridor_id buffer_distance nominal_corrid~  overlap_policy
+#> type        : <num>         <num>       <num>       <int>           <num>           <num>           <chr>
+#> values      :   -40           -40         -40           1               5              10 independent_ma~
+#>                 -60           -60         -60           2               5              10 independent_ma~
 ```

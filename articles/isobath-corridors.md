@@ -55,9 +55,10 @@ plot_bathy(
 bathymetry.](isobath-corridors_files/figure-html/isobath-map-1.png)
 
 Buffers are measured in map units, so the raster should use a projected
-CRS. The example raster is projected; other rasters should be
-reprojected explicitly when needed. Corridors use a 5 m buffer around
-each source isobath.
+CRS. The example raster is projected; longitude/latitude rasters
+generate a warning because their map-unit widths are usually not
+interpretable distances. Here `width = 5` is a one-sided buffer
+distance, so the nominal full corridor width is 10 m.
 
 ``` r
 
@@ -66,17 +67,20 @@ corridors <- make_isobath_corridors(
   depths = c(-50, -80, -120),
   width = 5
 )
-corridors[, c("contour_value", "depth_label", "corridor_id")]
+corridors[, c(
+  "contour_value", "depth_label", "corridor_id", "buffer_distance",
+  "nominal_corridor_width", "overlap_policy"
+)]
 #> class       : SpatVector
 #> geometry    : polygons
-#> dimensions  : 3, 3  (geometries, attributes)
+#> dimensions  : 3, 6  (geometries, attributes)
 #> extent      : 137471.2, 137777, 205664.4, 205761.6  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> names       : contour_value depth_label corridor_id
-#> type        :         <num>       <num>       <int>
-#> values      :           -50         -50           1
-#>                         -80         -80           2
-#>                        -120        -120           3
+#> names       : contour_value depth_label corridor_id buffer_distance nominal_corrido~   overlap_policy
+#> type        :         <num>       <num>       <int>           <num>            <num>            <chr>
+#> values      :           -50         -50           1               5               10 independent_may~
+#>                         -80         -80           2               5               10 independent_may~
+#>                        -120        -120           3               5               10 independent_may~
 ```
 
 ``` r
@@ -87,7 +91,7 @@ plot_isobath_corridors(
   isobaths = isobaths,
   background_contours = FALSE,
   title = "Isobath Corridors and Source Isobaths",
-  subtitle = "Corridors use a 5 m buffer around each source isobath"
+  subtitle = "5 m is the one-sided buffer distance (10 m nominal full width)"
 )
 ```
 
@@ -95,8 +99,10 @@ plot_isobath_corridors(
 bathymetry.](isobath-corridors_files/figure-html/corridor-map-1.png)
 
 The black lines are the source isobaths. The corridor polygons buffer
-those depth horizons by 5 m and define the terrain extraction zones used
-in the summary.
+those depth horizons by 5 m on each side and define the terrain
+extraction zones used in the summary. Corridors are independent buffers
+and may overlap; values in an overlap can contribute to more than one
+corridor, so corridor summaries are not mutually exclusive or additive.
 
 ## Extract and Summarize Terrain
 
@@ -104,16 +110,18 @@ in the summary.
 
 cells <- extract_isobath_corridors(terrain, corridors)
 head(cells)
-#> # A tibble: 6 × 10
-#>      ID level contour_value depth_label corridor_id slope_deg bpi_3x3 bpi_11x11
-#>   <int> <dbl>         <dbl>       <dbl>       <int>     <dbl>   <dbl>     <dbl>
-#> 1     1   -50           -50         -50           1      47.1  -0.336      4.82
-#> 2     1   -50           -50         -50           1      46.9  -0.436      4.35
-#> 3     1   -50           -50         -50           1      47.0  -0.428      3.78
-#> 4     1   -50           -50         -50           1      47.8  -0.378      3.35
-#> 5     1   -50           -50         -50           1      48.4  -0.419      3.06
-#> 6     1   -50           -50         -50           1      48.2  -0.676      2.73
-#> # ℹ 2 more variables: curvature <dbl>, surface_area_ratio <dbl>
+#> # A tibble: 6 × 14
+#>      ID level contour_value depth_label corridor_id buffer_distance
+#>   <int> <dbl>         <dbl>       <dbl>       <int>           <dbl>
+#> 1     1   -50           -50         -50           1               5
+#> 2     1   -50           -50         -50           1               5
+#> 3     1   -50           -50         -50           1               5
+#> 4     1   -50           -50         -50           1               5
+#> 5     1   -50           -50         -50           1               5
+#> 6     1   -50           -50         -50           1               5
+#> # ℹ 8 more variables: nominal_corridor_width <dbl>, overlap_policy <chr>,
+#> #   zone_id <int>, slope_deg <dbl>, bpi_3x3 <dbl>, bpi_11x11 <dbl>,
+#> #   curvature <dbl>, surface_area_ratio <dbl>
 
 summary <- summarize_isobath_terrain(terrain, corridors)
 summary[, c("contour_value", "slope_deg_mean", "bpi_3x3_mean", "curvature_mean")]

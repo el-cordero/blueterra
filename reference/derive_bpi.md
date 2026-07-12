@@ -54,6 +54,7 @@ derive_multiscale_bpi(
 - normalize:
 
   Logical. If `TRUE`, divide BPI by local focal standard deviation.
+  Zero-variance or unavailable focal neighborhoods return `NA`.
 
 - filename:
 
@@ -81,7 +82,12 @@ A single-layer
 The calculation is `cell value - focal mean`. Positive values therefore
 mean higher-than-neighborhood values when the raster is elevation-like.
 For positive-depth rasters, interpretation is reversed unless users
-convert the sign convention first.
+convert the sign convention first. Square windows are measured in cells
+and include the focal cell. Annular windows are measured in map units,
+require a projected CRS with linear units, and use separate x- and
+y-cell resolutions when cells are not square. At raster edges and next
+to missing cells, BPI uses the available cells in its partial focal
+support; a missing focal value remains missing.
 
 ## See also
 

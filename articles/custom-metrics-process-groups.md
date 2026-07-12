@@ -177,10 +177,10 @@ assign_process_groups(extended, catalog = custom_catalog)
 #>   metric metric_standard label process_group description source_function matched
 #>   <chr>  <chr>           <chr> <chr>         <chr>       <chr>           <lgl>  
 #> 1 slope… slope_deg       Slope slope_gradie… Local stee… derive_slope    TRUE   
-#> 2 tri    tri             Terr… seafloor_rug… Local terr… derive_tri      TRUE   
+#> 2 tri    tri             Terr… seafloor_rug… terra terr… derive_tri      TRUE   
 #> 3 bpi_3… bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi      TRUE   
 #> 4 bpi_1… bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi      TRUE   
-#> 5 curva… curvature       Curv… curvature     Laplacian-… derive_curvatu… TRUE   
+#> 5 curva… curvature       Four… curvature     Sum of the… derive_curvatu… TRUE   
 #> 6 slope… slope_tri_index Slop… custom_relief Product of… derive_custom_… TRUE   
 #> 7 relie… relief_positio… Reli… custom_relief TRI plus w… derive_custom_… TRUE
 summarize_process_groups(extended, catalog = custom_catalog)
@@ -200,9 +200,9 @@ select_process_representatives(
 #> # A tibble: 5 × 9
 #>   metric                label    process_group description units source_function
 #>   <chr>                 <chr>    <chr>         <chr>       <chr> <chr>          
-#> 1 curvature             Curvatu… curvature     Laplacian-… inpu… derive_curvatu…
+#> 1 curvature             Four-ne… curvature     Sum of the… inpu… derive_curvatu…
 #> 2 bpi_3x3               Fine-sc… seafloor_pos… Fine-scale… inpu… derive_bpi     
-#> 3 tri                   Terrain… seafloor_rug… Local terr… inpu… derive_tri     
+#> 3 tri                   Terrain… seafloor_rug… terra terr… inpu… derive_tri     
 #> 4 slope_deg             Slope    slope_gradie… Local stee… degr… derive_slope   
 #> 5 relief_position_index Relief-… custom_relief TRI plus w… index derive_custom_…
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,

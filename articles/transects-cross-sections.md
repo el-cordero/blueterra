@@ -32,7 +32,10 @@ estimate_surface_orientation(prepared, hitw_rect)
 [`estimate_surface_orientation()`](https://el-cordero.github.io/blueterra/reference/estimate_surface_orientation.md)
 converts local aspect into a representative bearing and a transect
 angle. Slope weighting emphasizes cells where orientation is better
-defined.
+defined. Its `orientation_resultant_length` records aspect-vector
+concentration: values near one indicate a stable common direction,
+whereas values near zero indicate cancelling aspects and an unstable
+mean angle.
 
 ## Automatic Transect Orientation
 
@@ -44,17 +47,20 @@ transects <- make_transects(
   bathy = prepared
 )
 
-transects[, c("transect_id", "angle_deg", "angle_source", "mean_aspect_deg")]
+transects[, c(
+  "transect_id", "angle_deg", "angle_source", "mean_aspect_deg",
+  "orientation_resultant_length"
+)]
 #> class       : SpatVector
 #> geometry    : lines
-#> dimensions  : 4, 4  (geometries, attributes)
+#> dimensions  : 4, 5  (geometries, attributes)
 #> extent      : 137512, 137762, 205591, 205891  (xmin, xmax, ymin, ymax)
 #> coord. ref. : NAD83 / Puerto Rico & Virgin Is. (EPSG:32161)
-#> names       : transect_id angle_deg angle_source mean_aspect_deg
-#> type        :       <chr>     <num>        <chr>           <num>
-#> values      :         1_1   94.6151      surface         175.385
-#>                       1_2   94.6151      surface         175.385
-#>                       1_3   94.6151      surface         175.385
+#> names       : transect_id angle_deg angle_source mean_aspect_deg orientation_resulta~
+#> type        :       <chr>     <num>        <chr>           <num>                <num>
+#> values      :         1_1   94.6151      surface         175.385             0.981706
+#>                       1_2   94.6151      surface         175.385             0.981706
+#>                       1_3   94.6151      surface         175.385             0.981706
 #>               ...
 ```
 
@@ -73,6 +79,11 @@ plot_transects(
 
 ![Automatically oriented transects over hillshaded
 bathymetry.](transects-cross-sections_files/figure-html/automatic-map-1.png)
+
+Inspect the resultant length before treating an automatic angle as a
+useful surface-derived direction. A weak value calls for a manual angle
+or the bounding-box orientation rather than a precise interpretation of
+the estimated mean aspect.
 
 ## Manual Angle Override
 

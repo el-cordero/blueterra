@@ -89,10 +89,14 @@ terra::res(hoyo)
 #> [1] 3.996743 3.996743
 ```
 
-Slope, buffers, transects, focal windows in map units, and isobath
-corridors should be interpreted in a projected CRS. `blueterra` requires
-explicit reprojection when a CRS conversion is part of the analysis
-design.
+Slope, transect spacing, and focal windows in map units should be
+interpreted in a projected CRS. In particular, annular BPI radii require
+a projected CRS and use separate x- and y-cell dimensions when the grid
+is not square. Isobath corridor buffering accepts longitude/latitude
+input with a warning, but a width in degrees is usually not an
+interpretable corridor distance; reproject before interpreting corridor
+width. `blueterra` does not silently reproject an input raster for these
+operations.
 
 ``` r
 

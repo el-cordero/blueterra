@@ -64,11 +64,11 @@ assign_process_groups(terrain)
 #> 2 aspec… aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect   TRUE   
 #> 3 north… northness       Nort… seafloor_asp… Cosine tra… derive_northne… TRUE   
 #> 4 eastn… eastness        East… seafloor_asp… Sine trans… derive_eastness TRUE   
-#> 5 tri    tri             Terr… seafloor_rug… Local terr… derive_tri      TRUE   
+#> 5 tri    tri             Terr… seafloor_rug… terra terr… derive_tri      TRUE   
 #> 6 bpi_3… bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi      TRUE   
 #> 7 bpi_1… bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi      TRUE   
-#> 8 curva… curvature       Curv… curvature     Laplacian-… derive_curvatu… TRUE   
-#> 9 surfa… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface… TRUE
+#> 8 curva… curvature       Four… curvature     Sum of the… derive_curvatu… TRUE   
+#> 9 surfa… surface_area_r… Surf… seafloor_rug… Slope-seca… derive_surface… TRUE
 summarize_process_groups(terrain)
 #> # A tibble: 5 × 3
 #>   process_group     n_metrics metrics                        
@@ -105,10 +105,10 @@ select_process_representatives(metrics_available = names(terrain))
 #> # A tibble: 5 × 9
 #>   metric     label               process_group description units source_function
 #>   <chr>      <chr>               <chr>         <chr>       <chr> <chr>          
-#> 1 curvature  Curvature           curvature     Laplacian-… inpu… derive_curvatu…
+#> 1 curvature  Four-neighbor Lapl… curvature     Sum of the… inpu… derive_curvatu…
 #> 2 aspect_deg Aspect              seafloor_asp… Local down… degr… derive_aspect  
 #> 3 bpi_3x3    Fine-scale BPI      seafloor_pos… Fine-scale… inpu… derive_bpi     
-#> 4 tri        Terrain Ruggedness… seafloor_rug… Local terr… inpu… derive_tri     
+#> 4 tri        Terrain Ruggedness… seafloor_rug… terra terr… inpu… derive_tri     
 #> 5 slope_deg  Slope               slope_gradie… Local stee… degr… derive_slope   
 #> # ℹ 3 more variables: requires_optional_dependency <lgl>,
 #> #   scale_sensitive <lgl>, interpretation_notes <chr>
@@ -120,10 +120,10 @@ select_process_representatives(
 #>   <chr>                    <chr> <chr>         <chr>       <chr> <chr>          
 #> 1 flowacc                  Conv… accumulation… Terrain-de… index external       
 #> 2 bathy                    Bath… base_bathyme… Input bath… inpu… as_bathy       
-#> 3 curvature                Curv… curvature     Laplacian-… inpu… derive_curvatu…
+#> 3 curvature                Four… curvature     Sum of the… inpu… derive_curvatu…
 #> 4 downslope_distance_to_s… Down… downslope_pa… Modeled do… map … external       
 #> 5 tpi                      Topo… seafloor_pos… Cell posit… inpu… derive_tpi     
-#> 6 roughness                Roug… seafloor_rug… Local rang… inpu… derive_roughne…
+#> 6 roughness                Roug… seafloor_rug… Difference… inpu… derive_roughne…
 #> 7 stream_power_index_wbt   Terr… transport_po… Compound t… index external       
 #> 8 northness                Nort… seafloor_asp… Cosine tra… unit… derive_northne…
 #> 9 slope_deg                Slope slope_gradie… Local stee… degr… derive_slope   
@@ -185,11 +185,11 @@ assign_process_groups(extended, catalog = custom_catalog)
 #>  2 aspect_deg    aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect  
 #>  3 northness     northness       Nort… seafloor_asp… Cosine tra… derive_northne…
 #>  4 eastness      eastness        East… seafloor_asp… Sine trans… derive_eastness
-#>  5 tri           tri             Terr… seafloor_rug… Local terr… derive_tri     
+#>  5 tri           tri             Terr… seafloor_rug… terra terr… derive_tri     
 #>  6 bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     
 #>  7 bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     
-#>  8 curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…
-#>  9 surface_area… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface…
+#>  8 curvature     curvature       Four… curvature     Sum of the… derive_curvatu…
+#>  9 surface_area… surface_area_r… Surf… seafloor_rug… Slope-seca… derive_surface…
 #> 10 slope_tri_in… slope_tri_index Slop… custom_relief Product of… derive_custom_…
 #> # ℹ 1 more variable: matched <lgl>
 summarize_process_groups(extended, catalog = custom_catalog)

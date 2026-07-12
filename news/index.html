@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,16 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="blueterra-020">blueterra 0.2.0<a class="anchor" aria-label="anchor" href="#blueterra-020"></a></h2>
+<ul><li>Corrected map-unit annular BPI kernels to use independent x and y cell dimensions, and require a projected CRS for radii expressed in map units.</li>
+<li>Made normalized BPI return <code>NA</code> for zero-variance or unavailable focal neighborhoods rather than an accidental <code>NaN</code>.</li>
+<li>Made <code>exact = TRUE</code> polygon summaries coverage-fraction weighted for mean, population standard deviation, median, sum, and effective cell count; single-layer exact summaries now preserve the raster layer name.</li>
+<li>Corrected polygon summaries and isobath-corridor extraction for vectors with no attribute table by assigning stable zone identifiers.</li>
+<li>Added transect orientation-resultant metadata and documented its use as a concentration indicator for surface-derived directions.</li>
+<li>Recorded corridor buffer distance, nominal full width, and independent overlap policy in corridor outputs.</li>
+<li>Added regression tests for annular BPI geometry and CRS handling, zero variance, focal support, known spatial summaries, transect geometry and reliability, isobath corridors, custom-layer geometry, and unmatched metric catalog entries.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="blueterra-010">blueterra 0.1.0<a class="anchor" aria-label="anchor" href="#blueterra-010"></a></h2>
 <ul><li>Initial development version.</li>
 <li>Added raster input, validation, preparation, terrain metrics, process groups, transects, isobath corridors, summaries, modeling helpers, plotting helpers, synthetic example data, tests, README, and vignettes.</li>
@@ -50,7 +60,8 @@
 <li>Improved hillshade-supported terrain maps, site-location documentation, and scientific examples for README, vignettes, and visual proof.</li>
 <li>Added surface-oriented transect defaults, richer cross-section and PCA plots, citation metadata, and custom metric/process-group extension helpers.</li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

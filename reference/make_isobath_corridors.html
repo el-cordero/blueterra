@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,8 @@
 
 
 <dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
-<dd><p>Buffer width in map units.</p></dd>
+<dd><p>One-sided buffer distance in map units. The nominal full
+corridor width is twice this value.</p></dd>
 
 
 <dt id="arg-smooth">smooth<a class="anchor" aria-label="anchor" href="#arg-smooth"></a></dt>
@@ -101,9 +102,12 @@ positive values. If <code>FALSE</code>, they are converted to negative values. I
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>width</code> is interpreted in the CRS map units. Projected CRS are strongly
-recommended. If the raster uses longitude/latitude, the function warns before
-buffering because distance interpretation may be misleading.</p>
+    <p><code>width</code> is interpreted as a one-sided buffer distance in the CRS map units.
+Projected CRS are strongly recommended. If the raster uses
+longitude/latitude, the function warns before buffering because distance
+interpretation may be misleading. Corridors are returned as independent
+buffers and can overlap; their summaries are therefore not mutually
+exclusive or additive.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -116,13 +120,13 @@ buffering because distance interpretation may be misleading.</p>
 <span class="r-in"><span><span class="fu">make_isobath_corridors</span><span class="op">(</span><span class="va">bathy</span>, depths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">40</span>, <span class="op">-</span><span class="fl">60</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> class       : SpatVector</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> geometry    : polygons</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> dimensions  : 2, 4  (geometries, attributes)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> dimensions  : 2, 7  (geometries, attributes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> extent      : 134965.3, 138732.2, 204565.3, 205790.1  (xmin, xmax, ymin, ymax)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> coord. ref. : NAD83 / Puerto Rico &amp; Virgin Is. (EPSG:32161)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> names       : level contour_value depth_label corridor_id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> type        : &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> values      :   -40           -40         -40           1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 -60           -60         -60           2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> names       : level contour_value depth_label corridor_id buffer_distance nominal_corrid~  overlap_policy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> type        : &lt;num&gt;         &lt;num&gt;       &lt;num&gt;       &lt;int&gt;           &lt;num&gt;           &lt;num&gt;           &lt;chr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> values      :   -40           -40         -40           1               5              10 independent_ma~</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 -60           -60         -60           2               5              10 independent_ma~</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

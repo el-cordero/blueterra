@@ -41,18 +41,20 @@ bathy <- read_bathy(blueterra_example("bathy"))
 terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
 corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 extract_isobath_corridors(terrain, corridors)
-#> # A tibble: 84 × 8
-#>       ID level contour_value depth_label corridor_id slope_deg bpi_3x3 bpi_11x11
-#>    <int> <dbl>         <dbl>       <dbl>       <int>     <dbl>   <dbl>     <dbl>
-#>  1     1   -50           -50         -50           1      47.5  -3.02       17.2
-#>  2     1   -50           -50         -50           1      48.0  -1.54       19.5
-#>  3     1   -50           -50         -50           1      48.0  -2.90       25.0
-#>  4     1   -50           -50         -50           1      45.9  -1.01       25.7
-#>  5     1   -50           -50         -50           1      46.0  -0.596      25.8
-#>  6     1   -50           -50         -50           1      48.0  -0.940      26.1
-#>  7     1   -50           -50         -50           1      46.2   1.64       31.1
-#>  8     1   -50           -50         -50           1      43.9  -0.331      29.8
-#>  9     1   -50           -50         -50           1      44.3  -0.943      27.5
-#> 10     1   -50           -50         -50           1      44.2  -0.577      26.7
+#> # A tibble: 84 × 12
+#>       ID level contour_value depth_label corridor_id buffer_distance
+#>    <int> <dbl>         <dbl>       <dbl>       <int>           <dbl>
+#>  1     1   -50           -50         -50           1               5
+#>  2     1   -50           -50         -50           1               5
+#>  3     1   -50           -50         -50           1               5
+#>  4     1   -50           -50         -50           1               5
+#>  5     1   -50           -50         -50           1               5
+#>  6     1   -50           -50         -50           1               5
+#>  7     1   -50           -50         -50           1               5
+#>  8     1   -50           -50         -50           1               5
+#>  9     1   -50           -50         -50           1               5
+#> 10     1   -50           -50         -50           1               5
 #> # ℹ 74 more rows
+#> # ℹ 6 more variables: nominal_corridor_width <dbl>, overlap_policy <chr>,
+#> #   zone_id <int>, slope_deg <dbl>, bpi_3x3 <dbl>, bpi_11x11 <dbl>
 ```

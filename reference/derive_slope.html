@@ -9,7 +9,7 @@ geomorphometry formulas."><meta property="og:image" content="https://el-cordero.
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -140,11 +140,17 @@ otherwise.</p>
     <p>Functions preserve the input raster sign. For example, slope depends on the
 magnitude of local gradients, while BPI/TPI interpretation depends on whether
 the raster stores elevation-like values or positive depth.</p>
-<p><code>derive_curvature()</code> computes a simple Laplacian-style local curvature index
-using a four-neighbor focal kernel. It is not profile curvature or plan
-curvature. <code>derive_surface_area_ratio()</code> uses <code>1 / cos(slope)</code> from the
-terrain slope layer and clamps near-zero cosine values to avoid pathological
-ratios at extreme slopes.</p>
+<p><code>derive_rugosity()</code> computes a vector-ruggedness-measure-style index from
+local slope and aspect vectors. Its focal means use available derivative
+cells, including partial focal support adjacent to a derivative boundary or
+missing data, but the outermost cells can remain missing because slope and
+aspect themselves require neighbouring elevation values.</p>
+<p><code>derive_curvature()</code> computes a four-neighbor Laplacian-style index. It is
+not plan, profile, mean, or Gaussian curvature, is not scaled by cell
+dimensions, and is consequently strongly resolution-dependent.
+<code>derive_surface_area_ratio()</code> is a slope-secant approximation, <code>1 / cos(slope)</code>,
+rather than a triangulated or directly measured benthic surface area. It
+clamps near-zero cosine values to avoid pathological ratios at extreme slopes.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

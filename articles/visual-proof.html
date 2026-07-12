@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,8 +96,10 @@ value.</em></p>
 </h2>
 <p><img src="../reference/figures/site/visual-proof-transects.png" width="100%" alt="Terrain-oriented transects over hillshaded bathymetry."></p>
 <p><em>Transects are oriented from local surface aspect and plotted over
-the prepared bathymetry. The line angle is recorded in the transect
-attributes so the choice is inspectable.</em></p>
+the prepared bathymetry. The line angle and
+<code>orientation_resultant_length</code> are recorded in the transect
+attributes; a low resultant length signals an unstable automatic mean
+direction.</em></p>
 </div>
 <div class="section level2">
 <h2 id="cross-sections">Cross-Sections<a class="anchor" aria-label="anchor" href="#cross-sections"></a>
@@ -113,7 +115,8 @@ angle are ignored during automatic value-column inference.</em></p>
 <p><img src="../reference/figures/site/visual-proof-isobath-corridors.png" width="100%" alt="Isobath corridors over hillshaded bathymetry with source isobaths in black."></p>
 <p><em>Isobath corridors are shown with the source isobaths in black.
 The black lines mark the depth horizons that were buffered to create
-extraction corridors.</em></p>
+independent extraction corridors; overlapping corridor summaries are not
+mutually exclusive.</em></p>
 </div>
 <div class="section level2">
 <h2 id="pca">PCA<a class="anchor" aria-label="anchor" href="#pca"></a>

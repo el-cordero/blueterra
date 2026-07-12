@@ -26,8 +26,9 @@ value.*
 bathymetry.](../reference/figures/site/visual-proof-transects.png)
 
 *Transects are oriented from local surface aspect and plotted over the
-prepared bathymetry. The line angle is recorded in the transect
-attributes so the choice is inspectable.*
+prepared bathymetry. The line angle and `orientation_resultant_length`
+are recorded in the transect attributes; a low resultant length signals
+an unstable automatic mean direction.*
 
 ## Cross-Sections
 
@@ -45,7 +46,8 @@ black.](../reference/figures/site/visual-proof-isobath-corridors.png)
 
 *Isobath corridors are shown with the source isobaths in black. The
 black lines mark the depth horizons that were buffered to create
-extraction corridors.*
+independent extraction corridors; overlapping corridor summaries are not
+mutually exclusive.*
 
 ## PCA
 

@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -186,12 +186,12 @@ summarizes local surface bending.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> aspect_deg    aspect_deg      Aspe… seafloor_asp… Local down… derive_aspect  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> northness     northness       Nort… seafloor_asp… Cosine tra… derive_northne…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> eastness      eastness        East… seafloor_asp… Sine trans… derive_eastness</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> tri           tri             Terr… seafloor_rug… Local terr… derive_tri     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… Vector rug… derive_rugosity</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> tri           tri             Terr… seafloor_rug… terra terr… derive_tri     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> rugosity_vrm… rugosity_vrm_3… Vect… seafloor_rug… One minus … derive_rugosity</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> bpi_3x3       bpi_3x3         Fine… seafloor_pos… Fine-scale… derive_bpi     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> bpi_11x11     bpi_11x11       Broa… seafloor_pos… Broad-scal… derive_bpi     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> curvature     curvature       Curv… curvature     Laplacian-… derive_curvatu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> surface_area… surface_area_r… Surf… seafloor_rug… Approximat… derive_surface…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> curvature     curvature       Four… curvature     Sum of the… derive_curvatu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> surface_area… surface_area_r… Surf… seafloor_rug… Slope-seca… derive_surface…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: matched &lt;lgl&gt;</span></span></span>
 <span><span class="fu"><a href="../reference/summarize_process_groups.html">summarize_process_groups</a></span><span class="op">(</span><span class="va">terrain</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
@@ -229,6 +229,12 @@ frame.</p>
 <span><span class="co">#&gt;   site_id site_name        slope_deg_mean bpi_3x3_mean</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> hitw    Hole-in-the-Wall           50.9      0.005<span style="text-decoration: underline;">68</span></span></span></code></pre></div>
+<p>Set <code>exact = TRUE</code> for boundary-sensitive polygon
+summaries when the optional <code>exactextractr</code> dependency is
+available. Exact raster–polygon intersections then supply coverage
+fractions used to weight means, population standard deviations, medians,
+sums, and effective cell counts; minima and maxima use positively
+intersected cells.</p>
 </div>
 <div class="section level2">
 <h2 id="transects-and-cross-sections">Transects and Cross-Sections<a class="anchor" aria-label="anchor" href="#transects-and-cross-sections"></a>
@@ -244,9 +250,12 @@ requiring the analyst to choose a fixed direction by hand.</p>
 <span></span>
 <span><span class="va">orientation</span></span>
 <span><span class="co">#&gt; [1] 94.61515</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">transects</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"angle_deg"</span>, <span class="st">"angle_source"</span>, <span class="st">"mean_aspect_deg"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   angle_deg angle_source mean_aspect_deg</span></span>
-<span><span class="co">#&gt; 1  94.61515      surface        175.3849</span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">transects</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"angle_deg"</span>, <span class="st">"angle_source"</span>, <span class="st">"mean_aspect_deg"</span>,</span>
+<span>  <span class="st">"orientation_resultant_length"</span></span>
+<span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   angle_deg angle_source mean_aspect_deg orientation_resultant_length</span></span>
+<span><span class="co">#&gt; 1  94.61515      surface        175.3849                    0.9817056</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cross_sections</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transect_id"</span>, <span class="st">"distance"</span>, <span class="st">"bathy_m"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   transect_id distance bathy_m</span></span>
@@ -257,6 +266,12 @@ requiring the analyst to choose a fixed direction by hand.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1_1             82.1  -<span style="color: #BB0000;">197.</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1_1            109.    -<span style="color: #BB0000;">94.8</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1_1            137.    -<span style="color: #BB0000;">71.8</span></span></span></code></pre></div>
+<p>Automatic orientation metadata include
+<code>orientation_resultant_length</code>. Values near one indicate a
+concentrated aspect direction; values near zero signal cancelling aspect
+vectors and an unreliable mean angle. In that case, use a manual or
+bounding-box orientation rather than overinterpreting the automatic
+direction.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_bathy.html">plot_transects</a></span><span class="op">(</span></span>
 <span>  <span class="va">prepared</span>,</span>
@@ -331,23 +346,26 @@ terrain attributes change along the depth gradient.</p>
 </h2>
 <p>Isobath corridors summarize terrain along depth horizons. The source
 isobaths are shown in black so the reader can see which contour each
-corridor buffers. Corridors use a 5 m buffer around each source
-isobath.</p>
+corridor buffers. Here <code>width = 5</code> is a one-sided buffer
+distance, producing a nominal 10 m full-width corridor.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">isobaths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_isobaths.html">extract_isobaths</a></span><span class="op">(</span><span class="va">prepared</span>, depths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">50</span>, <span class="op">-</span><span class="fl">80</span>, <span class="op">-</span><span class="fl">120</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">corridors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_isobath_corridors.html">make_isobath_corridors</a></span><span class="op">(</span><span class="va">prepared</span>, depths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">50</span>, <span class="op">-</span><span class="fl">80</span>, <span class="op">-</span><span class="fl">120</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">corridors</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"contour_value"</span>, <span class="st">"depth_label"</span>, <span class="st">"corridor_id"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">corridors</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"contour_value"</span>, <span class="st">"depth_label"</span>, <span class="st">"corridor_id"</span>, <span class="st">"buffer_distance"</span>,</span>
+<span>  <span class="st">"nominal_corridor_width"</span>, <span class="st">"overlap_policy"</span></span>
+<span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; class       : SpatVector</span></span>
 <span><span class="co">#&gt; geometry    : polygons</span></span>
-<span><span class="co">#&gt; dimensions  : 3, 3  (geometries, attributes)</span></span>
+<span><span class="co">#&gt; dimensions  : 3, 6  (geometries, attributes)</span></span>
 <span><span class="co">#&gt; extent      : 137471.2, 137777, 205664.4, 205761.6  (xmin, xmax, ymin, ymax)</span></span>
 <span><span class="co">#&gt; coord. ref. : NAD83 / Puerto Rico &amp; Virgin Is. (EPSG:32161)</span></span>
-<span><span class="co">#&gt; names       : contour_value depth_label corridor_id</span></span>
-<span><span class="co">#&gt; type        :         &lt;num&gt;       &lt;num&gt;       &lt;int&gt;</span></span>
-<span><span class="co">#&gt; values      :           -50         -50           1</span></span>
-<span><span class="co">#&gt;                         -80         -80           2</span></span>
-<span><span class="co">#&gt;                        -120        -120           3</span></span>
+<span><span class="co">#&gt; names       : contour_value depth_label corridor_id buffer_distance nominal_corrido~   overlap_policy</span></span>
+<span><span class="co">#&gt; type        :         &lt;num&gt;       &lt;num&gt;       &lt;int&gt;           &lt;num&gt;            &lt;num&gt;            &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; values      :           -50         -50           1               5               10 independent_may~</span></span>
+<span><span class="co">#&gt;                         -80         -80           2               5               10 independent_may~</span></span>
+<span><span class="co">#&gt;                        -120        -120           3               5               10 independent_may~</span></span>
 <span><span class="fu"><a href="../reference/summarize_isobath_terrain.html">summarize_isobath_terrain</a></span><span class="op">(</span><span class="va">terrain</span>, <span class="va">corridors</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"contour_value"</span>, <span class="st">"slope_deg_mean"</span>, <span class="st">"bpi_3x3_mean"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
 <span><span class="co">#&gt;   contour_value slope_deg_mean bpi_3x3_mean</span></span>
@@ -362,9 +380,12 @@ isobath.</p>
 <span>  isobaths <span class="op">=</span> <span class="va">isobaths</span>,</span>
 <span>  background_contours <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Isobath Corridors and Source Isobaths"</span>,</span>
-<span>  subtitle <span class="op">=</span> <span class="st">"Corridors use a 5 m buffer around each source isobath"</span></span>
+<span>  subtitle <span class="op">=</span> <span class="st">"5 m is the one-sided buffer distance (10 m nominal full width)"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="blueterra_files/figure-html/corridor-map-1.png" class="r-plt" alt="Isobath corridors over hillshaded bathymetry with source isobaths in black." width="672"></p>
+<p>Corridors are independent buffers and may overlap. A cell in an
+overlap can be included in more than one corridor summary, so corridor
+summaries are not mutually exclusive or additive.</p>
 </div>
 <div class="section level2">
 <h2 id="pca-and-model-ready-tables">PCA and Model-Ready Tables<a class="anchor" aria-label="anchor" href="#pca-and-model-ready-tables"></a>

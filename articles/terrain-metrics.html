@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -117,6 +117,11 @@ summarized in tables or used as predictors.</p>
 <p>These metrics describe local relief variability. Their values change
 with grid resolution and focal-window size, so windows should be chosen
 to match the feature scale being interpreted.</p>
+<p>The VRM-style rugosity calculation averages available
+slope/aspect-derived normal vectors within its focal window. It can
+therefore use partial focal support beside raster edges or missing-data
+boundaries, although the outermost cells can remain missing because
+slope and aspect require neighbouring elevation cells.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">structure_metrics</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_metric_stack.html">derive_metric_stack</a></span><span class="op">(</span></span>
 <span>  <span class="va">prepared</span>,</span>
@@ -141,9 +146,9 @@ to match the feature scale being interpreted.</p>
 <span>  title <span class="op">=</span> <span class="st">"Rugosity Over Hillshade"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="terrain-metrics_files/figure-html/structure-map-1.png" class="r-plt" alt="Rugosity over hillshaded bathymetry." width="672"></p>
-<p>Surface-area ratio is derived from slope and should be interpreted as
-a local raster-cell surface approximation, not as a measured benthic
-surface area.</p>
+<p>Surface-area ratio is derived from <code>1 / cos(slope)</code> and
+should be interpreted as a local raster-cell surface approximation, not
+as a triangulated or measured benthic surface area.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_bathy.html">plot_metric</a></span><span class="op">(</span></span>
 <span>  <span class="va">structure_metrics</span>,</span>
@@ -163,9 +168,20 @@ negative bathymetry, positive BPI means a cell has a higher stored value
 than its neighborhood, which usually means shallower terrain. For
 positive-depth rasters, interpretation reverses unless the sign
 convention is converted first.</p>
+<p>The square BPI window is specified in cells and includes the focal
+cell. An annular BPI window is specified by inner and outer radii in map
+units; it requires a projected CRS and calculates its footprint with
+separate x- and y-cell dimensions when the grid is not square. A
+positive inner radius excludes the focal cell. BPI uses available values
+in partial focal support at edges and missing-data boundaries, while a
+missing focal value remains missing. With <code>normalize = TRUE</code>,
+zero-variance or unavailable focal neighbourhoods return <code>NA</code>
+rather than a numerical <code>NaN</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fine_bpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_bpi.html">derive_bpi</a></span><span class="op">(</span><span class="va">prepared</span>, window <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">broad_bpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_bpi.html">derive_bpi</a></span><span class="op">(</span><span class="va">prepared</span>, window <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="va">annular_bpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_bpi.html">derive_bpi</a></span><span class="op">(</span><span class="va">prepared</span>, inner_radius <span class="op">=</span> <span class="fl">8</span>, outer_radius <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span>
+<span><span class="va">normalized_bpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_bpi.html">derive_bpi</a></span><span class="op">(</span><span class="va">prepared</span>, window <span class="op">=</span> <span class="fl">3</span>, normalize <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">tpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_slope.html">derive_tpi</a></span><span class="op">(</span><span class="va">prepared</span><span class="op">)</span></span>
 <span><span class="va">multi_bpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/derive_bpi.html">derive_multiscale_bpi</a></span><span class="op">(</span><span class="va">prepared</span>, windows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">7</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>

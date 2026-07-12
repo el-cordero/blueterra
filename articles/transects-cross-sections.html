@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,7 +98,11 @@ terrain metrics.</p>
 <span><span class="co">#&gt; [1] 94.61515</span></span></code></pre></div>
 <p><code><a href="../reference/estimate_surface_orientation.html">estimate_surface_orientation()</a></code> converts local aspect
 into a representative bearing and a transect angle. Slope weighting
-emphasizes cells where orientation is better defined.</p>
+emphasizes cells where orientation is better defined. Its
+<code>orientation_resultant_length</code> records aspect-vector
+concentration: values near one indicate a stable common direction,
+whereas values near zero indicate cancelling aspects and an unstable
+mean angle.</p>
 </div>
 <div class="section level2">
 <h2 id="automatic-transect-orientation">Automatic Transect Orientation<a class="anchor" aria-label="anchor" href="#automatic-transect-orientation"></a>
@@ -110,17 +114,20 @@ emphasizes cells where orientation is better defined.</p>
 <span>  bathy <span class="op">=</span> <span class="va">prepared</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">transects</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transect_id"</span>, <span class="st">"angle_deg"</span>, <span class="st">"angle_source"</span>, <span class="st">"mean_aspect_deg"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">transects</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"transect_id"</span>, <span class="st">"angle_deg"</span>, <span class="st">"angle_source"</span>, <span class="st">"mean_aspect_deg"</span>,</span>
+<span>  <span class="st">"orientation_resultant_length"</span></span>
+<span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; class       : SpatVector</span></span>
 <span><span class="co">#&gt; geometry    : lines</span></span>
-<span><span class="co">#&gt; dimensions  : 4, 4  (geometries, attributes)</span></span>
+<span><span class="co">#&gt; dimensions  : 4, 5  (geometries, attributes)</span></span>
 <span><span class="co">#&gt; extent      : 137512, 137762, 205591, 205891  (xmin, xmax, ymin, ymax)</span></span>
 <span><span class="co">#&gt; coord. ref. : NAD83 / Puerto Rico &amp; Virgin Is. (EPSG:32161)</span></span>
-<span><span class="co">#&gt; names       : transect_id angle_deg angle_source mean_aspect_deg</span></span>
-<span><span class="co">#&gt; type        :       &lt;chr&gt;     &lt;num&gt;        &lt;chr&gt;           &lt;num&gt;</span></span>
-<span><span class="co">#&gt; values      :         1_1   94.6151      surface         175.385</span></span>
-<span><span class="co">#&gt;                       1_2   94.6151      surface         175.385</span></span>
-<span><span class="co">#&gt;                       1_3   94.6151      surface         175.385</span></span>
+<span><span class="co">#&gt; names       : transect_id angle_deg angle_source mean_aspect_deg orientation_resulta~</span></span>
+<span><span class="co">#&gt; type        :       &lt;chr&gt;     &lt;num&gt;        &lt;chr&gt;           &lt;num&gt;                &lt;num&gt;</span></span>
+<span><span class="co">#&gt; values      :         1_1   94.6151      surface         175.385             0.981706</span></span>
+<span><span class="co">#&gt;                       1_2   94.6151      surface         175.385             0.981706</span></span>
+<span><span class="co">#&gt;                       1_3   94.6151      surface         175.385             0.981706</span></span>
 <span><span class="co">#&gt;               ...</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_bathy.html">plot_transects</a></span><span class="op">(</span></span>
@@ -133,6 +140,10 @@ emphasizes cells where orientation is better defined.</p>
 <span>  subtitle <span class="op">=</span> <span class="st">"Line angle estimated from local surface aspect"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="transects-cross-sections_files/figure-html/automatic-map-1.png" class="r-plt" alt="Automatically oriented transects over hillshaded bathymetry." width="672"></p>
+<p>Inspect the resultant length before treating an automatic angle as a
+useful surface-derived direction. A weak value calls for a manual angle
+or the bounding-box orientation rather than a precise interpretation of
+the estimated mean aspect.</p>
 </div>
 <div class="section level2">
 <h2 id="manual-angle-override">Manual Angle Override<a class="anchor" aria-label="anchor" href="#manual-angle-override"></a>

@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -149,10 +149,14 @@ path.</p>
 <span><span class="co">#&gt; [1] "+proj=lcc +lat_0=17.8333333333333 +lon_0=-66.4333333333333 +lat_1=18.4333333333333 +lat_2=18.0333333333333 +x_0=200000 +y_0=200000 +datum=NAD83 +units=m +no_defs"</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">res</a></span><span class="op">(</span><span class="va">hoyo</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 3.996743 3.996743</span></span></code></pre></div>
-<p>Slope, buffers, transects, focal windows in map units, and isobath
-corridors should be interpreted in a projected CRS.
-<code>blueterra</code> requires explicit reprojection when a CRS
-conversion is part of the analysis design.</p>
+<p>Slope, transect spacing, and focal windows in map units should be
+interpreted in a projected CRS. In particular, annular BPI radii require
+a projected CRS and use separate x- and y-cell dimensions when the grid
+is not square. Isobath corridor buffering accepts longitude/latitude
+input with a warning, but a width in degrees is usually not an
+interpretable corridor distance; reproject before interpreting corridor
+width. <code>blueterra</code> does not silently reproject an input
+raster for these operations.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coarse_template</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">hoyo</span>, fact <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">projected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crop_bathy.html">project_bathy</a></span><span class="op">(</span><span class="va">coarse_template</span>, <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/crs.html" class="external-link">crs</a></span><span class="op">(</span><span class="va">hoyo</span><span class="op">)</span><span class="op">)</span></span>

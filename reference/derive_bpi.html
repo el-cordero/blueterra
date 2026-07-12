@@ -9,7 +9,7 @@ cell and its focal-neighborhood mean."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">blueterra</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,7 +100,7 @@ cell and its focal-neighborhood mean.</p>
 
 <dt id="arg-normalize">normalize<a class="anchor" aria-label="anchor" href="#arg-normalize"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, divide BPI by local focal standard
-deviation.</p></dd>
+deviation. Zero-variance or unavailable focal neighborhoods return <code>NA</code>.</p></dd>
 
 
 <dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
@@ -128,7 +128,12 @@ deviation.</p></dd>
     <p>The calculation is <code>cell value - focal mean</code>. Positive values therefore mean
 higher-than-neighborhood values when the raster is elevation-like. For
 positive-depth rasters, interpretation is reversed unless users convert the
-sign convention first.</p>
+sign convention first. Square windows are measured in cells and include the
+focal cell. Annular windows are measured in map units, require a projected
+CRS with linear units, and use separate x- and y-cell resolutions when cells
+are not square. At raster edges and next to missing cells, BPI uses the
+available cells in its partial focal support; a missing focal value remains
+missing.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

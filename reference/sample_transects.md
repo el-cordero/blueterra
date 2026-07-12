@@ -82,7 +82,7 @@ bathy <- read_bathy(blueterra_example("bathy"))
 zones <- terra::vect(blueterra_example("zones"))
 transects <- make_transects(zones[1, ], spacing = 100, bathy = bathy)
 sample_transects(transects, bathy, n = 5)
-#> # A tibble: 15 × 18
+#> # A tibble: 15 × 19
 #>    site_id site_name feature_type source_name width_m height_m angle_deg zone_id
 #>    <chr>   <chr>     <chr>        <chr>         <dbl>    <dbl>     <dbl> <chr>  
 #>  1 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.3 1      
@@ -100,7 +100,8 @@ sample_transects(transects, bathy, n = 5)
 #> 13 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.3 1      
 #> 14 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.3 1      
 #> 15 hitw    Hole-in-… sampling_re… Hole In th…     300      300      94.3 1      
-#> # ℹ 10 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
-#> #   orientation_weight <chr>, n_orientation_cells <int>, transect_id <chr>,
-#> #   distance <dbl>, x <dbl>, y <dbl>, bathy_m <dbl>
+#> # ℹ 11 more variables: offset <dbl>, angle_source <chr>, mean_aspect_deg <dbl>,
+#> #   orientation_weight <chr>, n_orientation_cells <int>,
+#> #   orientation_resultant_length <dbl>, transect_id <chr>, distance <dbl>,
+#> #   x <dbl>, y <dbl>, bathy_m <dbl>
 ```

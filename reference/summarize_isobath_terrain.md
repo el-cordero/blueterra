@@ -35,7 +35,9 @@ summarize_isobath_terrain(
 
 - exact:
 
-  Logical. Use `exactextractr` when available.
+  Logical. Use coverage-fraction-weighted exact intersections through
+  [`summarize_terrain()`](https://el-cordero.github.io/blueterra/reference/summarize_terrain.md)
+  when available.
 
 - ...:
 
@@ -58,13 +60,14 @@ bathy <- read_bathy(blueterra_example("bathy"))
 terrain <- derive_terrain(bathy, metrics = c("slope", "bpi"))
 corridors <- make_isobath_corridors(bathy, depths = -50, width = 5)
 summarize_isobath_terrain(terrain, corridors)
-#> # A tibble: 1 × 20
-#>   level contour_value depth_label corridor_id zone_id slope_deg_mean
-#>   <dbl>         <dbl>       <dbl>       <int>   <int>          <dbl>
-#> 1   -50           -50         -50           1       1           38.2
-#> # ℹ 14 more variables: slope_deg_sd <dbl>, slope_deg_min <dbl>,
-#> #   slope_deg_max <dbl>, slope_deg_median <dbl>, bpi_3x3_mean <dbl>,
-#> #   bpi_3x3_sd <dbl>, bpi_3x3_min <dbl>, bpi_3x3_max <dbl>,
+#> # A tibble: 1 × 23
+#>   level contour_value depth_label corridor_id buffer_distance
+#>   <dbl>         <dbl>       <dbl>       <int>           <dbl>
+#> 1   -50           -50         -50           1               5
+#> # ℹ 18 more variables: nominal_corridor_width <dbl>, overlap_policy <chr>,
+#> #   zone_id <int>, slope_deg_mean <dbl>, slope_deg_sd <dbl>,
+#> #   slope_deg_min <dbl>, slope_deg_max <dbl>, slope_deg_median <dbl>,
+#> #   bpi_3x3_mean <dbl>, bpi_3x3_sd <dbl>, bpi_3x3_min <dbl>, bpi_3x3_max <dbl>,
 #> #   bpi_3x3_median <dbl>, bpi_11x11_mean <dbl>, bpi_11x11_sd <dbl>,
 #> #   bpi_11x11_min <dbl>, bpi_11x11_max <dbl>, bpi_11x11_median <dbl>
 ```
