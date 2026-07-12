@@ -1,5 +1,0 @@
-hardware=MacBook Pro; (Mac16,5); Apple M4 Max; 16 (12 performance and 4 efficiency) cores; 128 GB installed RAM
-installed_memory_gb=128
-available_ram_gb_at_start=91.0458068847656
-available_ram_method=macOS vm_stat snapshot: free + inactive + speculative pages; not a memory requirement
-operating_system=ProductName:		macOS; ProductVersion:		26.2; BuildVersion:		25C56

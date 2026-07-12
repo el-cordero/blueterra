@@ -1,5 +1,0 @@
-"artifact","object","format","bytes","comparison_policy"
-"binary/prepared_elevation.tif","prepared_elevation","GeoTIFF",1347462,"schema comparison; binary hash not treated as platform-independent"
-"binary/metric_stack.tif","metric_stack","GeoTIFF",16093920,"schema comparison; binary hash not treated as platform-independent"
-"binary/transects.gpkg","transects","GeoPackage",98304,"schema comparison; binary hash not treated as platform-independent"
-"binary/isobath_corridors.gpkg","isobath_corridors","GeoPackage",180224,"schema comparison; binary hash not treated as platform-independent"

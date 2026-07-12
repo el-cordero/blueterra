@@ -27,5 +27,10 @@ tmp/
 downloaded_data/
 bluetopo/
 BlueTopo/
+article/
+man/figures/README-custom-*.png
+man/figures/README-map-*.png
+man/figures/README-plot-*.png
+man/figures/README-plotting-*.png
 /doc/
 /Meta/

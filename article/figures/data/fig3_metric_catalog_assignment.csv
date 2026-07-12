@@ -1,6 +1,0 @@
-"metric","metric_standard","label","process_group","description","source_function","matched","metric_label","process_label","x"
-"slope_deg","slope_deg","Slope","slope_gradient","Local steepness of the seabed at each cell.","derive_slope",TRUE,"Slope","slope gradient",1
-"bpi_3x3","bpi_3x3","Fine-scale BPI","seafloor_position","Fine-scale bathymetric position index.","derive_bpi",TRUE,"Fine BPI","seafloor position",2
-"rugosity_vrm_3x3","rugosity_vrm_3x3","Vector Ruggedness Measure","seafloor_rugosity","One minus the magnitude of the mean local slope-aspect normal vector.","derive_rugosity",TRUE,"VRM-style rugosity","seafloor rugosity",3
-"laplacian_index","curvature","Four-neighbor Laplacian-style index","curvature","Sum of the four orthogonal neighbours minus four times the focal value.","derive_curvature",TRUE,"Laplacian-style index","curvature",4
-"surface_area_ratio","surface_area_ratio","Surface Area Ratio","seafloor_rugosity","Slope-secant approximation, 1 / cos(local slope), of surface-to-planar area ratio.","derive_surface_area_ratio",TRUE,"Surface-area ratio","seafloor rugosity",5

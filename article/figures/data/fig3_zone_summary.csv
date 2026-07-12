@@ -1,3 +1,0 @@
-"zone_id","polygon_provenance","slope_deg_mean","slope_deg_median","slope_deg_count","bpi_3x3_mean","bpi_3x3_median","bpi_3x3_count"
-1,"author-created deterministic analytical window",21.7247780177191,21.4424188770898,75000,-0.000351911742597963,-1.01725260606145e-05,75000
-2,"author-created deterministic analytical window",16.3121409181448,15.3979477544484,105000,-0.000589269050718874,-0.0655517578125,105000

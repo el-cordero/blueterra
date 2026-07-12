@@ -1,6 +1,0 @@
-"scenario","source","rows","columns","cells","resolution_x","resolution_y","crs"
-"native_unsmoothed","BlueTopo elevation crop",751,1001,751751,4,4,"EPSG:6348"
-"native_3x3_smoothed","BlueTopo elevation crop",751,1001,751751,4,4,"EPSG:6348"
-"coarse_8m_aggregate","mean aggregation of native crop",376,501,188376,8,8,"EPSG:6348"
-"positive_depth","sign-converted native crop",751,1001,751751,4,4,"EPSG:6348"
-"geographic_diagnostic","bilinear projection of native crop for CRS control",741,1025,759525,3.71529103998183e-05,3.71529103998194e-05,"EPSG:4326"
