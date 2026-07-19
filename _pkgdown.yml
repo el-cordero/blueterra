@@ -21,7 +21,7 @@ home:
 navbar:
   structure:
     left: [intro, reference, articles, visual-proof, news]
-    right: [search, github]
+    right: [search, cran, github]
   components:
     intro:
       text: "Get started"
@@ -50,6 +50,9 @@ navbar:
     news:
       text: "News"
       href: news/index.html
+    cran:
+      text: "CRAN"
+      href: https://CRAN.R-project.org/package=blueterra
     github:
       icon: fab fa-github
       href: https://github.com/el-cordero/blueterra

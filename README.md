@@ -3,6 +3,8 @@
 
 [![R-CMD-check](https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/blueterra)](https://CRAN.R-project.org/package=blueterra)
 [![License:
 MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/el-cordero/blueterra/blob/main/LICENSE.md)
 
@@ -21,7 +23,13 @@ Full documentation and articles are available at
 
 ## Installation
 
-Install the development version from GitHub:
+Install the released version from CRAN:
+
+``` r
+install.packages("blueterra")
+```
+
+The development version is available from GitHub:
 
 ``` r
 install.packages("remotes")
@@ -120,7 +128,7 @@ larger numeric values are shallower and smaller values are deeper.
 
 Square BPI windows are expressed in cells and include the focal cell.
 Annular BPI radii are expressed in map units, require a projected CRS,
-and use each raster axis's own cell dimension. BPI and VRM-style
+and use each raster axis’s own cell dimension. BPI and VRM-style
 rugosity use available focal support at raster edges and along
 missing-data boundaries; the outermost derivative cells can still be
 missing. Normalized BPI returns `NA` when its focal support has zero
@@ -128,7 +136,7 @@ variance or no usable values.
 
 For boundary-sensitive polygon summaries, set `exact = TRUE` when the
 optional `exactextractr` dependency is available. This uses
-raster--polygon coverage fractions to weight means, population standard
+raster–polygon coverage fractions to weight means, population standard
 deviations, medians, sums, and effective cell counts; minima and maxima
 use positively intersected cells.
 
@@ -184,11 +192,11 @@ plot_cross_sections(
 
 <img src="man/figures/README-profile-and-corridors-1.png" alt="Bathymetric cross-sections oriented from shallow terrain toward deeper terrain." width="100%" />
 
-Surface-derived transects record `orientation_resultant_length` alongside
-the angle and source. Values near one indicate aligned aspect vectors;
-values near zero indicate cancelling aspects and an unreliable mean
-direction, in which case a manual or bounding-box orientation is more
-defensible.
+Surface-derived transects record `orientation_resultant_length`
+alongside the angle and source. Values near one indicate aligned aspect
+vectors; values near zero indicate cancelling aspects and an unreliable
+mean direction, in which case a manual or bounding-box orientation is
+more defensible.
 
 ``` r
 isobaths <- extract_isobaths(hitw_prepared, depths = c(-50, -80, -120))
