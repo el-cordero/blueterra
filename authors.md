@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/el-cordero/blueterra/blob/HEAD/inst/CITATION)
+[`inst/CITATION`](https://github.com/el-cordero/blueterra/blob/main/inst/CITATION)
 
 Cordero E (2026). *blueterra: An R Workflow for Geomorphometric Analysis
 of Submerged Terrain*. R package version 0.2.0,

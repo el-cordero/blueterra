@@ -58,10 +58,10 @@ blueterra_examples()
 #> # A tibble: 6 × 8
 #>   name                path     type  description crs    nrow  ncol feature_count
 #>   <chr>               <chr>    <chr> <chr>       <chr> <dbl> <dbl>         <dbl>
-#> 1 hitw                /privat… rast… Reduced Ho… +pro…    75    75            NA
-#> 2 hoyo                /privat… rast… Reduced El… +pro…   123   124            NA
-#> 3 slope               /privat… rast… Aggregated… +pro…    90   190            NA
-#> 4 sampling_rectangles /privat… vect… Sampling r… +pro…    NA    NA             3
-#> 5 synthetic_bathy     /privat… rast… Synthetic … +pro…    60    60            NA
-#> 6 synthetic_zones     /privat… vect… Synthetic … +pro…    NA    NA             2
+#> 1 hitw                /tmp/Rt… rast… Reduced Ho… +pro…    75    75            NA
+#> 2 hoyo                /tmp/Rt… rast… Reduced El… +pro…   123   124            NA
+#> 3 slope               /tmp/Rt… rast… Aggregated… +pro…    90   190            NA
+#> 4 sampling_rectangles /tmp/Rt… vect… Sampling r… +pro…    NA    NA             3
+#> 5 synthetic_bathy     /tmp/Rt… rast… Synthetic … +pro…    60    60            NA
+#> 6 synthetic_zones     /tmp/Rt… vect… Synthetic … +pro…    NA    NA             2
 ```
