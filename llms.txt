@@ -2,6 +2,8 @@
 
 [![R-CMD-check](https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/el-cordero/blueterra/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/el-cordero/blueterra/actions/workflows/pkgdown.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/blueterra)](https://CRAN.R-project.org/package=blueterra)
 [![License:
 MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/el-cordero/blueterra/blob/main/LICENSE.md)
 
@@ -20,7 +22,14 @@ Full documentation and articles are available at
 
 ## Installation
 
-Install the development version from GitHub:
+Install the released version from CRAN:
+
+``` r
+
+install.packages("blueterra")
+```
+
+The development version is available from GitHub:
 
 ``` r
 

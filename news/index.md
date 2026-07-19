@@ -24,6 +24,8 @@
 
 ## blueterra 0.1.0
 
+CRAN release: 2026-07-19
+
 - Initial development version.
 - Added raster input, validation, preparation, terrain metrics, process
   groups, transects, isobath corridors, summaries, modeling helpers,
